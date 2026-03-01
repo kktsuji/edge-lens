@@ -43,9 +43,11 @@ Impacts every file in the project. Decide once.
 
 Decide folder layout and module boundaries before creating files.
 
-- [ ] Decide entry point: single `index.html` with JS modules, or multi-page?
-- [ ] Define folder structure (e.g., `src/features/`, `src/components/`, `src/utils/`)
-- [ ] Decide how features are loaded: all upfront, or lazy-loaded per feature tab?
+> Decision recorded in [20260301_step3_project_structure.md](./20260301_step3_project_structure.md)
+
+- [x] Decide entry point: single `index.html` with JS modules, or multi-page?
+- [x] Define folder structure (e.g., `src/features/`, `src/components/`, `src/utils/`)
+- [x] Decide how features are loaded: all upfront, or lazy-loaded per feature tab?
 
 ---
 
