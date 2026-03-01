@@ -8,6 +8,7 @@ Open the app, drop in an image, and instantly inspect pixel values, histograms, 
 
 ## ✨ Features
 
+- 🖼️ **Image Viewer** — open any image by drag & drop or file picker; your image is displayed instantly in the browser
 - 🎯 **Pixel Inspector** — hover anywhere to read RGBA values
 - 🔎 **Nearest-Neighbor Zoom** — magnify images without interpolation to inspect individual pixels at their exact values
 - 🪟 **Grid View** — arrange multiple images in a grid (e.g., 2×3) to compare them side by side
