@@ -125,13 +125,13 @@ Decisions in steps 4–8 can be made in parallel once the stack is chosen.
 
 ## Key Files to Create (after decisions)
 
-| File                           | Purpose                     |
-| ------------------------------ | --------------------------- |
-| `index.html`                   | App entry point             |
-| `src/main.ts`                  | JS entry                    |
-| `vite.config.ts`               | Build config                |
-| `tsconfig.json`                | TS config                   |
-| `package.json`                 | Dependencies                |
+| File                           | Purpose                       |
+| ------------------------------ | ----------------------------- |
+| `index.html`                   | App entry point               |
+| `src/main.ts`                  | JS entry                      |
+| `vite.config.ts`               | Build config                  |
+| `tsconfig.json`                | TS config                     |
+| `package.json`                 | Dependencies                  |
 | `amplify.yml`                  | Amplify build & deploy config |
-| `.github/workflows/deploy.yml` | CI/CD pipeline              |
-| `vitest.config.ts`             | Test config                 |
+| `.github/workflows/deploy.yml` | CI/CD pipeline                |
+| `vitest.config.ts`             | Test config                   |
