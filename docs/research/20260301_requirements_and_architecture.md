@@ -3,6 +3,7 @@
 ## Context
 
 EdgeLens is a privacy-first, browser-based image analysis tool (client-side only, no backend).
+See the [project README](../../README.md) for features, privacy policy, and analytics details.
 The goal of this session is to define all decisions needed before writing a single line of code,
 organized as a sequential TODO list. Hosting target: AWS S3 + CloudFront static site.
 
@@ -12,7 +13,7 @@ organized as a sequential TODO list. Hosting target: AWS S3 + CloudFront static 
 
 ### STEP 1 — Define MVP Scope
 
-Decide which features ship in v1 vs later phases. The README lists 10 features; building all at once is risky.
+Decide which features ship in v1 vs later phases. The [README](../../README.md) lists 10 features; building all at once is risky.
 
 > Decision recorded in [20260301_step1_mvp_scope.md](./20260301_step1_mvp_scope.md)
 
