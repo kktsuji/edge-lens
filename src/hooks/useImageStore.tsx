@@ -1,8 +1,8 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useState,
-  useCallback,
   type ReactNode,
 } from "react";
 import type { ImageState, ViewportState } from "../types";
@@ -45,13 +45,16 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     ctx.drawImage(bitmap, 0, 0);
     const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
-    setImage({
-      file,
-      name: file.name,
-      width: bitmap.width,
-      height: bitmap.height,
-      imageData,
-      imageBitmap: bitmap,
+    setImage((prev) => {
+      if (prev.imageBitmap) prev.imageBitmap.close();
+      return {
+        file,
+        name: file.name,
+        width: bitmap.width,
+        height: bitmap.height,
+        imageData,
+        imageBitmap: bitmap,
+      };
     });
     setViewport(initialViewport);
   }, []);

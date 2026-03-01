@@ -1,22 +1,52 @@
-import { useRef } from "react";
-import { Toolbar } from "./components/Toolbar";
+import { useCallback, useRef, useState, type DragEvent } from "react";
+import { CookieConsent } from "./components/CookieConsent";
 import { Sidebar } from "./components/Sidebar";
-import { useImageStore } from "./hooks/useImageStore";
-import { useCanvas } from "./hooks/useCanvas";
+import { Toolbar } from "./components/Toolbar";
+import { HistogramPanel } from "./features/histogram/components/HistogramPanel";
+import { useHistogram } from "./features/histogram/hooks/useHistogram";
+import { CloseButton } from "./features/image-loader/components/CloseButton";
 import { DropZone } from "./features/image-loader/components/DropZone";
 import { FilePickerButton } from "./features/image-loader/components/FilePickerButton";
-import { CloseButton } from "./features/image-loader/components/CloseButton";
-import { useZoom } from "./features/zoom/hooks/useZoom";
-import { usePixelInspector } from "./features/pixel-inspector/hooks/usePixelInspector";
 import { PixelInfoPanel } from "./features/pixel-inspector/components/PixelInfoPanel";
-import { useHistogram } from "./features/histogram/hooks/useHistogram";
-import { HistogramPanel } from "./features/histogram/components/HistogramPanel";
-import { CookieConsent } from "./components/CookieConsent";
+import { usePixelInspector } from "./features/pixel-inspector/hooks/usePixelInspector";
+import { useZoom } from "./features/zoom/hooks/useZoom";
+import { useCanvas } from "./hooks/useCanvas";
+import { useImageStore } from "./hooks/useImageStore";
+import { validateImageFile } from "./utils/validation";
 
 function App() {
-  const { image } = useImageStore();
+  const { image, loadImage } = useImageStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hasImage = !!image.imageData;
+
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  const handleDrop = useCallback(
+    async (e: DragEvent<HTMLElement>) => {
+      e.preventDefault();
+      setIsDraggingOver(false);
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const result = validateImageFile(file);
+      if (!result.valid) return;
+      try {
+        await loadImage(file);
+      } catch {
+        // ignore unsupported format silently when dropping on canvas
+      }
+    },
+    [loadImage],
+  );
+
+  const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    setIsDraggingOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    setIsDraggingOver(false);
+  }, []);
 
   useCanvas(canvasRef);
   useZoom(canvasRef);
@@ -43,7 +73,21 @@ function App() {
       <div className="flex min-h-0 flex-1">
         <main id="main-content" className="relative flex-1 overflow-hidden">
           {hasImage ? (
-            <canvas ref={canvasRef} className="h-full w-full" />
+            <div
+              className="relative h-full w-full"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+              <canvas ref={canvasRef} className="h-full w-full" />
+              {isDraggingOver && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center border-2 border-dashed border-blue-400 bg-blue-400/20">
+                  <p className="text-lg font-medium text-blue-300">
+                    Drop to replace image
+                  </p>
+                </div>
+              )}
+            </div>
           ) : (
             <DropZone />
           )}
