@@ -132,6 +132,6 @@ Decisions in steps 4–8 can be made in parallel once the stack is chosen.
 | `vite.config.ts`               | Build config                |
 | `tsconfig.json`                | TS config                   |
 | `package.json`                 | Dependencies                |
-| `infra/`                       | CDK stack (S3 + CloudFront) |
+| `amplify.yml`                  | Amplify build & deploy config |
 | `.github/workflows/deploy.yml` | CI/CD pipeline              |
 | `vitest.config.ts`             | Test config                 |
