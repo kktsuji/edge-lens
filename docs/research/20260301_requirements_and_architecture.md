@@ -69,10 +69,12 @@ AWS decisions that affect cost, security, and deployment.
 
 Automate build and deploy from day one.
 
-- [ ] **CI/CD platform**: GitHub Actions (already on GitHub, free for public repos)
-- [ ] **Pipeline steps**: lint → test → build → deploy to S3 → invalidate CloudFront cache
-- [ ] **Branch strategy**: deploy `main` to production, `develop` to staging (separate S3/CF stack)?
-- [ ] **AWS credentials in CI**: Use OIDC (no long-lived keys) or IAM user + GitHub Secrets
+- [x] **CI/CD platform**: AWS Amplify built-in CI/CD (no GitHub Actions needed)
+- [x] **Pipeline steps**: Amplify build → lint → test → build → deploy (configured via `amplify.yml`)
+- [x] **Branch strategy**: `main` → production environment; `develop` → staging environment (both managed in Amplify console)
+- [x] **AWS credentials in CI**: Managed by Amplify (no OIDC or IAM user secrets required)
+
+> Decision recorded in [20260301_step5_cicd_pipeline.md](./20260301_step5_cicd_pipeline.md)
 
 ---
 
