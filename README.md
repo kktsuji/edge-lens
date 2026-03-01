@@ -2,13 +2,17 @@
 
 **Browser-based image analyzer — your images never leave your device.**
 
-🚫 No uploads &nbsp;|&nbsp; 🖼️ Images stay local &nbsp;|&nbsp; ✅ Works offline
+🚫 No images uploaded &nbsp;|&nbsp; ✅ Analysis works offline &nbsp;|&nbsp; 🔓 Open source
 
-Open the app, drop in an image, and instantly inspect pixel values, histograms, color distributions, EXIF metadata, and more. Because EdgeLens runs entirely in your browser, you can verify via your browser's Network tab that zero image data ever leaves your machine.
+Open the app, drop in an image, and instantly inspect pixel values, histograms, color distributions, EXIF metadata, and more. Because EdgeLens runs entirely in your browser, you can verify via your browser's Network tab that zero image data ever leaves your machine. The full source code is open on [GitHub](https://github.com/kktsuji/edge-lens) — see exactly how it works.
 
 ## ✨ Features
 
 - 🎯 **Pixel Inspector** — click anywhere to read RGBA values
+- 🔎 **Nearest-Neighbor Zoom** — magnify images without interpolation to inspect individual pixels at their exact values
+- 🪟 **Grid View** — arrange multiple images in a grid (e.g., 2×3) to compare them side by side
+- 📈 **Line Profile** — drag across the image to draw a line and plot pixel values along it
+- ✂️ **ROI (Region of Interest) Statistics** — drag to select a rectangular region and inspect pixel statistics for that area
 - 📊 **Histogram** — visualize R/G/B/luminance channel distributions
 - 🏷️ **EXIF Metadata Viewer** — reveal hidden image metadata
 - 🎨 **Color Palette Extraction** — identify dominant colors
