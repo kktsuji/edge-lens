@@ -90,12 +90,14 @@ Automate build and deploy from day one.
 
 ### STEP 7 — Define Non-Functional Requirements
 
-- [ ] **Performance**: Target Lighthouse score (e.g., ≥90 Performance, ≥90 Accessibility)
-- [ ] **Browser support**: Modern evergreen only (Chrome, Firefox, Safari, Edge latest 2)?
-- [ ] **Accessibility**: WCAG 2.1 AA compliance target?
-- [ ] **Analytics**: Privacy-friendly option (Plausible, Fathom) or none?
-- [ ] **SEO**: Basic meta tags + Open Graph? Sitemap?
-- [ ] **i18n**: English only for now, or structure for future localization?
+> Decision recorded in [20260301_step7_non_functional_requirements.md](./20260301_step7_non_functional_requirements.md)
+
+- [x] **Performance**: Lighthouse ≥90 all categories (Performance, Accessibility, Best Practices, SEO)
+- [x] **Browser support**: Latest 2 evergreen — Chrome, Firefox, Safari, Edge
+- [x] **Accessibility**: WCAG 2.1 AA
+- [x] **Analytics**: Google Analytics 4 (requires cookie consent banner for GDPR)
+- [x] **SEO**: Basic meta tags + Open Graph tags only
+- [x] **i18n**: English now; i18next structure in place for future languages
 
 ---
 
