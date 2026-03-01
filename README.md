@@ -28,3 +28,5 @@ Your images **never leave your device** — ever.
 ## 📊 Analytics
 
 EdgeLens collects anonymous feature usage data (e.g., which tools you use) via Google Analytics to help improve the app. **No image data is collected.** You can opt out via your browser's [Do Not Track](https://en.wikipedia.org/wiki/Do_Not_Track) setting or a GA blocker.
+
+test
