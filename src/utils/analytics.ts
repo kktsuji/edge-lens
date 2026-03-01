@@ -1,4 +1,4 @@
-const GA_MEASUREMENT_ID = "G-XXXXXXXXXX"; // Replace with real ID
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID ?? "";
 
 let initialized = false;
 
