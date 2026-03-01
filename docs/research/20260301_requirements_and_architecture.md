@@ -55,14 +55,13 @@ Decide folder layout and module boundaries before creating files.
 
 AWS decisions that affect cost, security, and deployment.
 
-- [ ] **Domain name**: Choose a custom domain (e.g., `edge-lens.app`) or use CloudFront default URL?
-- [ ] **SSL/TLS**: ACM certificate in `us-east-1` (required for CloudFront)
-- [ ] **S3 bucket policy**: Block public access, use CloudFront OAC (Origin Access Control) — recommended
-- [ ] **CloudFront settings**:
-  - Cache policy: cache HTML short (e.g., 5 min), assets long (1 year with hash in filename)
-  - Price class: All edges vs US/Europe only
-  - Custom error responses: 404 → `/index.html` (needed for SPA routing if used)
-- [ ] **IaC tool**: AWS CDK (TypeScript, recommended) vs Terraform vs manual Console
+> Decision recorded in [20260301_step4_infrastructure_architecture.md](./20260301_step4_infrastructure_architecture.md)
+
+- [x] **Domain name**: `edgelens.tech` (custom domain via AWS Amplify)
+- [x] **SSL/TLS**: ACM certificate auto-provisioned by Amplify in `us-east-1`
+- [x] **S3 bucket policy**: Managed by Amplify (private bucket + CloudFront OAC, no manual setup)
+- [x] **CloudFront settings**: Managed by Amplify; cache invalidation triggered automatically on deploy
+- [x] **IaC tool**: AWS Amplify — replaces CDK/Terraform; GitHub webhook deploys `main` on push
 
 ---
 
