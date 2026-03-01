@@ -8,7 +8,7 @@ Open the app, drop in an image, and instantly inspect pixel values, histograms, 
 
 ## ✨ Features
 
-- 🎯 **Pixel Inspector** — click anywhere to read RGBA values
+- 🎯 **Pixel Inspector** — hover anywhere to read RGBA values
 - 🔎 **Nearest-Neighbor Zoom** — magnify images without interpolation to inspect individual pixels at their exact values
 - 🪟 **Grid View** — arrange multiple images in a grid (e.g., 2×3) to compare them side by side
 - 📈 **Line Profile** — drag across the image to draw a line and plot pixel values along it
