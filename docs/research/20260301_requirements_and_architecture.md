@@ -103,10 +103,12 @@ Automate build and deploy from day one.
 
 ### STEP 8 — Repository & Project Hygiene
 
-- [ ] **License**: Already MIT — confirm it stays
-- [ ] **Contributing guide**: Add `CONTRIBUTING.md`?
-- [ ] **Issue templates**: Bug report / feature request templates in `.github/`?
-- [ ] **Commit convention**: Conventional Commits (already in use from git log) — document it
+> Decision recorded in [20260301_step8_repo_hygiene.md](./20260301_step8_repo_hygiene.md)
+
+- [x] **License**: Keep MIT — no change
+- [x] **Contributing guide**: Add `CONTRIBUTING.md` (setup, testing, PR checklist, commit convention)
+- [x] **Issue templates**: Bug report + feature request in `.github/ISSUE_TEMPLATE/`
+- [x] **Commit convention**: Conventional Commits — documented in `CONTRIBUTING.md` only
 
 ---
 
