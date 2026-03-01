@@ -80,9 +80,11 @@ Automate build and deploy from day one.
 
 ### STEP 6 — Decide Testing Strategy
 
-- [ ] **Unit tests**: Vitest (pairs with Vite) for pixel math / util functions
-- [ ] **E2E tests**: Playwright for drag-drop upload and feature interactions
-- [ ] **Coverage target**: Define a minimum threshold (e.g., 80% for core utils)
+> Decision recorded in [20260301_step6_testing_strategy.md](./20260301_step6_testing_strategy.md)
+
+- [x] **Unit tests**: Vitest — `src/utils/` only (pixel math, color conversions, hooks)
+- [x] **E2E tests**: Playwright — happy path + edge cases per feature; Chromium only in CI
+- [x] **Coverage target**: 80% on `src/utils/`; no requirement on components or features
 
 ---
 
