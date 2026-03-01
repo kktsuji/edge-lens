@@ -28,17 +28,13 @@ Decide which features ship in v1 vs later phases. The README lists 10 features; 
 
 Impacts every file in the project. Decide once.
 
-- [ ] **Framework**: Vanilla JS/TS vs React vs Vue vs Svelte
-  - Vanilla is simplest for a tool app with no routing
-  - React/Vue add DX ergonomics but bundle overhead
-- [ ] **Language**: JavaScript vs TypeScript (TS recommended for a pixel-math-heavy tool)
-- [ ] **Build tool**: Vite (recommended, fast, no config) vs webpack vs Parcel
-- [ ] **CSS approach**: Plain CSS / CSS modules / Tailwind / a component library (e.g., shadcn)
-- [ ] **Image processing libraries**:
-  - Canvas API (built-in, zero dependency)
-  - `exifr` for EXIF parsing
-  - `quantize` or `color-thief` for palette extraction
-  - Chart.js or D3 for histogram/line profile plots
+- [x] **Framework**: React
+- [x] **Language**: TypeScript
+- [x] **Build tool**: Vite + `@vitejs/plugin-react-swc`
+- [x] **CSS approach**: Tailwind CSS (shadcn/ui optional later)
+- [x] **Image processing libraries**: Canvas API + `exifr` + `color-thief` + `Chart.js`
+
+> Decision recorded in [20260301_step2_frontend_stack.md](./20260301_step2_frontend_stack.md)
 
 ---
 
