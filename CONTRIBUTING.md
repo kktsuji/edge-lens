@@ -4,7 +4,7 @@ Thank you for your interest in contributing to EdgeLens!
 
 ## Prerequisites
 
-- **Node.js** ≥ 20
+- **Node.js** ≥ 22
 - **npm** ≥ 10
 
 ## Local Development Setup
