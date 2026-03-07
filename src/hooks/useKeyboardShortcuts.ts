@@ -101,7 +101,12 @@ export function useKeyboardShortcuts(
         return;
       }
 
-      if (e.key === "r" || e.key === "R") {
+      if (
+        (e.key === "r" || e.key === "R") &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
         if (img.imageData) {
           e.preventDefault();
           setToolMode("roi");
@@ -109,10 +114,28 @@ export function useKeyboardShortcuts(
         return;
       }
 
-      if (e.key === "l" || e.key === "L") {
+      if (
+        (e.key === "l" || e.key === "L") &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
         if (img.imageData) {
           e.preventDefault();
           setToolMode("line-profile");
+        }
+        return;
+      }
+
+      if (
+        (e.key === "n" || e.key === "N") &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        if (img.imageData) {
+          e.preventDefault();
+          setToolMode("navigate");
         }
         return;
       }

@@ -54,6 +54,7 @@ export function RoiStatsPanel() {
           onClick={() => setRoiSelection(null)}
           className="text-gray-500 hover:text-gray-200"
           aria-label={t("roiStats.clearAriaLabel")}
+          title={t("roiStats.clearAriaLabel")}
         >
           ×
         </button>

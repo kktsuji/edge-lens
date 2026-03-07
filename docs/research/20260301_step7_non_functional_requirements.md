@@ -32,5 +32,5 @@
 
 - **Now**: English only — all UI strings hardcoded in English
 - **Structure**: Use `i18next` + `react-i18next` from day one so adding languages later requires no refactor
-- Translation files live in `public/locales/{lang}/translation.json`
+- Translation files live in `src/locales/{lang}/translation.json`
 - Default locale: `en`; no locale switching UI at launch (infrastructure only)
