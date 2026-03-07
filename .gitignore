@@ -178,3 +178,6 @@ sketch
 ### Playwright ###
 playwright-report/
 test-results/
+
+## Claude Code
+CLAUDE.md
