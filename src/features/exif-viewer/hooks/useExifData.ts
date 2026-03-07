@@ -37,7 +37,7 @@ export function useExifData(): ExifData | null {
       .then((raw) => {
         if (cancelled) return;
         if (!raw) {
-          setExifData(null);
+          setExifData({});
           return;
         }
         setExifData({
@@ -56,7 +56,7 @@ export function useExifData(): ExifData | null {
         });
       })
       .catch(() => {
-        if (!cancelled) setExifData(null);
+        if (!cancelled) setExifData({});
       });
 
     return () => {
