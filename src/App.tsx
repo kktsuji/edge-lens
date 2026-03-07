@@ -10,6 +10,8 @@ import { useHistogram } from "./features/histogram/hooks/useHistogram";
 import { CloseButton } from "./features/image-loader/components/CloseButton";
 import { DropZone } from "./features/image-loader/components/DropZone";
 import { FilePickerButton } from "./features/image-loader/components/FilePickerButton";
+import { ExifPanel } from "./features/exif-viewer/components/ExifPanel";
+import { useExifData } from "./features/exif-viewer/hooks/useExifData";
 import { PixelInfoPanel } from "./features/pixel-inspector/components/PixelInfoPanel";
 import { usePixelInspector } from "./features/pixel-inspector/hooks/usePixelInspector";
 import { useZoom } from "./features/zoom/hooks/useZoom";
@@ -64,6 +66,7 @@ function App() {
   });
   const pixelInfo = usePixelInspector(canvasRef);
   const histogramData = useHistogram();
+  const exifData = useExifData();
 
   return (
     <div className="flex h-screen flex-col bg-gray-900 text-white">
@@ -114,6 +117,7 @@ function App() {
           <PixelInfoPanel pixelInfo={pixelInfo} />
           <HistogramPanel data={histogramData} />
           <ImageStatsPanel data={histogramData} />
+          <ExifPanel exifData={exifData} />
         </Sidebar>
       </div>
       <CookieConsent />

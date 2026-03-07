@@ -41,3 +41,18 @@ export interface ImageStats {
   blue: ChannelStats;
   luminance: ChannelStats;
 }
+
+export interface ExifData {
+  make?: string;
+  model?: string;
+  lens?: string;
+  exposureTime?: number;
+  fNumber?: number;
+  iso?: number;
+  focalLength?: number;
+  dateTimeOriginal?: Date;
+  software?: string;
+  orientation?: number;
+  colorSpace?: number;
+  hasGps?: boolean;
+}
