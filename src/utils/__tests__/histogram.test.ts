@@ -185,6 +185,81 @@ describe("computeRoiHistogram", () => {
     expect(hist.red.reduce((a, b) => a + b, 0)).toBe(2);
   });
 
+  it("handles negative width (produces same result as positive equivalent)", () => {
+    // 2x2 image: top-left red, top-right green, bottom-left blue, bottom-right white
+    const img = createImageData(2, 2, [
+      255,
+      0,
+      0,
+      255, // (0,0) red
+      0,
+      255,
+      0,
+      255, // (1,0) green
+      0,
+      0,
+      255,
+      255, // (0,1) blue
+      255,
+      255,
+      255,
+      255, // (1,1) white
+    ]);
+    // ROI with negative width: x=1, width=-1 should cover x=[0,1) same as x=0,width=1
+    const histNeg = computeRoiHistogram(img, {
+      x: 1,
+      y: 0,
+      width: -1,
+      height: 1,
+    });
+    const histPos = computeRoiHistogram(img, {
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+    });
+    expect(histNeg.red).toEqual(histPos.red);
+    expect(histNeg.green).toEqual(histPos.green);
+    expect(histNeg.blue).toEqual(histPos.blue);
+  });
+
+  it("handles negative height (produces same result as positive equivalent)", () => {
+    const img = createImageData(2, 2, [
+      255,
+      0,
+      0,
+      255, // (0,0) red
+      0,
+      255,
+      0,
+      255, // (1,0) green
+      0,
+      0,
+      255,
+      255, // (0,1) blue
+      255,
+      255,
+      255,
+      255, // (1,1) white
+    ]);
+    // ROI with negative height: y=1, height=-1 should cover y=[0,1) same as y=0,height=1
+    const histNeg = computeRoiHistogram(img, {
+      x: 0,
+      y: 1,
+      width: 1,
+      height: -1,
+    });
+    const histPos = computeRoiHistogram(img, {
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+    });
+    expect(histNeg.red).toEqual(histPos.red);
+    expect(histNeg.green).toEqual(histPos.green);
+    expect(histNeg.blue).toEqual(histPos.blue);
+  });
+
   it("returns all-zero histogram for zero-size ROI", () => {
     const img = createImageData(
       2,

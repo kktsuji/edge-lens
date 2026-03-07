@@ -41,10 +41,23 @@ export function computeRoiHistogram(
   const { width: imgWidth } = imageData;
   const data = imageData.data;
 
-  const x0 = Math.max(0, Math.floor(roi.x));
-  const y0 = Math.max(0, Math.floor(roi.y));
-  const x1 = Math.min(imageData.width, Math.ceil(roi.x + roi.width));
-  const y1 = Math.min(imageData.height, Math.ceil(roi.y + roi.height));
+  // Normalize ROI coordinates to handle negative width/height
+  let rawX0 = roi.x;
+  let rawX1 = roi.x + roi.width;
+  if (rawX0 > rawX1) {
+    [rawX0, rawX1] = [rawX1, rawX0];
+  }
+
+  let rawY0 = roi.y;
+  let rawY1 = roi.y + roi.height;
+  if (rawY0 > rawY1) {
+    [rawY0, rawY1] = [rawY1, rawY0];
+  }
+
+  const x0 = Math.max(0, Math.min(imageData.width, Math.floor(rawX0)));
+  const x1 = Math.max(0, Math.min(imageData.width, Math.ceil(rawX1)));
+  const y0 = Math.max(0, Math.min(imageData.height, Math.floor(rawY0)));
+  const y1 = Math.max(0, Math.min(imageData.height, Math.ceil(rawY1)));
 
   for (let row = y0; row < y1; row++) {
     for (let col = x0; col < x1; col++) {
