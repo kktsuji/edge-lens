@@ -97,8 +97,8 @@ function App() {
             <div className="mx-1 h-5 w-px bg-gray-600" />
             <button
               onClick={() => setToolMode("navigate")}
-              title={t("toolbar.navigate")}
-              aria-label={t("toolbar.navigate")}
+              title={`${t("toolbar.navigate")} (N)`}
+              aria-label={`${t("toolbar.navigate")} (N)`}
               aria-pressed={toolMode === "navigate"}
               className={`rounded px-2 py-1 text-sm transition-colors ${
                 toolMode === "navigate"
@@ -110,8 +110,8 @@ function App() {
             </button>
             <button
               onClick={() => setToolMode("line-profile")}
-              title={t("toolbar.lineProfile")}
-              aria-label={t("toolbar.lineProfile")}
+              title={`${t("toolbar.lineProfile")} (L)`}
+              aria-label={`${t("toolbar.lineProfile")} (L)`}
               aria-pressed={toolMode === "line-profile"}
               className={`rounded px-2 py-1 text-sm transition-colors ${
                 toolMode === "line-profile"
@@ -123,8 +123,8 @@ function App() {
             </button>
             <button
               onClick={() => setToolMode("roi")}
-              title={t("toolbar.roi")}
-              aria-label={t("toolbar.roi")}
+              title={`${t("toolbar.roi")} (R)`}
+              aria-label={`${t("toolbar.roi")} (R)`}
               aria-pressed={toolMode === "roi"}
               className={`rounded px-2 py-1 text-sm transition-colors ${
                 toolMode === "roi"

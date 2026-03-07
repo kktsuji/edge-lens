@@ -117,6 +117,14 @@ export function useKeyboardShortcuts(
         return;
       }
 
+      if (e.key === "n" || e.key === "N") {
+        if (img.imageData) {
+          e.preventDefault();
+          setToolMode("navigate");
+        }
+        return;
+      }
+
       if (!canvas || !img.imageData) return;
 
       const cw = canvas.clientWidth;
