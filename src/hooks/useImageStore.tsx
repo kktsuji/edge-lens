@@ -68,6 +68,8 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       };
     });
     setViewport(initialViewport);
+    setToolMode("navigate");
+    setRoiSelection(null);
   }, []);
 
   const closeImage = useCallback(() => {
@@ -76,6 +78,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     }
     setImage(initialImage);
     setViewport(initialViewport);
+    setToolMode("navigate");
     setRoiSelection(null);
   }, [image.imageBitmap]);
 
