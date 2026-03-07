@@ -19,6 +19,36 @@ ChartJS.register(
   Legend,
 );
 
+const options = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false as const,
+  scales: {
+    x: {
+      display: false,
+    },
+    y: {
+      display: false,
+      min: 0,
+      max: 255,
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: "bottom" as const,
+      labels: {
+        color: "#9ca3af",
+        boxWidth: 10,
+        font: { size: 10 },
+      },
+    },
+    tooltip: {
+      enabled: true,
+    },
+  },
+};
+
 interface LineProfileChartProps {
   samples: LineProfileSample[];
 }
@@ -58,36 +88,6 @@ export function LineProfileChart({ samples }: LineProfileChartProps) {
         borderWidth: 1,
       },
     ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: false as const,
-    scales: {
-      x: {
-        display: false,
-      },
-      y: {
-        display: false,
-        min: 0,
-        max: 255,
-      },
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: "bottom" as const,
-        labels: {
-          color: "#9ca3af",
-          boxWidth: 10,
-          font: { size: 10 },
-        },
-      },
-      tooltip: {
-        enabled: true,
-      },
-    },
   };
 
   return (
