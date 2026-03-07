@@ -3,17 +3,27 @@ import { useImageStore } from "../../../hooks/useImageStore";
 export function RoiSelectionOverlay() {
   const { roiSelection, viewport } = useImageStore();
 
-  if (!roiSelection || roiSelection.width === 0 || roiSelection.height === 0) {
+  if (!roiSelection) {
     return null;
   }
 
   const { zoom, panX, panY } = viewport;
   const { x, y, width, height } = roiSelection;
 
-  const screenX = x * zoom + panX;
-  const screenY = y * zoom + panY;
-  const screenW = width * zoom;
-  const screenH = height * zoom;
+  const normalizedWidth = Math.abs(width);
+  const normalizedHeight = Math.abs(height);
+
+  if (normalizedWidth === 0 || normalizedHeight === 0) {
+    return null;
+  }
+
+  const originX = width >= 0 ? x : x + width;
+  const originY = height >= 0 ? y : y + height;
+
+  const screenX = originX * zoom + panX;
+  const screenY = originY * zoom + panY;
+  const screenW = normalizedWidth * zoom;
+  const screenH = normalizedHeight * zoom;
 
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full">
