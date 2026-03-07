@@ -20,14 +20,16 @@ export function ImageStatsPanel({ data }: ImageStatsPanelProps) {
         <table className="w-full text-xs text-gray-300">
           <thead>
             <tr className="text-gray-500">
-              <th className="pb-1 text-left font-normal"></th>
-              <th className="pb-1 text-right font-normal">
+              <th scope="col" className="pb-1 text-left font-normal">
+                <span className="sr-only">{t("imageStats.channel")}</span>
+              </th>
+              <th scope="col" className="pb-1 text-right font-normal">
                 {t("imageStats.mean")}
               </th>
-              <th className="pb-1 text-right font-normal">
+              <th scope="col" className="pb-1 text-right font-normal">
                 {t("imageStats.median")}
               </th>
-              <th className="pb-1 text-right font-normal">
+              <th scope="col" className="pb-1 text-right font-normal">
                 {t("imageStats.stdDev")}
               </th>
             </tr>
