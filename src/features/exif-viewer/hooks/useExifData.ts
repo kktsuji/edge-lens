@@ -13,6 +13,8 @@ export function useExifData(): ExifData | null {
       return;
     }
 
+    // Clear previous EXIF data immediately when a new image is loaded
+    setExifData(null);
     let cancelled = false;
 
     exifr
