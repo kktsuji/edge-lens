@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import { CookieConsent } from "./components/CookieConsent";
+import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
 import { Sidebar } from "./components/Sidebar";
 import { Toolbar } from "./components/Toolbar";
 import { HistogramPanel } from "./features/histogram/components/HistogramPanel";
@@ -12,14 +13,17 @@ import { usePixelInspector } from "./features/pixel-inspector/hooks/usePixelInsp
 import { useZoom } from "./features/zoom/hooks/useZoom";
 import { useCanvas } from "./hooks/useCanvas";
 import { useImageStore } from "./hooks/useImageStore";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { validateImageFile } from "./utils/validation";
 
 function App() {
-  const { image, loadImage } = useImageStore();
+  const { image, loadImage, closeImage } = useImageStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const handleDrop = useCallback(
     async (e: DragEvent<HTMLElement>) => {
@@ -50,6 +54,12 @@ function App() {
 
   useCanvas(canvasRef);
   useZoom(canvasRef);
+  useKeyboardShortcuts(canvasRef, {
+    onOpenFile: () => fileInputRef.current?.click(),
+    onCloseImage: closeImage,
+    isHelpOpen,
+    onToggleHelp: () => setIsHelpOpen((v) => !v),
+  });
   const pixelInfo = usePixelInspector(canvasRef);
   const histogramData = useHistogram();
 
@@ -62,7 +72,7 @@ function App() {
         Skip to content
       </a>
       <Toolbar>
-        <FilePickerButton />
+        <FilePickerButton inputRef={fileInputRef} />
         <CloseButton />
         {hasImage && (
           <span className="ml-2 text-xs text-gray-400">
@@ -98,6 +108,9 @@ function App() {
         </Sidebar>
       </div>
       <CookieConsent />
+      {isHelpOpen && (
+        <KeyboardShortcutsHelp onClose={() => setIsHelpOpen(false)} />
+      )}
     </div>
   );
 }

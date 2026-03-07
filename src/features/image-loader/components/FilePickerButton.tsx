@@ -3,10 +3,17 @@ import { useTranslation } from "react-i18next";
 import { useImageStore } from "../../../hooks/useImageStore";
 import { validateImageFile } from "../../../utils/validation";
 
-export function FilePickerButton() {
+interface FilePickerButtonProps {
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+}
+
+export function FilePickerButton({
+  inputRef: externalInputRef,
+}: FilePickerButtonProps = {}) {
   const { t } = useTranslation();
   const { loadImage } = useImageStore();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const internalRef = useRef<HTMLInputElement>(null);
+  const inputRef = externalInputRef ?? internalRef;
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = useCallback(
