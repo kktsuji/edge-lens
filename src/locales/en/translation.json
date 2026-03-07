@@ -41,7 +41,7 @@
   "imageStats.blue": "B",
   "imageStats.luminance": "L",
   "exif.title": "EXIF Metadata",
-  "exif.placeholder": "Load a JPEG image to view its metadata.",
+  "exif.placeholder": "Load an image to view its metadata.",
   "exif.noExif": "No EXIF data found.",
   "exif.make": "Camera Make",
   "exif.model": "Camera Model",
