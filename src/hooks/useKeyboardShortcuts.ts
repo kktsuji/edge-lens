@@ -81,7 +81,10 @@ export function useKeyboardShortcuts(
         if (opts.isHelpOpen) {
           opts.onToggleHelp();
         } else if (drawOrderRef.current.length > 0) {
-          const last = drawOrderRef.current[drawOrderRef.current.length - 1];
+          const last = drawOrderRef.current.pop();
+          if (!last) {
+            return;
+          }
           if (last === "roi") setRoiSelection(null);
           else setLineProfile(null);
         } else if (toolModeRef.current !== "navigate") {
