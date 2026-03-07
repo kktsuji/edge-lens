@@ -44,6 +44,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       if (e.key !== " ") return;
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      e.preventDefault();
       isSpaceDown = true;
       canvas.style.cursor = "grab";
     };
