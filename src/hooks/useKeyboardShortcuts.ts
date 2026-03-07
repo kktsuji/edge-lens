@@ -11,12 +11,26 @@ export function useKeyboardShortcuts(
     onToggleHelp: () => void;
   },
 ) {
-  const { image, viewport, setViewport } = useImageStore();
+  const {
+    image,
+    viewport,
+    toolMode,
+    roiSelection,
+    setViewport,
+    setToolMode,
+    setRoiSelection,
+  } = useImageStore();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
 
   const imageRef = useRef(image);
   imageRef.current = image;
+
+  const toolModeRef = useRef(toolMode);
+  toolModeRef.current = toolMode;
+
+  const roiSelectionRef = useRef(roiSelection);
+  roiSelectionRef.current = roiSelection;
 
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -41,6 +55,10 @@ export function useKeyboardShortcuts(
         e.preventDefault();
         if (opts.isHelpOpen) {
           opts.onToggleHelp();
+        } else if (roiSelectionRef.current) {
+          setRoiSelection(null);
+        } else if (toolModeRef.current !== "navigate") {
+          setToolMode("navigate");
         } else if (img.imageData) {
           opts.onCloseImage();
         }
@@ -50,6 +68,22 @@ export function useKeyboardShortcuts(
       if (e.ctrlKey && e.key === "o") {
         e.preventDefault();
         opts.onOpenFile();
+        return;
+      }
+
+      if (e.key === "r" || e.key === "R") {
+        if (img.imageData) {
+          e.preventDefault();
+          setToolMode("roi");
+        }
+        return;
+      }
+
+      if (e.key === "l" || e.key === "L") {
+        if (img.imageData) {
+          e.preventDefault();
+          setToolMode("line-profile");
+        }
         return;
       }
 
@@ -108,5 +142,5 @@ export function useKeyboardShortcuts(
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [canvasRef, setViewport]);
+  }, [canvasRef, setViewport, setToolMode, setRoiSelection]);
 }

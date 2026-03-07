@@ -42,6 +42,15 @@ export interface ImageStats {
   luminance: ChannelStats;
 }
 
+export type ToolMode = "navigate" | "roi" | "line-profile";
+
+export interface RoiSelection {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface ExifData {
   make?: string;
   model?: string;

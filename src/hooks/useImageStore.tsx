@@ -5,16 +5,25 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { ImageState, ViewportState } from "../types";
+import type {
+  ImageState,
+  RoiSelection,
+  ToolMode,
+  ViewportState,
+} from "../types";
 
 interface ImageStoreContextValue {
   image: ImageState;
   viewport: ViewportState;
+  toolMode: ToolMode;
+  roiSelection: RoiSelection | null;
   loadImage: (file: File) => Promise<void>;
   closeImage: () => void;
   setZoom: (zoom: number) => void;
   setPan: (panX: number, panY: number) => void;
   setViewport: (viewport: ViewportState) => void;
+  setToolMode: (mode: ToolMode) => void;
+  setRoiSelection: (roi: RoiSelection | null) => void;
 }
 
 const initialImage: ImageState = {
@@ -37,6 +46,8 @@ const ImageStoreContext = createContext<ImageStoreContextValue | null>(null);
 export function ImageStoreProvider({ children }: { children: ReactNode }) {
   const [image, setImage] = useState<ImageState>(initialImage);
   const [viewport, setViewport] = useState<ViewportState>(initialViewport);
+  const [toolMode, setToolMode] = useState<ToolMode>("navigate");
+  const [roiSelection, setRoiSelection] = useState<RoiSelection | null>(null);
 
   const loadImage = useCallback(async (file: File) => {
     const bitmap = await createImageBitmap(file);
@@ -65,6 +76,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     }
     setImage(initialImage);
     setViewport(initialViewport);
+    setRoiSelection(null);
   }, [image.imageBitmap]);
 
   const setZoom = useCallback((zoom: number) => {
@@ -80,11 +92,15 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       value={{
         image,
         viewport,
+        toolMode,
+        roiSelection,
         loadImage,
         closeImage,
         setZoom,
         setPan,
         setViewport,
+        setToolMode,
+        setRoiSelection,
       }}
     >
       {children}

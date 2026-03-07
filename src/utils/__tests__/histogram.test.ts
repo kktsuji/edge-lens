@@ -3,6 +3,7 @@ import {
   computeChannelStats,
   computeHistogram,
   computeImageStats,
+  computeRoiHistogram,
 } from "../histogram";
 
 function createImageData(
@@ -121,6 +122,78 @@ describe("computeChannelStats", () => {
     const stats = computeChannelStats(bins);
     expect(stats.mean).toBeCloseTo(127.5);
     expect(stats.stdDev).toBeCloseTo(127.5);
+  });
+});
+
+describe("computeRoiHistogram", () => {
+  it("counts only pixels within the ROI", () => {
+    // 2x2 image: top-left red, top-right green, bottom-left blue, bottom-right white
+    const img = createImageData(2, 2, [
+      255,
+      0,
+      0,
+      255, // (0,0) red
+      0,
+      255,
+      0,
+      255, // (1,0) green
+      0,
+      0,
+      255,
+      255, // (0,1) blue
+      255,
+      255,
+      255,
+      255, // (1,1) white
+    ]);
+
+    // ROI covers only top-left pixel
+    const hist = computeRoiHistogram(img, { x: 0, y: 0, width: 1, height: 1 });
+    expect(hist.red[255]).toBe(1);
+    expect(hist.green[0]).toBe(1);
+    expect(hist.blue[0]).toBe(1);
+    expect(hist.red.reduce((a, b) => a + b, 0)).toBe(1);
+  });
+
+  it("counts all pixels when ROI covers entire image", () => {
+    const img = createImageData(2, 1, [255, 0, 0, 255, 0, 255, 0, 255]);
+    const hist = computeRoiHistogram(img, { x: 0, y: 0, width: 2, height: 1 });
+    expect(hist.red[255]).toBe(1);
+    expect(hist.green[255]).toBe(1);
+    expect(hist.red.reduce((a, b) => a + b, 0)).toBe(2);
+  });
+
+  it("clamps ROI bounds to image edges", () => {
+    const img = createImageData(
+      2,
+      2,
+      [
+        100, 100, 100, 255, 200, 200, 200, 255, 50, 50, 50, 255, 150, 150, 150,
+        255,
+      ],
+    );
+    // ROI extends beyond image bounds
+    const hist = computeRoiHistogram(img, {
+      x: 1,
+      y: 0,
+      width: 10,
+      height: 10,
+    });
+    // Should only count pixels at x=1 for both rows: (200,200,200) and (150,150,150)
+    expect(hist.red[200]).toBe(1);
+    expect(hist.red[150]).toBe(1);
+    expect(hist.red.reduce((a, b) => a + b, 0)).toBe(2);
+  });
+
+  it("returns all-zero histogram for zero-size ROI", () => {
+    const img = createImageData(
+      2,
+      2,
+      [255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255],
+    );
+    const hist = computeRoiHistogram(img, { x: 0, y: 0, width: 0, height: 0 });
+    expect(hist.red.every((v) => v === 0)).toBe(true);
+    expect(hist.green.every((v) => v === 0)).toBe(true);
   });
 });
 
