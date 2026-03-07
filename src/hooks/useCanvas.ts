@@ -41,17 +41,25 @@ export function useCanvas(
     return () => observer.disconnect();
   }, [canvasRef, image.imageBitmap]);
 
-  // Set smart initial viewport whenever a new image is loaded.
-  // Uses getBoundingClientRect() directly to avoid React batching timing issues
-  // with the containerSize state updated in the effect above.
+  // Set smart initial viewport whenever a new image or container size is available.
+  // Derive the viewport from the same containerSize used for canvas sizing to
+  // keep pan/zoom aligned with the actual canvas buffer dimensions.
   useEffect(() => {
-    if (!image.imageBitmap || !canvasRef.current) return;
-    const container = canvasRef.current.parentElement;
-    if (!container) return;
-    const { width: cw, height: ch } = container.getBoundingClientRect();
+    if (!image.imageBitmap) return;
+
+    const cw = containerSize.width;
+    const ch = containerSize.height;
     if (!cw || !ch) return;
+
     setViewport(computeInitialViewport(image.width, image.height, cw, ch));
-  }, [image.imageBitmap, image.width, image.height, canvasRef, setViewport]);
+  }, [
+    image.imageBitmap,
+    image.width,
+    image.height,
+    containerSize.width,
+    containerSize.height,
+    setViewport,
+  ]);
 
   // Render image with zoom/pan transform
   useEffect(() => {
