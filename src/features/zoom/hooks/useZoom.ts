@@ -95,6 +95,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       canvas.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
+      canvas.style.cursor = "";
     };
   }, [canvasRef, setViewport, image.imageBitmap]);
 
