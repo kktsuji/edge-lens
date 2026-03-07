@@ -9,7 +9,7 @@ const LineProfileChart = lazy(() =>
 
 export function LineProfilePanel() {
   const { t } = useTranslation();
-  const { image, lineProfile } = useImageStore();
+  const { image, lineProfile, toolMode } = useImageStore();
 
   const samples = useMemo(() => {
     if (!image.imageData || !lineProfile) return null;
@@ -17,6 +17,7 @@ export function LineProfilePanel() {
   }, [image.imageData, lineProfile]);
 
   if (!image.imageData) return null;
+  if (toolMode !== "line-profile" && !lineProfile) return null;
 
   return (
     <div>

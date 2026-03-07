@@ -46,8 +46,8 @@ export function useLineProfile(
       const screenY = e.clientY - rect.top;
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
       const img = imageRef.current;
-      const x1 = Math.max(0, Math.min(img.width, imgPos.x));
-      const y1 = Math.max(0, Math.min(img.height, imgPos.y));
+      const x1 = Math.max(0, Math.min(img.width - 1, imgPos.x));
+      const y1 = Math.max(0, Math.min(img.height - 1, imgPos.y));
 
       isDragging = true;
       startImgX = x1;
@@ -70,8 +70,8 @@ export function useLineProfile(
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
 
       const img = imageRef.current;
-      const x2 = Math.max(0, Math.min(img.width, imgPos.x));
-      const y2 = Math.max(0, Math.min(img.height, imgPos.y));
+      const x2 = Math.max(0, Math.min(img.width - 1, imgPos.x));
+      const y2 = Math.max(0, Math.min(img.height - 1, imgPos.y));
 
       setLineProfile({
         x1: startImgX,
