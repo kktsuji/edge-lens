@@ -39,5 +39,20 @@
   "imageStats.red": "R",
   "imageStats.green": "G",
   "imageStats.blue": "B",
-  "imageStats.luminance": "L"
+  "imageStats.luminance": "L",
+  "exif.title": "EXIF Metadata",
+  "exif.placeholder": "Load a JPEG image to view its metadata.",
+  "exif.noExif": "No EXIF data found.",
+  "exif.make": "Camera Make",
+  "exif.model": "Camera Model",
+  "exif.lens": "Lens",
+  "exif.exposureTime": "Shutter Speed",
+  "exif.fNumber": "Aperture",
+  "exif.iso": "ISO",
+  "exif.focalLength": "Focal Length",
+  "exif.dateTimeOriginal": "Date Taken",
+  "exif.software": "Software",
+  "exif.orientation": "Orientation",
+  "exif.colorSpace": "Color Space",
+  "exif.gpsPresent": "GPS data present"
 }
