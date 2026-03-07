@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { computeInitialViewport } from "../utils/viewport";
 import { useImageStore } from "./useImageStore";
 
 export function useCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  const { image, viewport } = useImageStore();
+  const { image, viewport, setViewport } = useImageStore();
   const rafRef = useRef<number>(0);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
@@ -39,6 +40,26 @@ export function useCanvas(
     observer.observe(container);
     return () => observer.disconnect();
   }, [canvasRef, image.imageBitmap]);
+
+  // Set smart initial viewport whenever a new image or container size is available.
+  // Derive the viewport from the same containerSize used for canvas sizing to
+  // keep pan/zoom aligned with the actual canvas buffer dimensions.
+  useEffect(() => {
+    if (!image.imageBitmap) return;
+
+    const cw = containerSize.width;
+    const ch = containerSize.height;
+    if (!cw || !ch) return;
+
+    setViewport(computeInitialViewport(image.width, image.height, cw, ch));
+  }, [
+    image.imageBitmap,
+    image.width,
+    image.height,
+    containerSize.width,
+    containerSize.height,
+    setViewport,
+  ]);
 
   // Render image with zoom/pan transform
   useEffect(() => {
