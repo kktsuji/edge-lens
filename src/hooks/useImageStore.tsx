@@ -7,6 +7,7 @@ import {
 } from "react";
 import type {
   ImageState,
+  LineProfile,
   RoiSelection,
   ToolMode,
   ViewportState,
@@ -17,6 +18,7 @@ interface ImageStoreContextValue {
   viewport: ViewportState;
   toolMode: ToolMode;
   roiSelection: RoiSelection | null;
+  lineProfile: LineProfile | null;
   loadImage: (file: File) => Promise<void>;
   closeImage: () => void;
   setZoom: (zoom: number) => void;
@@ -24,6 +26,7 @@ interface ImageStoreContextValue {
   setViewport: (viewport: ViewportState) => void;
   setToolMode: (mode: ToolMode) => void;
   setRoiSelection: (roi: RoiSelection | null) => void;
+  setLineProfile: (lp: LineProfile | null) => void;
 }
 
 const initialImage: ImageState = {
@@ -48,6 +51,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   const [viewport, setViewport] = useState<ViewportState>(initialViewport);
   const [toolMode, setToolMode] = useState<ToolMode>("navigate");
   const [roiSelection, setRoiSelection] = useState<RoiSelection | null>(null);
+  const [lineProfile, setLineProfile] = useState<LineProfile | null>(null);
 
   const loadImage = useCallback(async (file: File) => {
     const bitmap = await createImageBitmap(file);
@@ -70,6 +74,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     setViewport(initialViewport);
     setToolMode("navigate");
     setRoiSelection(null);
+    setLineProfile(null);
   }, []);
 
   const closeImage = useCallback(() => {
@@ -80,6 +85,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     setViewport(initialViewport);
     setToolMode("navigate");
     setRoiSelection(null);
+    setLineProfile(null);
   }, [image.imageBitmap]);
 
   const setZoom = useCallback((zoom: number) => {
@@ -97,6 +103,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         viewport,
         toolMode,
         roiSelection,
+        lineProfile,
         loadImage,
         closeImage,
         setZoom,
@@ -104,6 +111,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         setViewport,
         setToolMode,
         setRoiSelection,
+        setLineProfile,
       }}
     >
       {children}
