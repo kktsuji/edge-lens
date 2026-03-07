@@ -27,6 +27,7 @@
   "shortcuts.fitToScreen": "Fit to screen",
   "shortcuts.actualSize": "Actual size (100%)",
   "shortcuts.pan": "Pan image",
+  "shortcuts.navigateTool": "Select Navigate tool",
   "shortcuts.roiTool": "Select ROI tool",
   "shortcuts.lineProfileTool": "Select Line Profile tool",
   "shortcuts.openFile": "Open file",

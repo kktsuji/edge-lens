@@ -14,7 +14,7 @@ Implemented the full EdgeLens MVP: a privacy-first, browser-based image analysis
 - [x] Step 2: Configure Tailwind CSS v4 with `@tailwindcss/vite` plugin
 - [x] Step 3: Configure ESLint flat config + Prettier (`eslint.config.js`, `.prettierrc`, `.prettierignore`)
 - [x] Step 4: Configure Vitest with jsdom environment, 80% coverage thresholds (`vitest.config.ts`, `src/test/setup.ts`)
-- [x] Step 5: Configure i18next infrastructure (`src/i18n.ts`, `public/locales/en/translation.json`)
+- [x] Step 5: Configure i18next infrastructure (`src/i18n.ts`, `src/locales/en/translation.json`)
 - [x] Step 6: Create `amplify.yml` and `.browserslistrc`
 - [x] Step 7: Repo hygiene files (`CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/bug_report.md`, `.github/ISSUE_TEMPLATE/feature_request.md`)
 
