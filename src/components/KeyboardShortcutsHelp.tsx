@@ -4,7 +4,7 @@ interface Props {
   onClose: () => void;
 }
 
-const shortcuts = [
+export const shortcuts = [
   { keys: "+ / =", labelKey: "shortcuts.zoomIn" },
   { keys: "-", labelKey: "shortcuts.zoomOut" },
   { keys: "0", labelKey: "shortcuts.fitToScreen" },
