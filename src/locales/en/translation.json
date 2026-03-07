@@ -20,5 +20,14 @@
   "histogram.luminance": "Luminance",
   "cookie.message": "EdgeLens uses analytics cookies to improve the app. No image data is collected.",
   "cookie.accept": "Accept",
-  "cookie.decline": "Decline"
+  "cookie.decline": "Decline",
+  "shortcuts.title": "Keyboard Shortcuts",
+  "shortcuts.zoomIn": "Zoom in",
+  "shortcuts.zoomOut": "Zoom out",
+  "shortcuts.fitToScreen": "Fit to screen",
+  "shortcuts.actualSize": "Actual size (100%)",
+  "shortcuts.pan": "Pan image",
+  "shortcuts.openFile": "Open file",
+  "shortcuts.closeImage": "Close image",
+  "shortcuts.toggleHelp": "Toggle this help"
 }

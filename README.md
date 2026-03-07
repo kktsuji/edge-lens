@@ -21,6 +21,28 @@ Open the app, drop in an image, and instantly inspect pixel values, histograms, 
 - 🆓 **Free for Everyone** — no account, no ads, no strings attached
 - 🐙 **Open Source** — inspect the full codebase on [GitHub](https://github.com/kktsuji/edge-lens)
 
+## ⌨️ Keyboard & Mouse Controls
+
+### Mouse
+
+| Action       | Effect                          |
+| ------------ | ------------------------------- |
+| Scroll wheel | Zoom in / out (cursor-anchored) |
+| Space + drag | Pan the image                   |
+
+### Keyboard
+
+| Key            | Action                           |
+| -------------- | -------------------------------- |
+| `Ctrl + O`     | Open file picker                 |
+| `+` / `=`      | Zoom in                          |
+| `-`            | Zoom out                         |
+| `0`            | Fit image to window              |
+| `1`            | Zoom to 100% (1:1)               |
+| `Space` + drag | Pan the image                    |
+| `Escape`       | Close image / close help overlay |
+| `?`            | Toggle keyboard shortcuts help   |
+
 ## 🔒 Image Privacy
 
 Your images **never leave your device** — ever.

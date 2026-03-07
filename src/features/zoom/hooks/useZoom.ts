@@ -1,9 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useImageStore } from "../../../hooks/useImageStore";
-
-const MIN_ZOOM = 0.1;
-const MAX_ZOOM = 50;
-const ZOOM_FACTOR = 1.1;
+import { MIN_ZOOM, MAX_ZOOM, ZOOM_FACTOR } from "../constants";
 
 export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const { image, viewport, setViewport } = useImageStore();
@@ -33,22 +30,39 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     [setViewport],
   );
 
-  // Middle-button pan
+  // Space+left drag pan
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    let isSpaceDown = false;
     let isPanning = false;
     let lastX = 0;
     let lastY = 0;
 
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== " ") return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      e.preventDefault();
+      isSpaceDown = true;
+      canvas.style.cursor = "grab";
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key !== " ") return;
+      isSpaceDown = false;
+      if (isPanning) isPanning = false;
+      canvas.style.cursor = "";
+    };
+
     const onMouseDown = (e: MouseEvent) => {
-      // Middle button
-      if (e.button === 1) {
+      if (e.button === 0 && isSpaceDown) {
         e.preventDefault();
         isPanning = true;
         lastX = e.clientX;
         lastY = e.clientY;
+        canvas.style.cursor = "grabbing";
       }
     };
 
@@ -63,26 +77,25 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     };
 
     const onMouseUp = (e: MouseEvent) => {
-      if (e.button === 1) {
+      if (e.button === 0 && isPanning) {
         isPanning = false;
+        canvas.style.cursor = isSpaceDown ? "grab" : "";
       }
     };
 
-    // Prevent autoscroll icon on middle-click
-    const onAuxClick = (e: MouseEvent) => {
-      if (e.button === 1) e.preventDefault();
-    };
-
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
     canvas.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-    canvas.addEventListener("auxclick", onAuxClick);
 
     return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
       canvas.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
-      canvas.removeEventListener("auxclick", onAuxClick);
+      canvas.style.cursor = "";
     };
   }, [canvasRef, setViewport, image.imageBitmap]);
 
