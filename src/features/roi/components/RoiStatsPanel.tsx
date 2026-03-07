@@ -8,7 +8,7 @@ import {
 
 export function RoiStatsPanel() {
   const { t } = useTranslation();
-  const { roiSelection, image } = useImageStore();
+  const { roiSelection, image, setRoiSelection } = useImageStore();
 
   const stats = useMemo(() => {
     if (
@@ -45,9 +45,18 @@ export function RoiStatsPanel() {
 
   return (
     <div>
-      <h2 className="mb-2 text-sm font-semibold text-gray-300">
-        {t("roiStats.title")}
-      </h2>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-300">
+          {t("roiStats.title")}
+        </h2>
+        <button
+          onClick={() => setRoiSelection(null)}
+          className="text-gray-500 hover:text-gray-200"
+          aria-label="Clear ROI selection"
+        >
+          ×
+        </button>
+      </div>
       <div className="mb-2 space-y-0.5 text-xs text-gray-400">
         <div>
           {t("roiStats.position")} x: {x0}, y: {y0}

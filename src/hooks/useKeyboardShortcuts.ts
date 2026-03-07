@@ -16,9 +16,11 @@ export function useKeyboardShortcuts(
     viewport,
     toolMode,
     roiSelection,
+    lineProfile,
     setViewport,
     setToolMode,
     setRoiSelection,
+    setLineProfile,
   } = useImageStore();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
@@ -29,8 +31,31 @@ export function useKeyboardShortcuts(
   const toolModeRef = useRef(toolMode);
   toolModeRef.current = toolMode;
 
-  const roiSelectionRef = useRef(roiSelection);
-  roiSelectionRef.current = roiSelection;
+  const drawOrderRef = useRef<Array<"roi" | "line-profile">>([]);
+
+  useEffect(() => {
+    if (roiSelection) {
+      drawOrderRef.current = [
+        ...drawOrderRef.current.filter((x) => x !== "roi"),
+        "roi",
+      ];
+    } else {
+      drawOrderRef.current = drawOrderRef.current.filter((x) => x !== "roi");
+    }
+  }, [roiSelection]);
+
+  useEffect(() => {
+    if (lineProfile) {
+      drawOrderRef.current = [
+        ...drawOrderRef.current.filter((x) => x !== "line-profile"),
+        "line-profile",
+      ];
+    } else {
+      drawOrderRef.current = drawOrderRef.current.filter(
+        (x) => x !== "line-profile",
+      );
+    }
+  }, [lineProfile]);
 
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -55,8 +80,10 @@ export function useKeyboardShortcuts(
         e.preventDefault();
         if (opts.isHelpOpen) {
           opts.onToggleHelp();
-        } else if (roiSelectionRef.current) {
-          setRoiSelection(null);
+        } else if (drawOrderRef.current.length > 0) {
+          const last = drawOrderRef.current[drawOrderRef.current.length - 1];
+          if (last === "roi") setRoiSelection(null);
+          else setLineProfile(null);
         } else if (toolModeRef.current !== "navigate") {
           setToolMode("navigate");
         } else if (img.imageData) {
@@ -142,5 +169,5 @@ export function useKeyboardShortcuts(
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [canvasRef, setViewport, setToolMode, setRoiSelection]);
+  }, [canvasRef, setViewport, setToolMode, setRoiSelection, setLineProfile]);
 }
