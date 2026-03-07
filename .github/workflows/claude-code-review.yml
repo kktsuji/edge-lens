@@ -37,6 +37,7 @@ jobs:
         id: claude-review
         uses: anthropics/claude-code-action@5754b35b0e8771a979727706b2a366dd5d7cf562 # v1
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
