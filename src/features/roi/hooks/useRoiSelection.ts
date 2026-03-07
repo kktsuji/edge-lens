@@ -60,8 +60,8 @@ export function useRoiSelection(
       const img = imageRef.current;
       const x = Math.max(0, Math.min(startImgX, imgPos.x));
       const y = Math.max(0, Math.min(startImgY, imgPos.y));
-      const x2 = Math.min(img.width, Math.max(startImgX, imgPos.x));
-      const y2 = Math.min(img.height, Math.max(startImgY, imgPos.y));
+      const x2 = Math.max(0, Math.min(img.width, Math.max(startImgX, imgPos.x)));
+      const y2 = Math.max(0, Math.min(img.height, Math.max(startImgY, imgPos.y)));
 
       setRoiSelection({ x, y, width: x2 - x, height: y2 - y });
     };
