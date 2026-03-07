@@ -2,6 +2,7 @@ import { useCallback, useRef, useState, type DragEvent } from "react";
 import { CookieConsent } from "./components/CookieConsent";
 import { HelpButton } from "./components/HelpButton";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
+import { KeyboardShortcutsPanel } from "./components/KeyboardShortcutsPanel";
 import { Sidebar } from "./components/Sidebar";
 import { Toolbar } from "./components/Toolbar";
 import { HistogramPanel } from "./features/histogram/components/HistogramPanel";
@@ -118,6 +119,7 @@ function App() {
           <HistogramPanel data={histogramData} />
           <ImageStatsPanel data={histogramData} />
           <ExifPanel exifData={exifData} />
+          {!hasImage && <KeyboardShortcutsPanel />}
         </Sidebar>
       </div>
       <CookieConsent />
