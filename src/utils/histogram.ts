@@ -1,4 +1,9 @@
-import type { ChannelStats, HistogramData, ImageStats } from "../types";
+import type {
+  ChannelStats,
+  HistogramData,
+  ImageStats,
+  RoiSelection,
+} from "../types";
 
 export function computeHistogram(imageData: ImageData): HistogramData {
   const red = new Array<number>(256).fill(0);
@@ -19,6 +24,50 @@ export function computeHistogram(imageData: ImageData): HistogramData {
     // ITU-R BT.601 luminance
     const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
     luminance[lum]!++;
+  }
+
+  return { red, green, blue, luminance };
+}
+
+export function computeRoiHistogram(
+  imageData: ImageData,
+  roi: RoiSelection,
+): HistogramData {
+  const red = new Array<number>(256).fill(0);
+  const green = new Array<number>(256).fill(0);
+  const blue = new Array<number>(256).fill(0);
+  const luminance = new Array<number>(256).fill(0);
+
+  const { width: imgWidth } = imageData;
+  const data = imageData.data;
+
+  // No negative-dimension handling needed: useRoiSelection always computes
+  // width = max(x) - min(x) and height = max(y) - min(y), so both are >= 0.
+  const x0 = Math.max(0, Math.min(imageData.width, Math.floor(roi.x)));
+  const x1 = Math.max(
+    0,
+    Math.min(imageData.width, Math.ceil(roi.x + roi.width)),
+  );
+  const y0 = Math.max(0, Math.min(imageData.height, Math.floor(roi.y)));
+  const y1 = Math.max(
+    0,
+    Math.min(imageData.height, Math.ceil(roi.y + roi.height)),
+  );
+
+  for (let row = y0; row < y1; row++) {
+    for (let col = x0; col < x1; col++) {
+      const i = (row * imgWidth + col) * 4;
+      const r = data[i]!;
+      const g = data[i + 1]!;
+      const b = data[i + 2]!;
+
+      red[r]!++;
+      green[g]!++;
+      blue[b]!++;
+
+      const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+      luminance[lum]!++;
+    }
   }
 
   return { red, green, blue, luminance };

@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, type DragEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { CookieConsent } from "./components/CookieConsent";
 import { GitHubButton } from "./components/GitHubButton";
 import { HelpButton } from "./components/HelpButton";
@@ -16,6 +17,9 @@ import { ExifPanel } from "./features/exif-viewer/components/ExifPanel";
 import { useExifData } from "./features/exif-viewer/hooks/useExifData";
 import { PixelInfoPanel } from "./features/pixel-inspector/components/PixelInfoPanel";
 import { usePixelInspector } from "./features/pixel-inspector/hooks/usePixelInspector";
+import { RoiSelectionOverlay } from "./features/roi/components/RoiSelectionOverlay";
+import { RoiStatsPanel } from "./features/roi/components/RoiStatsPanel";
+import { useRoiSelection } from "./features/roi/hooks/useRoiSelection";
 import { useZoom } from "./features/zoom/hooks/useZoom";
 import { useCanvas } from "./hooks/useCanvas";
 import { useImageStore } from "./hooks/useImageStore";
@@ -23,7 +27,9 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { validateImageFile } from "./utils/validation";
 
 function App() {
-  const { image, viewport, loadImage, closeImage } = useImageStore();
+  const { t } = useTranslation();
+  const { image, viewport, toolMode, loadImage, closeImage, setToolMode } =
+    useImageStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
@@ -60,6 +66,7 @@ function App() {
 
   useCanvas(canvasRef);
   useZoom(canvasRef);
+  useRoiSelection(canvasRef);
   useKeyboardShortcuts(canvasRef, {
     onOpenFile: () => fileInputRef.current?.click(),
     onCloseImage: closeImage,
@@ -82,7 +89,47 @@ function App() {
         <FilePickerButton inputRef={fileInputRef} />
         <CloseButton />
         {hasImage && (
-          <span className="ml-2 text-xs text-gray-400">
+          <>
+            <div className="mx-1 h-5 w-px bg-gray-600" />
+            <button
+              onClick={() => setToolMode("navigate")}
+              title={t("toolbar.navigate")}
+              aria-label={t("toolbar.navigate")}
+              aria-pressed={toolMode === "navigate"}
+              className={`rounded px-2 py-1 text-sm transition-colors ${
+                toolMode === "navigate"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+            >
+              ↖
+            </button>
+            <button
+              onClick={() => setToolMode("roi")}
+              title={t("toolbar.roi")}
+              aria-label={t("toolbar.roi")}
+              aria-pressed={toolMode === "roi"}
+              className={`rounded px-2 py-1 text-sm transition-colors ${
+                toolMode === "roi"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+            >
+              ▭
+            </button>
+            <button
+              disabled
+              title={t("toolbar.lineProfile")}
+              aria-label={t("toolbar.lineProfile")}
+              className="cursor-not-allowed rounded px-2 py-1 text-sm text-gray-600"
+            >
+              ╱
+            </button>
+            <div className="mx-1 h-5 w-px bg-gray-600" />
+          </>
+        )}
+        {hasImage && (
+          <span className="text-xs text-gray-400">
             {image.name} ({image.width}×{image.height})
           </span>
         )}
@@ -105,7 +152,11 @@ function App() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
             >
-              <canvas ref={canvasRef} className="h-full w-full" />
+              <canvas
+                ref={canvasRef}
+                className={`h-full w-full ${toolMode === "roi" ? "cursor-crosshair" : ""}`}
+              />
+              <RoiSelectionOverlay />
               {isDraggingOver && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center border-2 border-dashed border-blue-400 bg-blue-400/20">
                   <p className="text-lg font-medium text-blue-300">
@@ -119,6 +170,7 @@ function App() {
           )}
         </main>
         <Sidebar>
+          <RoiStatsPanel />
           <PixelInfoPanel pixelInfo={pixelInfo} />
           <HistogramPanel data={histogramData} />
           <ImageStatsPanel data={histogramData} />

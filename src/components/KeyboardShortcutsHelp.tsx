@@ -10,6 +10,8 @@ export const shortcuts = [
   { keys: "0", labelKey: "shortcuts.fitToScreen" },
   { keys: "1", labelKey: "shortcuts.actualSize" },
   { keys: "Space + drag", labelKey: "shortcuts.pan" },
+  { keys: "R", labelKey: "shortcuts.roiTool" },
+  { keys: "L", labelKey: "shortcuts.lineProfileTool" },
   { keys: "Ctrl+O", labelKey: "shortcuts.openFile" },
   { keys: "Escape", labelKey: "shortcuts.closeImage" },
   { keys: "?", labelKey: "shortcuts.toggleHelp" },
