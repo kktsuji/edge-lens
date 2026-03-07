@@ -27,6 +27,7 @@ export function LineProfilePanel() {
         </h2>
         {lineProfile && (
           <button
+            type="button"
             onClick={() => setLineProfile(null)}
             className="text-gray-500 hover:text-gray-200"
             aria-label="Clear line profile"
