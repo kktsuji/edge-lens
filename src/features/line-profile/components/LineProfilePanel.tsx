@@ -9,7 +9,7 @@ const LineProfileChart = lazy(() =>
 
 export function LineProfilePanel() {
   const { t } = useTranslation();
-  const { image, lineProfile, toolMode } = useImageStore();
+  const { image, lineProfile, toolMode, setLineProfile } = useImageStore();
 
   const samples = useMemo(() => {
     if (!image.imageData || !lineProfile) return null;
@@ -21,9 +21,21 @@ export function LineProfilePanel() {
 
   return (
     <div>
-      <h2 className="mb-2 text-sm font-semibold text-gray-300">
-        {t("lineProfile.title")}
-      </h2>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-300">
+          {t("lineProfile.title")}
+        </h2>
+        {lineProfile && (
+          <button
+            type="button"
+            onClick={() => setLineProfile(null)}
+            className="text-gray-500 hover:text-gray-200"
+            aria-label={t("lineProfile.clearAriaLabel")}
+          >
+            ×
+          </button>
+        )}
+      </div>
       {samples ? (
         <Suspense
           fallback={<div className="h-40 animate-pulse rounded bg-gray-700" />}
