@@ -45,15 +45,18 @@ export function useLineProfile(
       const screenX = e.clientX - rect.left;
       const screenY = e.clientY - rect.top;
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
+      const img = imageRef.current;
+      const x1 = Math.max(0, Math.min(img.width, imgPos.x));
+      const y1 = Math.max(0, Math.min(img.height, imgPos.y));
 
       isDragging = true;
-      startImgX = imgPos.x;
-      startImgY = imgPos.y;
+      startImgX = x1;
+      startImgY = y1;
       setLineProfile({
-        x1: imgPos.x,
-        y1: imgPos.y,
-        x2: imgPos.x,
-        y2: imgPos.y,
+        x1,
+        y1,
+        x2: x1,
+        y2: y1,
       });
       e.preventDefault();
     };
