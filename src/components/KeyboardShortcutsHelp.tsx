@@ -26,9 +26,15 @@ export function KeyboardShortcutsHelp({ onClose }: Props) {
       <div
         className="w-80 rounded-lg bg-gray-800 shadow-xl"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shortcuts-dialog-title"
       >
         <div className="flex items-center justify-between border-b border-gray-700 px-4 py-3">
-          <h2 className="text-sm font-semibold text-white">
+          <h2
+            id="shortcuts-dialog-title"
+            className="text-sm font-semibold text-white"
+          >
             {t("shortcuts.title")}
           </h2>
           <button
