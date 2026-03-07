@@ -58,7 +58,7 @@ export function ImageStatsPanel({ data }: ImageStatsPanelProps) {
               ] as const
             ).map(({ key, label, color }) => (
               <tr key={key}>
-                <td className={`py-0.5 font-medium ${color}`}>{label}</td>
+                <th scope="row" className={`py-0.5 font-medium ${color}`}>{label}</th>
                 <td className="py-0.5 text-right">
                   {stats[key].mean.toFixed(1)}
                 </td>
