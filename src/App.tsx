@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import { CookieConsent } from "./components/CookieConsent";
+import { GitHubButton } from "./components/GitHubButton";
 import { HelpButton } from "./components/HelpButton";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
 import { KeyboardShortcutsPanel } from "./components/KeyboardShortcutsPanel";
@@ -90,6 +91,7 @@ function App() {
             {Math.round(viewport.zoom * 100)}%
           </span>
         )}
+        <GitHubButton />
         <HelpButton onClick={() => setIsHelpOpen((v) => !v)} />
       </Toolbar>
       <div className="flex min-h-0 flex-1">
