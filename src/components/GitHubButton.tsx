@@ -1,7 +1,9 @@
+const REPO_URL = "https://github.com/kktsuji/edge-lens";
+
 export function GitHubButton() {
   return (
     <a
-      href="https://github.com/kktsuji/edge-lens"
+      href={REPO_URL}
       target="_blank"
       rel="noopener noreferrer"
       className="ml-auto rounded p-1 text-gray-400 hover:bg-gray-700 hover:text-white"
