@@ -2,6 +2,9 @@ import { useTranslation } from "react-i18next";
 import type { ExifData } from "../../../types";
 
 function formatExposureTime(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) {
+    return "-";
+  }
   if (n >= 1) return `${n} s`;
   return `1/${Math.round(1 / n)} s`;
 }
