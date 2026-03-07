@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState, type DragEvent } from "react";
 import { CookieConsent } from "./components/CookieConsent";
+import { HelpButton } from "./components/HelpButton";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
 import { Sidebar } from "./components/Sidebar";
 import { Toolbar } from "./components/Toolbar";
@@ -79,6 +80,7 @@ function App() {
             {image.name} ({image.width}×{image.height})
           </span>
         )}
+        <HelpButton onClick={() => setIsHelpOpen((v) => !v)} />
       </Toolbar>
       <div className="flex min-h-0 flex-1">
         <main id="main-content" className="relative flex-1 overflow-hidden">
