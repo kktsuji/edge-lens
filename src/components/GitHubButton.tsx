@@ -6,7 +6,7 @@ export function GitHubButton() {
       href={REPO_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="ml-auto rounded p-1 text-gray-400 hover:bg-gray-700 hover:text-white"
+      className="rounded p-1 text-gray-400 hover:bg-gray-700 hover:text-white"
       aria-label="View source on GitHub"
       title="View source on GitHub"
     >
