@@ -17,6 +17,9 @@ import { ExifPanel } from "./features/exif-viewer/components/ExifPanel";
 import { useExifData } from "./features/exif-viewer/hooks/useExifData";
 import { PixelInfoPanel } from "./features/pixel-inspector/components/PixelInfoPanel";
 import { usePixelInspector } from "./features/pixel-inspector/hooks/usePixelInspector";
+import { LineProfileOverlay } from "./features/line-profile/components/LineProfileOverlay";
+import { LineProfilePanel } from "./features/line-profile/components/LineProfilePanel";
+import { useLineProfile } from "./features/line-profile/hooks/useLineProfile";
 import { RoiSelectionOverlay } from "./features/roi/components/RoiSelectionOverlay";
 import { RoiStatsPanel } from "./features/roi/components/RoiStatsPanel";
 import { useRoiSelection } from "./features/roi/hooks/useRoiSelection";
@@ -67,6 +70,7 @@ function App() {
   useCanvas(canvasRef);
   useZoom(canvasRef);
   useRoiSelection(canvasRef);
+  useLineProfile(canvasRef);
   useKeyboardShortcuts(canvasRef, {
     onOpenFile: () => fileInputRef.current?.click(),
     onCloseImage: closeImage,
@@ -105,6 +109,19 @@ function App() {
               ↖
             </button>
             <button
+              onClick={() => setToolMode("line-profile")}
+              title={t("toolbar.lineProfile")}
+              aria-label={t("toolbar.lineProfile")}
+              aria-pressed={toolMode === "line-profile"}
+              className={`rounded px-2 py-1 text-sm transition-colors ${
+                toolMode === "line-profile"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+            >
+              ╱
+            </button>
+            <button
               onClick={() => setToolMode("roi")}
               title={t("toolbar.roi")}
               aria-label={t("toolbar.roi")}
@@ -116,14 +133,6 @@ function App() {
               }`}
             >
               ▭
-            </button>
-            <button
-              disabled
-              title={t("toolbar.lineProfile")}
-              aria-label={t("toolbar.lineProfile")}
-              className="cursor-not-allowed rounded px-2 py-1 text-sm text-gray-600"
-            >
-              ╱
             </button>
             <div className="mx-1 h-5 w-px bg-gray-600" />
           </>
@@ -154,9 +163,10 @@ function App() {
             >
               <canvas
                 ref={canvasRef}
-                className={`h-full w-full ${toolMode === "roi" ? "cursor-crosshair" : ""}`}
+                className={`h-full w-full ${toolMode === "roi" || toolMode === "line-profile" ? "cursor-crosshair" : ""}`}
               />
               <RoiSelectionOverlay />
+              <LineProfileOverlay />
               {isDraggingOver && (
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center border-2 border-dashed border-blue-400 bg-blue-400/20">
                   <p className="text-lg font-medium text-blue-300">
@@ -170,6 +180,7 @@ function App() {
           )}
         </main>
         <Sidebar>
+          <LineProfilePanel />
           <RoiStatsPanel />
           <PixelInfoPanel pixelInfo={pixelInfo} />
           <HistogramPanel data={histogramData} />

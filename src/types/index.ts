@@ -51,6 +51,13 @@ export interface RoiSelection {
   height: number;
 }
 
+export interface LineProfile {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
 export interface ExifData {
   make?: string;
   model?: string;
