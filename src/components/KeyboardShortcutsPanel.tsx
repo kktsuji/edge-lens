@@ -9,13 +9,25 @@ export function KeyboardShortcutsPanel() {
         {t("shortcuts.title")}
       </h2>
       <table className="w-full text-xs">
+        <thead>
+          <tr>
+            <th scope="col">
+              <span className="sr-only">Keys</span>
+            </th>
+            <th scope="col">
+              <span className="sr-only">Action</span>
+            </th>
+          </tr>
+        </thead>
         <tbody>
           {shortcuts.map(({ keys, labelKey }) => (
             <tr
               key={labelKey}
               className="border-b border-gray-700/50 last:border-0"
             >
-              <td className="py-1 font-mono text-gray-300">{keys}</td>
+              <th scope="row" className="py-1 font-mono text-gray-300">
+                {keys}
+              </th>
               <td className="py-1 text-gray-400">{t(labelKey)}</td>
             </tr>
           ))}
