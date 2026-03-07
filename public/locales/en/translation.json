@@ -20,5 +20,22 @@
   "histogram.luminance": "Luminance",
   "cookie.message": "EdgeLens uses analytics cookies to improve the app. No image data is collected.",
   "cookie.accept": "Accept",
-  "cookie.decline": "Decline"
+  "cookie.decline": "Decline",
+  "lineProfile.clearAriaLabel": "Clear Line Profile (Esc)",
+  "roiStats.clearAriaLabel": "Clear ROI (Esc)",
+  "toolbar.navigate": "Navigate",
+  "toolbar.lineProfile": "Line Profile",
+  "toolbar.roi": "ROI",
+  "shortcuts.title": "Keyboard Shortcuts",
+  "shortcuts.zoomIn": "Zoom in",
+  "shortcuts.zoomOut": "Zoom out",
+  "shortcuts.fitToScreen": "Fit to screen",
+  "shortcuts.actualSize": "Actual size (100%)",
+  "shortcuts.pan": "Pan",
+  "shortcuts.navigateTool": "Navigate tool",
+  "shortcuts.roiTool": "ROI tool",
+  "shortcuts.lineProfileTool": "Line Profile tool",
+  "shortcuts.openFile": "Open file",
+  "shortcuts.closeImage": "Close image",
+  "shortcuts.toggleHelp": "Toggle this help"
 }
