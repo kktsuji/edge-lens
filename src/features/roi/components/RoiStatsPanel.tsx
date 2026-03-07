@@ -14,6 +14,8 @@ export function RoiStatsPanel() {
     if (
       !roiSelection ||
       !image.imageData ||
+      // useRoiSelection always produces width/height >= 0 (never negative),
+      // so this guard only excludes a zero-size ROI (click without drag).
       roiSelection.width <= 0 ||
       roiSelection.height <= 0
     ) {

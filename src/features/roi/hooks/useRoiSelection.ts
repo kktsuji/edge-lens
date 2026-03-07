@@ -58,10 +58,18 @@ export function useRoiSelection(
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
 
       const img = imageRef.current;
+      // x/y are always the smaller coordinate and x2/y2 the larger, so
+      // width and height are always >= 0 — no negative dimensions can occur.
       const x = Math.max(0, Math.min(startImgX, imgPos.x));
       const y = Math.max(0, Math.min(startImgY, imgPos.y));
-      const x2 = Math.max(0, Math.min(img.width, Math.max(startImgX, imgPos.x)));
-      const y2 = Math.max(0, Math.min(img.height, Math.max(startImgY, imgPos.y)));
+      const x2 = Math.max(
+        0,
+        Math.min(img.width, Math.max(startImgX, imgPos.x)),
+      );
+      const y2 = Math.max(
+        0,
+        Math.min(img.height, Math.max(startImgY, imgPos.y)),
+      );
 
       setRoiSelection({ x, y, width: x2 - x, height: y2 - y });
     };
