@@ -19,7 +19,7 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { validateImageFile } from "./utils/validation";
 
 function App() {
-  const { image, loadImage, closeImage } = useImageStore();
+  const { image, viewport, loadImage, closeImage } = useImageStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
@@ -79,6 +79,11 @@ function App() {
         {hasImage && (
           <span className="ml-2 text-xs text-gray-400">
             {image.name} ({image.width}×{image.height})
+          </span>
+        )}
+        {hasImage && (
+          <span className="text-xs text-gray-400">
+            {Math.round(viewport.zoom * 100)}%
           </span>
         )}
         <HelpButton onClick={() => setIsHelpOpen((v) => !v)} />
