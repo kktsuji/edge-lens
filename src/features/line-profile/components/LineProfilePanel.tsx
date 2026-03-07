@@ -31,6 +31,7 @@ export function LineProfilePanel() {
             onClick={() => setLineProfile(null)}
             className="text-gray-500 hover:text-gray-200"
             aria-label={t("lineProfile.clearAriaLabel")}
+            title={t("lineProfile.clearAriaLabel")}
           >
             ×
           </button>

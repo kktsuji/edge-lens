@@ -21,6 +21,8 @@
   "cookie.message": "EdgeLens uses analytics cookies to improve the app. No image data is collected.",
   "cookie.accept": "Accept",
   "cookie.decline": "Decline",
+  "lineProfile.clearAriaLabel": "Clear Line Profile (Esc)",
+  "roiStats.clearAriaLabel": "Clear ROI (Esc)",
   "toolbar.navigate": "Navigate",
   "toolbar.lineProfile": "Line Profile",
   "toolbar.roi": "ROI",
