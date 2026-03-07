@@ -14,8 +14,8 @@ export function RoiStatsPanel() {
     if (
       !roiSelection ||
       !image.imageData ||
-      roiSelection.width === 0 ||
-      roiSelection.height === 0
+      roiSelection.width <= 0 ||
+      roiSelection.height <= 0
     ) {
       return null;
     }
