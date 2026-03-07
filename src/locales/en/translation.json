@@ -29,5 +29,14 @@
   "shortcuts.pan": "Pan image",
   "shortcuts.openFile": "Open file",
   "shortcuts.closeImage": "Close image",
-  "shortcuts.toggleHelp": "Toggle this help"
+  "shortcuts.toggleHelp": "Toggle this help",
+  "imageStats.title": "Image Stats",
+  "imageStats.placeholder": "Load an image to view its statistics.",
+  "imageStats.mean": "Mean",
+  "imageStats.median": "Median",
+  "imageStats.stdDev": "Std Dev",
+  "imageStats.red": "R",
+  "imageStats.green": "G",
+  "imageStats.blue": "B",
+  "imageStats.luminance": "L"
 }

@@ -28,3 +28,16 @@ export interface HistogramData {
   blue: number[];
   luminance: number[];
 }
+
+export interface ChannelStats {
+  mean: number;
+  median: number;
+  stdDev: number;
+}
+
+export interface ImageStats {
+  red: ChannelStats;
+  green: ChannelStats;
+  blue: ChannelStats;
+  luminance: ChannelStats;
+}

@@ -5,6 +5,7 @@ import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
 import { Sidebar } from "./components/Sidebar";
 import { Toolbar } from "./components/Toolbar";
 import { HistogramPanel } from "./features/histogram/components/HistogramPanel";
+import { ImageStatsPanel } from "./features/histogram/components/ImageStatsPanel";
 import { useHistogram } from "./features/histogram/hooks/useHistogram";
 import { CloseButton } from "./features/image-loader/components/CloseButton";
 import { DropZone } from "./features/image-loader/components/DropZone";
@@ -107,6 +108,7 @@ function App() {
         <Sidebar>
           <PixelInfoPanel pixelInfo={pixelInfo} />
           <HistogramPanel data={histogramData} />
+          <ImageStatsPanel data={histogramData} />
         </Sidebar>
       </div>
       <CookieConsent />
