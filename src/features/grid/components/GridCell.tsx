@@ -5,6 +5,7 @@ import {
   useState,
   type DragEvent,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { useGridActions } from "../../../hooks/useImageStore";
 import { useCanvas } from "../../../hooks/useCanvas";
 import { useImageStore } from "../../../hooks/useImageStore";
@@ -24,12 +25,14 @@ interface GridCellProps {
 }
 
 function GridCellContent({ cellId, isActive }: GridCellProps) {
+  const { t } = useTranslation();
   const { image, toolMode } = useImageStore();
   const { setActiveCellId, setCellPixelInfo, loadImageToCell } =
     useGridActions();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hasImage = !!image.imageData;
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const dragDepthRef = useRef(0);
 
   useCanvas(canvasRef);
   useZoom(canvasRef);
@@ -49,6 +52,7 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
   const handleDrop = useCallback(
     async (e: DragEvent<HTMLElement>) => {
       e.preventDefault();
+      dragDepthRef.current = 0;
       setIsDraggingOver(false);
       const file = e.dataTransfer.files[0];
       if (!file) return;
@@ -63,14 +67,23 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
     [cellId, loadImageToCell],
   );
 
+  const handleDragEnter = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    dragDepthRef.current += 1;
+    setIsDraggingOver(true);
+  }, []);
+
   const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {
     e.preventDefault();
-    setIsDraggingOver(true);
   }, []);
 
   const handleDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
     e.preventDefault();
-    setIsDraggingOver(false);
+    dragDepthRef.current -= 1;
+    if (dragDepthRef.current <= 0) {
+      dragDepthRef.current = 0;
+      setIsDraggingOver(false);
+    }
   }, []);
 
   return (
@@ -86,6 +99,7 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
         <div
           className="relative h-full w-full"
           onDrop={handleDrop}
+          onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
@@ -98,7 +112,7 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
           {isDraggingOver && (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center border-2 border-dashed border-blue-400 bg-blue-400/20">
               <p className="text-sm font-medium text-blue-300">
-                Drop to replace image
+                {t("grid.dropToReplace")}
               </p>
             </div>
           )}

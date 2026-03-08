@@ -27,6 +27,14 @@ export function GridLayoutSelector({ onClose }: GridLayoutSelectorProps) {
   };
 
   const handleCustomApply = () => {
+    if (
+      !Number.isFinite(customRows) ||
+      !Number.isInteger(customRows) ||
+      !Number.isFinite(customCols) ||
+      !Number.isInteger(customCols)
+    ) {
+      return;
+    }
     setGridLayout({ rows: customRows, cols: customCols });
     onClose();
   };
@@ -63,30 +71,36 @@ export function GridLayoutSelector({ onClose }: GridLayoutSelectorProps) {
             type="number"
             min={1}
             max={4}
+            step={1}
             value={customRows}
-            onChange={(e) =>
-              setCustomRows(Math.max(1, Math.min(4, Number(e.target.value))))
-            }
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              if (!Number.isFinite(n)) return;
+              setCustomRows(Math.max(1, Math.min(4, n)));
+            }}
             className="w-12 rounded border border-gray-600 bg-gray-700 px-1 py-0.5 text-center text-sm text-white"
-            aria-label="Rows"
+            aria-label={t("grid.rows")}
           />
           <span className="text-xs text-gray-400">x</span>
           <input
             type="number"
             min={1}
             max={4}
+            step={1}
             value={customCols}
-            onChange={(e) =>
-              setCustomCols(Math.max(1, Math.min(4, Number(e.target.value))))
-            }
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              if (!Number.isFinite(n)) return;
+              setCustomCols(Math.max(1, Math.min(4, n)));
+            }}
             className="w-12 rounded border border-gray-600 bg-gray-700 px-1 py-0.5 text-center text-sm text-white"
-            aria-label="Columns"
+            aria-label={t("grid.columns")}
           />
           <button
             onClick={handleCustomApply}
             className="rounded bg-blue-600 px-2 py-0.5 text-xs text-white hover:bg-blue-500"
           >
-            OK
+            {t("grid.ok")}
           </button>
         </div>
       </div>

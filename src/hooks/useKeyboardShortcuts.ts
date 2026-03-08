@@ -72,10 +72,12 @@ export function useKeyboardShortcuts(
 
   // Clear draw order when switching between single/grid mode
   const prevGridEnabled = useRef(gridState.enabled);
-  if (prevGridEnabled.current !== gridState.enabled) {
-    drawOrderRef.current = [];
-    prevGridEnabled.current = gridState.enabled;
-  }
+  useEffect(() => {
+    if (prevGridEnabled.current !== gridState.enabled) {
+      drawOrderRef.current = [];
+      prevGridEnabled.current = gridState.enabled;
+    }
+  }, [gridState.enabled]);
 
   const gridStateRef = useRef(gridState);
   gridStateRef.current = gridState;

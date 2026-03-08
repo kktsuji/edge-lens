@@ -1,13 +1,24 @@
+import { useEffect } from "react";
 import { useGridActions } from "../../../hooks/useImageStore";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { GridCell } from "./GridCell";
 
 export function GridContainer() {
-  const { gridState } = useGridActions();
+  const { gridState, setActiveCellId } = useGridActions();
   const { layout, cells, activeCellId } = gridState;
   const isMd = useMediaQuery("(min-width: 768px)");
 
   const visibleCells = isMd ? cells : cells.slice(0, 1);
+
+  // On small screens only cell 0 is visible — sync activeCellId if it
+  // points to a hidden cell so the sidebar shows the correct data.
+  useEffect(() => {
+    if (isMd) return;
+    const firstCell = cells[0];
+    if (firstCell && activeCellId !== firstCell.id) {
+      setActiveCellId(firstCell.id);
+    }
+  }, [isMd, cells, activeCellId, setActiveCellId]);
 
   return (
     <div

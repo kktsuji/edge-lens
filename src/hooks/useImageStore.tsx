@@ -185,12 +185,12 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       stale.bitmap = prev.imageBitmap;
       return initialImage;
     });
-    stale.bitmap?.close();
-    const bitmapsToClose: ImageBitmap[] = [];
+    const bitmapsToClose = new Set<ImageBitmap>();
+    if (stale.bitmap) bitmapsToClose.add(stale.bitmap);
     setGridState((prev) => {
       for (const cell of prev.cells) {
         if (cell.image.imageBitmap) {
-          bitmapsToClose.push(cell.image.imageBitmap);
+          bitmapsToClose.add(cell.image.imageBitmap);
         }
       }
       return { ...initialGridState };
@@ -266,8 +266,15 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       setViewport(restore.cell.viewport);
       setRoiSelection(restore.cell.roiSelection);
       setLineProfile(restore.cell.lineProfile);
+    } else if (restore.cell) {
+      // Cell 0-0 exists but has no image — reset to clean state
+      setImage(initialImage);
+      setViewport(initialViewport);
+      setRoiSelection(null);
+      setLineProfile(null);
     }
     for (const b of bitmapsToClose) b.close();
+    setRefitKey((k) => k + 1);
   }, []);
 
   const setGridLayout = useCallback((layout: GridLayout) => {
@@ -291,6 +298,12 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         setViewport(restore.cell.viewport);
         setRoiSelection(restore.cell.roiSelection);
         setLineProfile(restore.cell.lineProfile);
+      } else {
+        // Cell 0-0 missing or has no image — reset to clean state
+        setImage(initialImage);
+        setViewport(initialViewport);
+        setRoiSelection(null);
+        setLineProfile(null);
       }
       for (const b of bitmapsToClose) b.close();
       setRefitKey((k) => k + 1);
@@ -401,6 +414,10 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const closeCellImage = useCallback((cellId: string) => {
+    // Bump load version so any in-flight loadImageToCell is discarded
+    const versionMap = cellLoadVersionRef.current;
+    versionMap.set(cellId, (versionMap.get(cellId) ?? 0) + 1);
+
     const stale: { bitmap: ImageBitmap | null } = { bitmap: null };
     setGridState((prev) => ({
       ...prev,

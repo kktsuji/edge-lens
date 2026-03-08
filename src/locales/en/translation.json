@@ -74,5 +74,9 @@
   "grid.unlock": "Unlock Position",
   "grid.activeCell": "Cell",
   "grid.dropMessage": "Drop an image here or click Open Image",
-  "grid.customLayout": "Custom"
+  "grid.customLayout": "Custom",
+  "grid.dropToReplace": "Drop to replace image",
+  "grid.rows": "Rows",
+  "grid.columns": "Columns",
+  "grid.ok": "OK"
 }
