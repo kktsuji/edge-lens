@@ -9,8 +9,14 @@ import {
 import { getTouchDistance, getTouchMidpoint } from "../utils/touchGeometry";
 
 export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
-  const { image, viewport, toolMode, setViewport, setIsTouchPinching } =
-    useImageStore();
+  const {
+    image,
+    viewport,
+    toolMode,
+    setViewport,
+    setIsTouchPinching,
+    refitKey,
+  } = useImageStore();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
 
@@ -172,7 +178,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       canvas.removeEventListener("pointercancel", onPointerCancel);
       canvas.style.cursor = "";
     };
-  }, [canvasRef, setViewport, image.imageBitmap]);
+  }, [canvasRef, setViewport, image.imageBitmap, refitKey]);
 
   // Attach wheel listener (must use { passive: false } to preventDefault)
   useEffect(() => {
@@ -181,7 +187,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
     canvas.addEventListener("wheel", handleWheel, { passive: false });
     return () => canvas.removeEventListener("wheel", handleWheel);
-  }, [canvasRef, handleWheel, image.imageBitmap]);
+  }, [canvasRef, handleWheel, image.imageBitmap, refitKey]);
 
   // Touch pinch-to-zoom (two-finger gesture)
   useEffect(() => {
@@ -261,5 +267,5 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       canvas.removeEventListener("touchcancel", onTouchCancel);
       setIsTouchPinching(false);
     };
-  }, [canvasRef, setViewport, setIsTouchPinching, image.imageBitmap]);
+  }, [canvasRef, setViewport, setIsTouchPinching, image.imageBitmap, refitKey]);
 }
