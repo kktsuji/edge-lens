@@ -10,6 +10,7 @@ import type {
   RoiSelection,
   ViewportState,
 } from "../../../types";
+import { clipLineToRect } from "../../../utils/coordinates";
 
 const emptyImage: ImageState = {
   file: null,
@@ -130,12 +131,27 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
         const sy = roi.y * sourceVp.zoom + sourceVp.panY;
         const sw = roi.width * sourceVp.zoom;
         const sh = roi.height * sourceVp.zoom;
-        setAllCellsRoiSelection((c) => ({
-          x: (sx - c.viewport.panX) / c.viewport.zoom,
-          y: (sy - c.viewport.panY) / c.viewport.zoom,
-          width: sw / c.viewport.zoom,
-          height: sh / c.viewport.zoom,
-        }));
+        setAllCellsRoiSelection((c) => {
+          const imgW = c.image.width;
+          const imgH = c.image.height;
+          if (!imgW || !imgH) return null;
+
+          const rawX = (sx - c.viewport.panX) / c.viewport.zoom;
+          const rawY = (sy - c.viewport.panY) / c.viewport.zoom;
+          const rawW = sw / c.viewport.zoom;
+          const rawH = sh / c.viewport.zoom;
+
+          const x1 = Math.max(0, Math.min(imgW, rawX));
+          const y1 = Math.max(0, Math.min(imgH, rawY));
+          const x2 = Math.max(0, Math.min(imgW, rawX + rawW));
+          const y2 = Math.max(0, Math.min(imgH, rawY + rawH));
+
+          const w = x2 - x1;
+          const h = y2 - y1;
+          if (w <= 0 || h <= 0) return null;
+
+          return { x: x1, y: y1, width: w, height: h };
+        });
       } else {
         setCellRoiSelection(cellId, roi);
       }
@@ -161,12 +177,27 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
         const sy1 = lp.y1 * sourceVp.zoom + sourceVp.panY;
         const sx2 = lp.x2 * sourceVp.zoom + sourceVp.panX;
         const sy2 = lp.y2 * sourceVp.zoom + sourceVp.panY;
-        setAllCellsLineProfile((c) => ({
-          x1: (sx1 - c.viewport.panX) / c.viewport.zoom,
-          y1: (sy1 - c.viewport.panY) / c.viewport.zoom,
-          x2: (sx2 - c.viewport.panX) / c.viewport.zoom,
-          y2: (sy2 - c.viewport.panY) / c.viewport.zoom,
-        }));
+        setAllCellsLineProfile((c) => {
+          const imgW = c.image.width;
+          const imgH = c.image.height;
+          if (!imgW || !imgH) return null;
+
+          const rawX1 = (sx1 - c.viewport.panX) / c.viewport.zoom;
+          const rawY1 = (sy1 - c.viewport.panY) / c.viewport.zoom;
+          const rawX2 = (sx2 - c.viewport.panX) / c.viewport.zoom;
+          const rawY2 = (sy2 - c.viewport.panY) / c.viewport.zoom;
+
+          return clipLineToRect(
+            rawX1,
+            rawY1,
+            rawX2,
+            rawY2,
+            0,
+            0,
+            imgW - 1,
+            imgH - 1,
+          );
+        });
       } else {
         setCellLineProfile(cellId, lp);
       }

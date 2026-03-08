@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useImageStore } from "../../../hooks/useImageStore";
-import { screenToImage } from "../../../utils/coordinates";
+import { clipLineToRect, screenToImage } from "../../../utils/coordinates";
 
 export function useLineProfile(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
@@ -25,8 +25,8 @@ export function useLineProfile(
     if (!canvas) return;
 
     let isDragging = false;
-    let startImgX = 0;
-    let startImgY = 0;
+    let rawStartX = 0;
+    let rawStartY = 0;
     let isSpaceDown = false;
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -46,19 +46,23 @@ export function useLineProfile(
       const screenX = e.clientX - rect.left;
       const screenY = e.clientY - rect.top;
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
-      const img = imageRef.current;
-      const x1 = Math.max(0, Math.min(img.width - 1, imgPos.x));
-      const y1 = Math.max(0, Math.min(img.height - 1, imgPos.y));
 
       isDragging = true;
-      startImgX = x1;
-      startImgY = y1;
-      setLineProfile({
-        x1,
-        y1,
-        x2: x1,
-        y2: y1,
-      });
+      rawStartX = imgPos.x;
+      rawStartY = imgPos.y;
+      // Single point — clip to image bounds for initial display
+      const img = imageRef.current;
+      const clipped = clipLineToRect(
+        imgPos.x,
+        imgPos.y,
+        imgPos.x,
+        imgPos.y,
+        0,
+        0,
+        img.width - 1,
+        img.height - 1,
+      );
+      setLineProfile(clipped);
       canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
@@ -72,15 +76,17 @@ export function useLineProfile(
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
 
       const img = imageRef.current;
-      const x2 = Math.max(0, Math.min(img.width - 1, imgPos.x));
-      const y2 = Math.max(0, Math.min(img.height - 1, imgPos.y));
-
-      setLineProfile({
-        x1: startImgX,
-        y1: startImgY,
-        x2,
-        y2,
-      });
+      const clipped = clipLineToRect(
+        rawStartX,
+        rawStartY,
+        imgPos.x,
+        imgPos.y,
+        0,
+        0,
+        img.width - 1,
+        img.height - 1,
+      );
+      setLineProfile(clipped);
     };
 
     const onPointerUp = (e: PointerEvent) => {
