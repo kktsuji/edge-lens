@@ -11,11 +11,7 @@ import { ActiveCellIndicator } from "./ActiveCellIndicator";
 import { GridCellProvider } from "./GridCellProvider";
 
 function GridSidebarPanels() {
-  const { gridState } = useGridActions();
-  const activeCell = gridState.activeCellId
-    ? gridState.cells.find((c) => c.id === gridState.activeCellId)
-    : null;
-  const pixelInfo = activeCell?.pixelInfo ?? null;
+  const { activeCellPixelInfo } = useGridActions();
 
   const histogramData = useHistogram();
   const exifData = useExifData();
@@ -25,7 +21,7 @@ function GridSidebarPanels() {
       <ActiveCellIndicator />
       <LineProfilePanel />
       <RoiStatsPanel />
-      <PixelInfoPanel pixelInfo={pixelInfo} />
+      <PixelInfoPanel pixelInfo={activeCellPixelInfo} />
       <HistogramPanel data={histogramData} />
       <ImageStatsPanel data={histogramData} />
       <ExifPanel exifData={exifData} />

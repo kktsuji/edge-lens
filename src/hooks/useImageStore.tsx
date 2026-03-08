@@ -2,6 +2,8 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -39,6 +41,7 @@ export interface ImageStoreContextValue {
 
 export interface GridActions {
   gridState: GridState;
+  activeCellPixelInfo: PixelInfo | null;
   setGridEnabled: (enabled: boolean) => void;
   setGridLayout: (layout: GridLayout) => void;
   setGridPositionLocked: (locked: boolean) => void;
@@ -89,7 +92,6 @@ function createEmptyCell(id: string): GridCellState {
     viewport: { ...initialViewport },
     roiSelection: null,
     lineProfile: null,
-    pixelInfo: null,
   };
 }
 
@@ -102,7 +104,7 @@ function buildCellGrid(
     for (let c = 0; c < layout.cols; c++) {
       const id = `${r}-${c}`;
       const existing = existingCells.find((cell) => cell.id === id);
-      cells.push(existing ?? createEmptyCell(id));
+      cells.push(existing ? { ...existing } : createEmptyCell(id));
     }
   }
   return cells;
@@ -125,11 +127,28 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   const [isTouchPinching, setIsTouchPinching] = useState(false);
   const [gridState, setGridState] = useState<GridState>(initialGridState);
   const [refitKey, setRefitKey] = useState(0);
+  const [activeCellPixelInfo, setActiveCellPixelInfo] =
+    useState<PixelInfo | null>(null);
+
+  // Refs for single-view state so grid callbacks stay stable (#3, #7)
+  const imageRef = useRef(image);
+  imageRef.current = image;
+  const viewportRef = useRef(viewport);
+  viewportRef.current = viewport;
+  const roiSelectionRef = useRef(roiSelection);
+  roiSelectionRef.current = roiSelection;
+  const lineProfileRef = useRef(lineProfile);
+  lineProfileRef.current = lineProfile;
+
+  // Ref for active cell id so setCellPixelInfo stays stable (#1)
+  const activeCellIdRef = useRef(gridState.activeCellId);
+  activeCellIdRef.current = gridState.activeCellId;
 
   const loadImage = useCallback(async (file: File) => {
     const bitmap = await createImageBitmap(file);
     const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = offscreen.getContext("2d")!;
+    const ctx = offscreen.getContext("2d");
+    if (!ctx) throw new Error("Failed to get 2d context");
     ctx.drawImage(bitmap, 0, 0);
     const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
@@ -151,24 +170,27 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     setIsTouchPinching(false);
   }, []);
 
+  // Fix #2: use state updaters to read latest state instead of closures
   const closeImage = useCallback(() => {
-    if (image.imageBitmap) {
-      image.imageBitmap.close();
-    }
-    // Close all grid cell ImageBitmaps
-    for (const cell of gridState.cells) {
-      if (cell.image.imageBitmap) {
-        cell.image.imageBitmap.close();
+    setImage((prev) => {
+      if (prev.imageBitmap) prev.imageBitmap.close();
+      return initialImage;
+    });
+    setGridState((prev) => {
+      for (const cell of prev.cells) {
+        if (cell.image.imageBitmap) {
+          cell.image.imageBitmap.close();
+        }
       }
-    }
-    setGridState({ ...initialGridState });
-    setImage(initialImage);
+      return { ...initialGridState };
+    });
     setViewport(initialViewport);
     setToolMode("navigate");
     setRoiSelection(null);
     setLineProfile(null);
     setIsTouchPinching(false);
-  }, [image.imageBitmap, gridState.cells]);
+    setActiveCellPixelInfo(null);
+  }, []);
 
   const setZoom = useCallback((zoom: number) => {
     setViewport((prev) => ({ ...prev, zoom }));
@@ -180,119 +202,125 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   // --- Grid actions ---
 
-  const setGridEnabled = useCallback(
-    (enabled: boolean) => {
-      setGridState((prev) => {
-        if (enabled && !prev.enabled) {
-          const layout =
-            prev.layout.rows === 1 && prev.layout.cols === 1
-              ? { rows: 1, cols: 2 }
-              : prev.layout;
-          const cells = buildCellGrid(layout, prev.cells);
-          // Move current single-view image to cell "0-0" if it exists
-          const firstCell = cells.find((c) => c.id === "0-0");
-          if (firstCell && image.imageData) {
-            firstCell.image = { ...image };
-            firstCell.viewport = { ...viewport };
-            firstCell.roiSelection = roiSelection;
-            firstCell.lineProfile = lineProfile;
+  // Fix #3, #7: read single-view state from refs, avoid state mutation
+  const setGridEnabled = useCallback((enabled: boolean) => {
+    setGridState((prev) => {
+      if (enabled && !prev.enabled) {
+        const layout =
+          prev.layout.rows === 1 && prev.layout.cols === 1
+            ? { rows: 1, cols: 2 }
+            : prev.layout;
+        const img = imageRef.current;
+        const vp = viewportRef.current;
+        const roi = roiSelectionRef.current;
+        const lp = lineProfileRef.current;
+        const cells = buildCellGrid(layout, prev.cells).map((c) => {
+          if (c.id === "0-0" && img.imageData) {
+            return {
+              ...c,
+              image: { ...img },
+              viewport: { ...vp },
+              roiSelection: roi,
+              lineProfile: lp,
+            };
           }
-          return {
-            ...prev,
-            enabled: true,
-            layout,
-            cells,
-            activeCellId: "0-0",
-          };
-        }
-        if (!enabled && prev.enabled) {
-          // Restore cell "0-0" to single view, close other bitmaps
-          const firstCell = prev.cells.find((c) => c.id === "0-0");
-          if (firstCell?.image.imageBitmap) {
-            setImage(firstCell.image);
-            setViewport(firstCell.viewport);
-            setRoiSelection(firstCell.roiSelection);
-            setLineProfile(firstCell.lineProfile);
-          }
-          // Close bitmaps on non-first cells
-          for (const cell of prev.cells) {
-            if (cell.id !== "0-0" && cell.image.imageBitmap) {
-              cell.image.imageBitmap.close();
-            }
-          }
-          return { ...initialGridState };
-        }
-        return prev;
-      });
-    },
-    [image, viewport, roiSelection, lineProfile],
-  );
-
-  const setGridLayout = useCallback(
-    (layout: GridLayout) => {
-      // 1×1 means "return to single view"
-      if (layout.rows === 1 && layout.cols === 1) {
-        setGridState((prev) => {
-          if (!prev.enabled) return prev;
-          // Restore cell "0-0" to single view, close other bitmaps
-          const firstCell = prev.cells.find((c) => c.id === "0-0");
-          if (firstCell?.image.imageBitmap) {
-            setImage(firstCell.image);
-            setViewport(firstCell.viewport);
-            setRoiSelection(firstCell.roiSelection);
-            setLineProfile(firstCell.lineProfile);
-          }
-          for (const cell of prev.cells) {
-            if (cell.id !== "0-0" && cell.image.imageBitmap) {
-              cell.image.imageBitmap.close();
-            }
-          }
-          return { ...initialGridState };
+          return c;
         });
-        setRefitKey((k) => k + 1);
-        return;
+        return {
+          ...prev,
+          enabled: true,
+          layout,
+          cells,
+          activeCellId: "0-0",
+        };
       }
-
-      setGridState((prev) => {
-        // Close bitmaps for cells that will be removed
-        const newIds = new Set<string>();
-        for (let r = 0; r < layout.rows; r++) {
-          for (let c = 0; c < layout.cols; c++) {
-            newIds.add(`${r}-${c}`);
-          }
+      if (!enabled && prev.enabled) {
+        // Restore cell "0-0" to single view, close other bitmaps
+        const firstCell = prev.cells.find((c) => c.id === "0-0");
+        if (firstCell?.image.imageBitmap) {
+          setImage(firstCell.image);
+          setViewport(firstCell.viewport);
+          setRoiSelection(firstCell.roiSelection);
+          setLineProfile(firstCell.lineProfile);
         }
         for (const cell of prev.cells) {
-          if (!newIds.has(cell.id) && cell.image.imageBitmap) {
+          if (cell.id !== "0-0" && cell.image.imageBitmap) {
             cell.image.imageBitmap.close();
           }
         }
-        const cells = buildCellGrid(layout, prev.cells);
-        // Copy single-view image to cell "0-0" when transitioning to grid
-        if (!prev.enabled) {
-          const firstCell = cells.find((c) => c.id === "0-0");
-          if (firstCell && image.imageData) {
-            firstCell.image = { ...image };
-            firstCell.viewport = { ...viewport };
-            firstCell.roiSelection = roiSelection;
-            firstCell.lineProfile = lineProfile;
+        return { ...initialGridState };
+      }
+      return prev;
+    });
+  }, []);
+
+  const setGridLayout = useCallback((layout: GridLayout) => {
+    // 1×1 means "return to single view"
+    if (layout.rows === 1 && layout.cols === 1) {
+      setGridState((prev) => {
+        if (!prev.enabled) return prev;
+        const firstCell = prev.cells.find((c) => c.id === "0-0");
+        if (firstCell?.image.imageBitmap) {
+          setImage(firstCell.image);
+          setViewport(firstCell.viewport);
+          setRoiSelection(firstCell.roiSelection);
+          setLineProfile(firstCell.lineProfile);
+        }
+        for (const cell of prev.cells) {
+          if (cell.id !== "0-0" && cell.image.imageBitmap) {
+            cell.image.imageBitmap.close();
           }
         }
-        const activeCellId =
-          prev.activeCellId && newIds.has(prev.activeCellId)
-            ? prev.activeCellId
-            : "0-0";
-        return {
-          ...prev,
-          layout,
-          cells,
-          enabled: true,
-          activeCellId,
-          layoutVersion: prev.layoutVersion + 1,
-        };
+        return { ...initialGridState };
       });
-    },
-    [image, viewport, roiSelection, lineProfile],
-  );
+      setRefitKey((k) => k + 1);
+      return;
+    }
+
+    setGridState((prev) => {
+      // Close bitmaps for cells that will be removed
+      const newIds = new Set<string>();
+      for (let r = 0; r < layout.rows; r++) {
+        for (let c = 0; c < layout.cols; c++) {
+          newIds.add(`${r}-${c}`);
+        }
+      }
+      for (const cell of prev.cells) {
+        if (!newIds.has(cell.id) && cell.image.imageBitmap) {
+          cell.image.imageBitmap.close();
+        }
+      }
+      const img = imageRef.current;
+      const vp = viewportRef.current;
+      const roi = roiSelectionRef.current;
+      const lp = lineProfileRef.current;
+      const cells = buildCellGrid(layout, prev.cells).map((c) => {
+        // Copy single-view image to cell "0-0" when transitioning to grid
+        if (!prev.enabled && c.id === "0-0" && img.imageData) {
+          return {
+            ...c,
+            image: { ...img },
+            viewport: { ...vp },
+            roiSelection: roi,
+            lineProfile: lp,
+          };
+        }
+        return c;
+      });
+      const activeCellId =
+        prev.activeCellId && newIds.has(prev.activeCellId)
+          ? prev.activeCellId
+          : "0-0";
+      return {
+        ...prev,
+        layout,
+        cells,
+        enabled: true,
+        activeCellId,
+        layoutVersion: prev.layoutVersion + 1,
+      };
+    });
+  }, []);
 
   const setGridPositionLocked = useCallback((locked: boolean) => {
     setGridState((prev) => ({ ...prev, positionLocked: locked }));
@@ -300,12 +328,14 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   const setActiveCellId = useCallback((id: string | null) => {
     setGridState((prev) => ({ ...prev, activeCellId: id }));
+    setActiveCellPixelInfo(null);
   }, []);
 
   const loadImageToCell = useCallback(async (cellId: string, file: File) => {
     const bitmap = await createImageBitmap(file);
     const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = offscreen.getContext("2d")!;
+    const ctx = offscreen.getContext("2d");
+    if (!ctx) throw new Error("Failed to get 2d context");
     ctx.drawImage(bitmap, 0, 0);
     const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
@@ -327,7 +357,6 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
           viewport: { ...initialViewport },
           roiSelection: null,
           lineProfile: null,
-          pixelInfo: null,
         };
       }),
     }));
@@ -393,14 +422,12 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  // Fix #1: only update lightweight state for active cell, skip gridState
   const setCellPixelInfo = useCallback(
     (cellId: string, info: PixelInfo | null) => {
-      setGridState((prev) => ({
-        ...prev,
-        cells: prev.cells.map((cell) =>
-          cell.id === cellId ? { ...cell, pixelInfo: info } : cell,
-        ),
-      }));
+      if (cellId === activeCellIdRef.current) {
+        setActiveCellPixelInfo(info);
+      }
     },
     [],
   );
@@ -441,22 +468,43 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const gridActions: GridActions = {
-    gridState,
-    setGridEnabled,
-    setGridLayout,
-    setGridPositionLocked,
-    setActiveCellId,
-    loadImageToCell,
-    closeCellImage,
-    updateCellViewport,
-    updateAllCellViewports,
-    setCellRoiSelection,
-    setCellLineProfile,
-    setCellPixelInfo,
-    setAllCellsRoiSelection,
-    setAllCellsLineProfile,
-  };
+  // Fix #6: memoize gridActions so consumers don't re-render on every render
+  const gridActions: GridActions = useMemo(
+    () => ({
+      gridState,
+      activeCellPixelInfo,
+      setGridEnabled,
+      setGridLayout,
+      setGridPositionLocked,
+      setActiveCellId,
+      loadImageToCell,
+      closeCellImage,
+      updateCellViewport,
+      updateAllCellViewports,
+      setCellRoiSelection,
+      setCellLineProfile,
+      setCellPixelInfo,
+      setAllCellsRoiSelection,
+      setAllCellsLineProfile,
+    }),
+    [
+      gridState,
+      activeCellPixelInfo,
+      setGridEnabled,
+      setGridLayout,
+      setGridPositionLocked,
+      setActiveCellId,
+      loadImageToCell,
+      closeCellImage,
+      updateCellViewport,
+      updateAllCellViewports,
+      setCellRoiSelection,
+      setCellLineProfile,
+      setCellPixelInfo,
+      setAllCellsRoiSelection,
+      setAllCellsLineProfile,
+    ],
+  );
 
   return (
     <ImageStoreContext.Provider

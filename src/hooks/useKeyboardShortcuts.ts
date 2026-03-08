@@ -28,6 +28,8 @@ export function useKeyboardShortcuts(
     setGridPositionLocked,
     updateCellViewport,
     updateAllCellViewports,
+    setCellRoiSelection,
+    setCellLineProfile,
   } = useGridActions();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
@@ -90,6 +92,21 @@ export function useKeyboardShortcuts(
         e.preventDefault();
         if (opts.isHelpOpen) {
           opts.onToggleHelp();
+        } else if (gridStateRef.current.enabled) {
+          // Fix #5: In grid mode, check active cell's ROI/line-profile
+          const gs = gridStateRef.current;
+          const activeCell = gs.activeCellId
+            ? gs.cells.find((c) => c.id === gs.activeCellId)
+            : null;
+          if (activeCell?.lineProfile) {
+            setCellLineProfile(gs.activeCellId!, null);
+          } else if (activeCell?.roiSelection) {
+            setCellRoiSelection(gs.activeCellId!, null);
+          } else if (toolModeRef.current !== "navigate") {
+            setToolMode("navigate");
+          } else {
+            setGridEnabled(false);
+          }
         } else if (drawOrderRef.current.length > 0) {
           const last = drawOrderRef.current.pop();
           if (!last) {
@@ -99,8 +116,6 @@ export function useKeyboardShortcuts(
           else setLineProfile(null);
         } else if (toolModeRef.current !== "navigate") {
           setToolMode("navigate");
-        } else if (gridStateRef.current.enabled) {
-          setGridEnabled(false);
         } else if (img.imageData) {
           opts.onCloseImage();
         }
@@ -373,5 +388,7 @@ export function useKeyboardShortcuts(
     setGridPositionLocked,
     updateCellViewport,
     updateAllCellViewports,
+    setCellRoiSelection,
+    setCellLineProfile,
   ]);
 }

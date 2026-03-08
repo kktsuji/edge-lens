@@ -54,6 +54,10 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
   const gridStateRef = useRef(gridState);
   gridStateRef.current = gridState;
 
+  // Fix #4: ref for viewport so setZoom/setPan always read latest value
+  const viewportRef = useRef(viewport);
+  viewportRef.current = viewport;
+
   const setViewport = useCallback(
     (vp: ViewportState) => {
       const gs = gridStateRef.current;
@@ -88,16 +92,16 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
 
   const setZoom = useCallback(
     (zoom: number) => {
-      setViewport({ ...viewport, zoom });
+      setViewport({ ...viewportRef.current, zoom });
     },
-    [viewport, setViewport],
+    [setViewport],
   );
 
   const setPan = useCallback(
     (panX: number, panY: number) => {
-      setViewport({ ...viewport, panX, panY });
+      setViewport({ ...viewportRef.current, panX, panY });
     },
-    [viewport, setViewport],
+    [setViewport],
   );
 
   const loadImage = useCallback(

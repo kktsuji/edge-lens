@@ -69,7 +69,6 @@ export interface GridCellState {
   viewport: ViewportState;
   roiSelection: RoiSelection | null;
   lineProfile: LineProfile | null;
-  pixelInfo: PixelInfo | null;
 }
 
 export interface GridState {
