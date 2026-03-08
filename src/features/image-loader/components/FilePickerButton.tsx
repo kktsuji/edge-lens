@@ -44,9 +44,14 @@ export function FilePickerButton({
     <>
       <button
         onClick={() => inputRef.current?.click()}
-        className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-500"
+        className="rounded bg-blue-600 px-2 py-1 text-sm text-white hover:bg-blue-500 sm:px-3 sm:py-1.5"
+        title={t("toolbar.open")}
+        aria-label={t("toolbar.open")}
       >
-        {t("toolbar.open")}
+        <span className="hidden sm:inline">{t("toolbar.open")}</span>
+        <span className="sm:hidden" aria-hidden="true">
+          📂
+        </span>
       </button>
       <input
         ref={inputRef}

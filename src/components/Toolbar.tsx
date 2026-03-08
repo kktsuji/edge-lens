@@ -6,7 +6,7 @@ interface ToolbarProps {
 
 export function Toolbar({ children }: ToolbarProps) {
   return (
-    <nav className="flex h-12 shrink-0 items-center gap-2 border-b border-gray-700 bg-gray-800 px-4">
+    <nav className="flex min-h-12 shrink-0 items-center gap-1 overflow-x-auto border-b border-gray-700 bg-gray-800 px-2 sm:gap-2 sm:px-4">
       <span className="text-sm font-semibold tracking-wide text-gray-200">
         EdgeLens
       </span>
