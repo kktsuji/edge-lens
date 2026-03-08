@@ -6,7 +6,9 @@ export function CloseButton() {
   const { image, closeImage } = useImageStore();
   const { gridState } = useGridActions();
 
-  if (!image.imageData && !gridState.enabled) return null;
+  const hasGridImages =
+    gridState.enabled && gridState.cells.some((c) => c.image.imageData);
+  if (!image.imageData && !hasGridImages) return null;
 
   return (
     <button

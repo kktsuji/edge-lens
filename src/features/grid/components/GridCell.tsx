@@ -24,8 +24,9 @@ interface GridCellProps {
 }
 
 function GridCellContent({ cellId, isActive }: GridCellProps) {
-  const { image, toolMode, loadImage } = useImageStore();
-  const { setActiveCellId, setCellPixelInfo } = useGridActions();
+  const { image, toolMode } = useImageStore();
+  const { setActiveCellId, setCellPixelInfo, loadImageToCell } =
+    useGridActions();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hasImage = !!image.imageData;
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -54,12 +55,12 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
       const result = validateImageFile(file);
       if (!result.valid) return;
       try {
-        await loadImage(file);
-      } catch {
-        // ignore
+        await loadImageToCell(cellId, file);
+      } catch (err) {
+        console.error("Failed to load image into grid cell:", err);
       }
     },
-    [loadImage],
+    [cellId, loadImageToCell],
   );
 
   const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {

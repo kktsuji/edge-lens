@@ -42,6 +42,9 @@ export function useLineProfile(
       if (isTouchPinchingRef.current) return;
       if (e.pointerType !== "touch" && isSpaceDown) return;
 
+      const img = imageRef.current;
+      if (img.width <= 0 || img.height <= 0) return;
+
       const rect = canvas.getBoundingClientRect();
       const screenX = e.clientX - rect.left;
       const screenY = e.clientY - rect.top;
@@ -51,7 +54,6 @@ export function useLineProfile(
       rawStartX = imgPos.x;
       rawStartY = imgPos.y;
       // Single point — clip to image bounds for initial display
-      const img = imageRef.current;
       const clipped = clipLineToRect(
         imgPos.x,
         imgPos.y,
@@ -70,12 +72,14 @@ export function useLineProfile(
     const onPointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
 
+      const img = imageRef.current;
+      if (img.width <= 0 || img.height <= 0) return;
+
       const rect = canvas.getBoundingClientRect();
       const screenX = e.clientX - rect.left;
       const screenY = e.clientY - rect.top;
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
 
-      const img = imageRef.current;
       const clipped = clipLineToRect(
         rawStartX,
         rawStartY,
@@ -107,5 +111,5 @@ export function useLineProfile(
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
     };
-  }, [canvasRef, setLineProfile, image.imageBitmap]);
+  }, [canvasRef, setLineProfile, image.imageBitmap, image.width, image.height]);
 }

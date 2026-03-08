@@ -21,6 +21,13 @@ describe("screenToImage", () => {
     const result = screenToImage(300, 500, { zoom: 2, panX: 100, panY: 100 });
     expect(result).toEqual({ x: 100, y: 200 });
   });
+
+  it("falls back to zoom=1 when zoom is 0", () => {
+    const result = screenToImage(100, 200, { zoom: 0, panX: 0, panY: 0 });
+    expect(result).toEqual({ x: 100, y: 200 });
+    expect(Number.isFinite(result.x)).toBe(true);
+    expect(Number.isFinite(result.y)).toBe(true);
+  });
 });
 
 describe("clipLineToRect", () => {
@@ -109,6 +116,33 @@ describe("clipLineToRect", () => {
   it("handles line parallel to and outside the rect", () => {
     // Horizontal line above the rect
     const result = clipLineToRect(0, -5, 100, -5, xmin, ymin, xmax, ymax);
+    expect(result).toBeNull();
+  });
+
+  it("handles near-parallel line with floating-point precision", () => {
+    // Nearly horizontal line just barely inside the rect
+    const result = clipLineToRect(
+      0,
+      50,
+      100,
+      50 + 1e-12,
+      xmin,
+      ymin,
+      xmax,
+      ymax,
+    );
+    expect(result).not.toBeNull();
+    expect(result!.x1).toBeCloseTo(0, 5);
+    expect(result!.y1).toBeCloseTo(50, 5);
+  });
+
+  it("handles very large coordinates", () => {
+    const result = clipLineToRect(-1e6, 50, 1e6, 50, xmin, ymin, xmax, ymax);
+    expect(result).toEqual({ x1: 0, y1: 50, x2: 100, y2: 50 });
+  });
+
+  it("returns null for inverted rectangle (xmin > xmax)", () => {
+    const result = clipLineToRect(50, 50, 60, 60, 100, 0, 0, 100);
     expect(result).toBeNull();
   });
 });

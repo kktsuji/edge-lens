@@ -66,6 +66,13 @@ export function useKeyboardShortcuts(
     }
   }, [lineProfile]);
 
+  // Clear draw order when switching between single/grid mode
+  const prevGridEnabled = useRef(gridState.enabled);
+  if (prevGridEnabled.current !== gridState.enabled) {
+    drawOrderRef.current = [];
+    prevGridEnabled.current = gridState.enabled;
+  }
+
   const gridStateRef = useRef(gridState);
   gridStateRef.current = gridState;
 
@@ -98,10 +105,10 @@ export function useKeyboardShortcuts(
           const activeCell = gs.activeCellId
             ? gs.cells.find((c) => c.id === gs.activeCellId)
             : null;
-          if (activeCell?.lineProfile) {
-            setCellLineProfile(gs.activeCellId!, null);
-          } else if (activeCell?.roiSelection) {
-            setCellRoiSelection(gs.activeCellId!, null);
+          if (gs.activeCellId && activeCell?.lineProfile) {
+            setCellLineProfile(gs.activeCellId, null);
+          } else if (gs.activeCellId && activeCell?.roiSelection) {
+            setCellRoiSelection(gs.activeCellId, null);
           } else if (toolModeRef.current !== "navigate") {
             setToolMode("navigate");
           } else {

@@ -5,9 +5,10 @@ export function screenToImage(
   screenY: number,
   viewport: ViewportState,
 ): { x: number; y: number } {
+  const zoom = viewport.zoom || 1;
   return {
-    x: (screenX - viewport.panX) / viewport.zoom,
-    y: (screenY - viewport.panY) / viewport.zoom,
+    x: (screenX - viewport.panX) / zoom,
+    y: (screenY - viewport.panY) / zoom,
   };
 }
 
@@ -38,9 +39,11 @@ export function clipLineToRect(
   let t0 = 0;
   let t1 = 1;
 
+  const EPSILON = 1e-10;
+
   for (const { p, q } of edges) {
-    if (p === 0) {
-      if (q < 0) return null;
+    if (Math.abs(p) < EPSILON) {
+      if (q < -EPSILON) return null;
     } else {
       const t = q / p;
       if (p < 0) {

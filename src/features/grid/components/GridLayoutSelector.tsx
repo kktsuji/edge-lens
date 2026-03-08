@@ -18,8 +18,8 @@ const PRESETS = [
 export function GridLayoutSelector({ onClose }: GridLayoutSelectorProps) {
   const { t } = useTranslation();
   const { gridState, setGridLayout } = useGridActions();
-  const [customRows, setCustomRows] = useState(2);
-  const [customCols, setCustomCols] = useState(2);
+  const [customRows, setCustomRows] = useState(gridState.layout.rows);
+  const [customCols, setCustomCols] = useState(gridState.layout.cols);
 
   const handlePreset = (rows: number, cols: number) => {
     setGridLayout({ rows, cols });
