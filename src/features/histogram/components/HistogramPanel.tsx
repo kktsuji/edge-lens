@@ -25,7 +25,7 @@ export function HistogramPanel({ data }: HistogramPanelProps) {
           <HistogramChart data={data} />
         </Suspense>
       ) : (
-        <p className="text-xs text-gray-500">{t("histogram.placeholder")}</p>
+        <p className="text-xs text-gray-400">{t("histogram.placeholder")}</p>
       )}
     </div>
   );

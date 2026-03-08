@@ -1,14 +1,17 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
 
-const FIXTURE = path.resolve(__dirname, "fixtures/test-2x2.png");
+const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
 
 test.describe("Pixel Inspector", () => {
   test("shows pixel info on hover", async ({ page }) => {
     await page.goto("/");
 
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByRole("button", { name: "Open Image" }).click();
+    await page
+      .locator("#main-content")
+      .getByRole("button", { name: "Open Image" })
+      .click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(FIXTURE);
 

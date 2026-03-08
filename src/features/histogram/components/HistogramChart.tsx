@@ -100,7 +100,11 @@ export function HistogramChart({ data }: HistogramChartProps) {
 
   return (
     <div className="h-40">
-      <Line data={chartData} options={options} />
+      <Line
+        data={chartData}
+        options={options}
+        aria-label="Image color histogram"
+      />
     </div>
   );
 }

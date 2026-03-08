@@ -52,7 +52,7 @@ export function RoiStatsPanel() {
         <button
           type="button"
           onClick={() => setRoiSelection(null)}
-          className="text-gray-500 hover:text-gray-200"
+          className="text-gray-400 hover:text-gray-200"
           aria-label={t("roiStats.clearAriaLabel")}
           title={t("roiStats.clearAriaLabel")}
         >
@@ -69,7 +69,7 @@ export function RoiStatsPanel() {
       </div>
       <table className="w-full text-xs text-gray-300">
         <thead>
-          <tr className="text-gray-500">
+          <tr className="text-gray-400">
             <th scope="col" className="pb-1 text-left font-normal">
               <span className="sr-only">{t("imageStats.channel")}</span>
             </th>

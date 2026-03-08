@@ -84,14 +84,14 @@ export function ExifPanel({ exifData }: ExifPanelProps) {
         {t("exif.title")}
       </h2>
       {!exifData ? (
-        <p className="text-xs text-gray-500">{t("exif.placeholder")}</p>
+        <p className="text-xs text-gray-400">{t("exif.placeholder")}</p>
       ) : rows.length === 0 ? (
-        <p className="text-xs text-gray-500">{t("exif.noExif")}</p>
+        <p className="text-xs text-gray-400">{t("exif.noExif")}</p>
       ) : (
         <div className="space-y-1 text-xs text-gray-400">
           {rows.map(({ labelKey, value }) => (
             <div key={labelKey} className="flex justify-between gap-2">
-              <span className="shrink-0 text-gray-500">{t(labelKey)}</span>
+              <span className="shrink-0 text-gray-400">{t(labelKey)}</span>
               <span className="truncate text-right">{value}</span>
             </div>
           ))}

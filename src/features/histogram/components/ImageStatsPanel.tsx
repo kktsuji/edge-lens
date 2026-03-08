@@ -19,7 +19,7 @@ export function ImageStatsPanel({ data }: ImageStatsPanelProps) {
       {stats ? (
         <table className="w-full text-xs text-gray-300">
           <thead>
-            <tr className="text-gray-500">
+            <tr className="text-gray-400">
               <th scope="col" className="pb-1 text-left font-normal">
                 <span className="sr-only">{t("imageStats.channel")}</span>
               </th>
@@ -75,7 +75,7 @@ export function ImageStatsPanel({ data }: ImageStatsPanelProps) {
           </tbody>
         </table>
       ) : (
-        <p className="text-xs text-gray-500">{t("imageStats.placeholder")}</p>
+        <p className="text-xs text-gray-400">{t("imageStats.placeholder")}</p>
       )}
     </div>
   );

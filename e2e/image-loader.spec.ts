@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
 
-const FIXTURE = path.resolve(__dirname, "fixtures/test-2x2.png");
+const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
 
 test.describe("Image Loader", () => {
   test.beforeEach(async ({ page }) => {
@@ -14,7 +14,10 @@ test.describe("Image Loader", () => {
 
   test("opens image via file picker", async ({ page }) => {
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByRole("button", { name: "Open Image" }).click();
+    await page
+      .locator("#main-content")
+      .getByRole("button", { name: "Open Image" })
+      .click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(FIXTURE);
 
@@ -25,7 +28,10 @@ test.describe("Image Loader", () => {
 
   test("closes image and returns to drop zone", async ({ page }) => {
     const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByRole("button", { name: "Open Image" }).click();
+    await page
+      .locator("#main-content")
+      .getByRole("button", { name: "Open Image" })
+      .click();
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(FIXTURE);
 

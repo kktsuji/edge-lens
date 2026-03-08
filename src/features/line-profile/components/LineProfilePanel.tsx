@@ -29,7 +29,7 @@ export function LineProfilePanel() {
           <button
             type="button"
             onClick={() => setLineProfile(null)}
-            className="text-gray-500 hover:text-gray-200"
+            className="text-gray-400 hover:text-gray-200"
             aria-label={t("lineProfile.clearAriaLabel")}
             title={t("lineProfile.clearAriaLabel")}
           >
@@ -44,7 +44,7 @@ export function LineProfilePanel() {
           <LineProfileChart samples={samples} />
         </Suspense>
       ) : (
-        <p className="text-xs text-gray-500">{t("lineProfile.placeholder")}</p>
+        <p className="text-xs text-gray-400">{t("lineProfile.placeholder")}</p>
       )}
     </div>
   );
