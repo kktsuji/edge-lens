@@ -49,7 +49,9 @@ export function GridToggleButton() {
         }}
         title={`${t("grid.toggle")} (G)`}
         aria-label={`${t("grid.toggle")} (G)`}
-        aria-pressed={gridState.enabled}
+        aria-haspopup="dialog"
+        aria-expanded={isDropdownOpen}
+        aria-controls="grid-layout-dropdown"
         className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
           gridState.enabled
             ? "bg-blue-600 text-white"

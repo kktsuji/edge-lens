@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useGridActions } from "../../../hooks/useImageStore";
 import { useHistogram } from "../../histogram/hooks/useHistogram";
 import { useExifData } from "../../exif-viewer/hooks/useExifData";
@@ -32,8 +33,14 @@ function GridSidebarPanels() {
 export function GridSidebarContent() {
   const { gridState } = useGridActions();
 
+  const { t } = useTranslation();
+
   if (!gridState.activeCellId) {
-    return <ActiveCellIndicator />;
+    return (
+      <p className="px-3 py-4 text-sm text-gray-400">
+        {t("grid.sidebarEmpty")}
+      </p>
+    );
   }
 
   return (
