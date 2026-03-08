@@ -30,8 +30,10 @@ export function GridCellDropZone({ cellId }: GridCellDropZoneProps) {
       }
       try {
         await loadImageToCell(cellId, file);
-      } catch {
-        setError("error.unsupportedFormat");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "error.unsupportedFormat",
+        );
       }
     },
     [cellId, loadImageToCell],

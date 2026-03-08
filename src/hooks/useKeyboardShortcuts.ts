@@ -207,6 +207,7 @@ export function useKeyboardShortcuts(
           : null;
         if (!activeCell?.image.imageData) return;
 
+        if (!gs.activeCellId) return;
         const activeCellEl = document.querySelector(
           `[data-cell-id="${gs.activeCellId}"] canvas`,
         ) as HTMLCanvasElement | null;

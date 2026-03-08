@@ -32,8 +32,13 @@ export function GridToggleButton() {
         setIsDropdownOpen(false);
       }
     };
+    const handleResize = () => updatePosition();
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("resize", handleResize);
+    };
   }, [isDropdownOpen, updatePosition]);
 
   return (

@@ -8,8 +8,8 @@ export function ActiveCellIndicator() {
   if (!gridState.enabled || !gridState.activeCellId) return null;
 
   const parts = gridState.activeCellId.split("-");
-  const row = Number(parts[0]) + 1;
-  const col = Number(parts[1]) + 1;
+  const row = Number(parts[0] ?? 0) + 1;
+  const col = Number(parts[1] ?? 0) + 1;
 
   return (
     <div className="flex items-center gap-2 rounded bg-gray-700 px-2 py-1 text-xs text-gray-300">
