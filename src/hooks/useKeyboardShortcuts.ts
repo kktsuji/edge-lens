@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { MIN_ZOOM, MAX_ZOOM, ZOOM_FACTOR } from "../features/zoom/constants";
+import type { ViewportState } from "../types";
 import { useImageStore, useGridActions } from "./useImageStore";
 
 export function useKeyboardShortcuts(
@@ -28,8 +29,11 @@ export function useKeyboardShortcuts(
     setGridPositionLocked,
     updateCellViewport,
     updateAllCellViewports,
+    updateCellViewportsBatch,
     setCellRoiSelection,
     setCellLineProfile,
+    setAllCellsRoiSelection,
+    setAllCellsLineProfile,
   } = useGridActions();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
@@ -106,9 +110,17 @@ export function useKeyboardShortcuts(
             ? gs.cells.find((c) => c.id === gs.activeCellId)
             : null;
           if (gs.activeCellId && activeCell?.lineProfile) {
-            setCellLineProfile(gs.activeCellId, null);
+            if (gs.positionLocked) {
+              setAllCellsLineProfile(null);
+            } else {
+              setCellLineProfile(gs.activeCellId, null);
+            }
           } else if (gs.activeCellId && activeCell?.roiSelection) {
-            setCellRoiSelection(gs.activeCellId, null);
+            if (gs.positionLocked) {
+              setAllCellsRoiSelection(null);
+            } else {
+              setCellRoiSelection(gs.activeCellId, null);
+            }
           } else if (toolModeRef.current !== "navigate") {
             setToolMode("navigate");
           } else {
@@ -273,6 +285,7 @@ export function useKeyboardShortcuts(
           e.preventDefault();
           if (gs.positionLocked) {
             // Fit each cell's image to its own container independently
+            const updates = new Map<string, ViewportState>();
             for (const c of gs.cells) {
               if (!c.image.imageData) continue;
               const el = document.querySelector(
@@ -282,12 +295,13 @@ export function useKeyboardShortcuts(
               const w = el.clientWidth;
               const h = el.clientHeight;
               const zoom = Math.min(w / c.image.width, h / c.image.height);
-              updateCellViewport(c.id, {
+              updates.set(c.id, {
                 zoom,
                 panX: (w - c.image.width * zoom) / 2,
                 panY: (h - c.image.height * zoom) / 2,
               });
             }
+            updateCellViewportsBatch(updates);
           } else {
             const zoom = Math.min(cw / cellImg.width, ch / cellImg.height);
             updateCellViewport(gs.activeCellId!, {
@@ -303,6 +317,7 @@ export function useKeyboardShortcuts(
           e.preventDefault();
           if (gs.positionLocked) {
             // Show each cell's image at 100% centered independently
+            const updates = new Map<string, ViewportState>();
             for (const c of gs.cells) {
               if (!c.image.imageData) continue;
               const el = document.querySelector(
@@ -311,12 +326,13 @@ export function useKeyboardShortcuts(
               if (!el) continue;
               const w = el.clientWidth;
               const h = el.clientHeight;
-              updateCellViewport(c.id, {
+              updates.set(c.id, {
                 zoom: 1,
                 panX: (w - c.image.width) / 2,
                 panY: (h - c.image.height) / 2,
               });
             }
+            updateCellViewportsBatch(updates);
           } else {
             updateCellViewport(gs.activeCellId!, {
               zoom: 1,
@@ -396,7 +412,10 @@ export function useKeyboardShortcuts(
     setGridPositionLocked,
     updateCellViewport,
     updateAllCellViewports,
+    updateCellViewportsBatch,
     setCellRoiSelection,
     setCellLineProfile,
+    setAllCellsRoiSelection,
+    setAllCellsLineProfile,
   ]);
 }

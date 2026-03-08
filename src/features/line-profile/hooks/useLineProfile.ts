@@ -64,7 +64,7 @@ export function useLineProfile(
         img.width - 1,
         img.height - 1,
       );
-      setLineProfile(clipped);
+      if (clipped) setLineProfile(clipped);
       canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
@@ -90,7 +90,7 @@ export function useLineProfile(
         img.width - 1,
         img.height - 1,
       );
-      setLineProfile(clipped);
+      if (clipped) setLineProfile(clipped);
     };
 
     const onPointerUp = (e: PointerEvent) => {

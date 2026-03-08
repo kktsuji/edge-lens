@@ -50,6 +50,7 @@ export interface GridActions {
   closeCellImage: (cellId: string) => void;
   updateCellViewport: (cellId: string, viewport: ViewportState) => void;
   updateAllCellViewports: (fn: (vp: ViewportState) => ViewportState) => void;
+  updateCellViewportsBatch: (updates: Map<string, ViewportState>) => void;
   setCellRoiSelection: (cellId: string, roi: RoiSelection | null) => void;
   setCellLineProfile: (cellId: string, lp: LineProfile | null) => void;
   setCellPixelInfo: (cellId: string, info: PixelInfo | null) => void;
@@ -431,6 +432,19 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const updateCellViewportsBatch = useCallback(
+    (updates: Map<string, ViewportState>) => {
+      setGridState((prev) => ({
+        ...prev,
+        cells: prev.cells.map((cell) => {
+          const vp = updates.get(cell.id);
+          return vp ? { ...cell, viewport: vp } : cell;
+        }),
+      }));
+    },
+    [],
+  );
+
   const setCellRoiSelection = useCallback(
     (cellId: string, roi: RoiSelection | null) => {
       setGridState((prev) => ({
@@ -514,6 +528,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       closeCellImage,
       updateCellViewport,
       updateAllCellViewports,
+      updateCellViewportsBatch,
       setCellRoiSelection,
       setCellLineProfile,
       setCellPixelInfo,
@@ -531,6 +546,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       closeCellImage,
       updateCellViewport,
       updateAllCellViewports,
+      updateCellViewportsBatch,
       setCellRoiSelection,
       setCellLineProfile,
       setCellPixelInfo,
