@@ -39,4 +39,4 @@ jobs:
             Format the comment in markdown. Start the comment with "## Claude Code Review" as the heading.
             Include a summary of findings (bugs, security issues, logic errors) or state that no
             significant issues were found.
-          additional_permissions: "Bash(gh pr comment:*),Bash(gh api:*)"
+          additional_permissions: "Bash(gh pr comment:*)"
