@@ -151,11 +151,17 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 
+    const onPointerCancel = () => {
+      isPanning = false;
+      canvas.style.cursor = isSpaceDown ? "grab" : "";
+    };
+
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerCancel);
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
@@ -163,6 +169,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerCancel);
       canvas.style.cursor = "";
     };
   }, [canvasRef, setViewport, image.imageBitmap]);
@@ -208,6 +215,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       const t1 = e.touches[0]!;
       const t2 = e.touches[1]!;
       const newDistance = getTouchDistance(t1, t2);
+      if (initialDistance === 0) return;
       const scaleFactor = newDistance / initialDistance;
       const newZoom = Math.min(
         MAX_ZOOM,
@@ -221,15 +229,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
       const v = viewportRef.current;
 
-      // Zoom anchored at midpoint + pan for midpoint drift
-      const panX =
-        cx -
-        (lastMidpoint.x - v.panX) * (newZoom / v.zoom) +
-        (cx - lastMidpoint.x);
-      const panY =
-        cy -
-        (lastMidpoint.y - v.panY) * (newZoom / v.zoom) +
-        (cy - lastMidpoint.y);
+      // Zoom anchored at midpoint
+      const panX = cx - (lastMidpoint.x - v.panX) * (newZoom / v.zoom);
+      const panY = cy - (lastMidpoint.y - v.panY) * (newZoom / v.zoom);
 
       lastMidpoint = { x: cx, y: cy };
       setViewport({ zoom: newZoom, panX, panY });
@@ -242,14 +244,22 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       }
     };
 
+    const onTouchCancel = () => {
+      isPinching = false;
+      setIsTouchPinching(false);
+    };
+
     canvas.addEventListener("touchstart", onTouchStart, { passive: false });
     canvas.addEventListener("touchmove", onTouchMove, { passive: false });
     canvas.addEventListener("touchend", onTouchEnd, { passive: false });
+    canvas.addEventListener("touchcancel", onTouchCancel);
 
     return () => {
       canvas.removeEventListener("touchstart", onTouchStart);
       canvas.removeEventListener("touchmove", onTouchMove);
       canvas.removeEventListener("touchend", onTouchEnd);
+      canvas.removeEventListener("touchcancel", onTouchCancel);
+      setIsTouchPinching(false);
     };
   }, [canvasRef, setViewport, setIsTouchPinching, image.imageBitmap]);
 }

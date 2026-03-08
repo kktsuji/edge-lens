@@ -75,6 +75,10 @@ export function usePixelInspector(
     [readPixel],
   );
 
+  const handlePointerCancel = useCallback(() => {
+    touchStartRef.current = null;
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -83,12 +87,14 @@ export function usePixelInspector(
     canvas.addEventListener("pointerleave", handlePointerLeave);
     canvas.addEventListener("pointerdown", handlePointerDown);
     canvas.addEventListener("pointerup", handlePointerUp);
+    canvas.addEventListener("pointercancel", handlePointerCancel);
 
     return () => {
       canvas.removeEventListener("pointermove", handlePointerMove);
       canvas.removeEventListener("pointerleave", handlePointerLeave);
       canvas.removeEventListener("pointerdown", handlePointerDown);
       canvas.removeEventListener("pointerup", handlePointerUp);
+      canvas.removeEventListener("pointercancel", handlePointerCancel);
     };
   }, [
     canvasRef,
@@ -96,7 +102,8 @@ export function usePixelInspector(
     handlePointerLeave,
     handlePointerDown,
     handlePointerUp,
-    image.imageBitmap,
+    handlePointerCancel,
+    image.imageData,
   ]);
 
   return pixelInfo;

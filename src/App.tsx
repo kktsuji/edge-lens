@@ -153,6 +153,7 @@ function App() {
             onClick={() => setIsSidebarOpen((v) => !v)}
             className="min-h-10 min-w-10 rounded px-2 py-1 text-sm text-gray-400 hover:bg-gray-700 hover:text-white md:hidden"
             aria-label="Toggle sidebar"
+            aria-expanded={isSidebarOpen}
           >
             ☰
           </button>

@@ -78,6 +78,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     setToolMode("navigate");
     setRoiSelection(null);
     setLineProfile(null);
+    setIsTouchPinching(false);
   }, []);
 
   const closeImage = useCallback(() => {
@@ -89,6 +90,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     setToolMode("navigate");
     setRoiSelection(null);
     setLineProfile(null);
+    setIsTouchPinching(false);
   }, [image.imageBitmap]);
 
   const setZoom = useCallback((zoom: number) => {
