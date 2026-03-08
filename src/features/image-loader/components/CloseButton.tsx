@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { useImageStore } from "../../../hooks/useImageStore";
+import { useImageStore, useGridActions } from "../../../hooks/useImageStore";
 
 export function CloseButton() {
   const { t } = useTranslation();
   const { image, closeImage } = useImageStore();
+  const { gridState } = useGridActions();
 
-  if (!image.imageData) return null;
+  if (!image.imageData && !gridState.enabled) return null;
 
   return (
     <button

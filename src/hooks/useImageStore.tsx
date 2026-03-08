@@ -152,13 +152,20 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     if (image.imageBitmap) {
       image.imageBitmap.close();
     }
+    // Close all grid cell ImageBitmaps
+    for (const cell of gridState.cells) {
+      if (cell.image.imageBitmap) {
+        cell.image.imageBitmap.close();
+      }
+    }
+    setGridState({ ...initialGridState });
     setImage(initialImage);
     setViewport(initialViewport);
     setToolMode("navigate");
     setRoiSelection(null);
     setLineProfile(null);
     setIsTouchPinching(false);
-  }, [image.imageBitmap]);
+  }, [image.imageBitmap, gridState.cells]);
 
   const setZoom = useCallback((zoom: number) => {
     setViewport((prev) => ({ ...prev, zoom }));
