@@ -15,6 +15,9 @@ export function Sidebar({ children, isOpen, onToggle }: SidebarProps) {
           type="button"
           className="fixed inset-0 z-30 bg-black/50 md:hidden"
           onClick={onToggle}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onToggle();
+          }}
           aria-label="Close sidebar"
         />
       )}
