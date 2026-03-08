@@ -16,7 +16,7 @@ export function GridContainer() {
       {cells.map((cell, index) => (
         <div
           key={cell.id}
-          className={`bg-gray-900 ${index === 0 ? "block" : "hidden md:block"}`}
+          className={`min-h-0 min-w-0 bg-gray-900 ${index === 0 ? "block" : "hidden md:block"}`}
         >
           <GridCell cellId={cell.id} isActive={cell.id === activeCellId} />
         </div>
