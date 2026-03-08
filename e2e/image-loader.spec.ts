@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
+import { loadTestImage } from "./helpers.js";
 
-const FIXTURE = path.resolve(__dirname, "fixtures/test-2x2.png");
+const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
 
 test.describe("Image Loader", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,23 +14,14 @@ test.describe("Image Loader", () => {
   });
 
   test("opens image via file picker", async ({ page }) => {
-    const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByRole("button", { name: "Open Image" }).click();
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(FIXTURE);
+    await loadTestImage(page, FIXTURE);
 
-    // Image info should appear in toolbar
-    await expect(page.getByText("test-2x2.png")).toBeVisible();
     await expect(page.getByText("2×2")).toBeVisible();
   });
 
   test("closes image and returns to drop zone", async ({ page }) => {
-    const fileChooserPromise = page.waitForEvent("filechooser");
-    await page.getByRole("button", { name: "Open Image" }).click();
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(FIXTURE);
+    await loadTestImage(page, FIXTURE);
 
-    await expect(page.getByText("test-2x2.png")).toBeVisible();
     await page.getByRole("button", { name: "Close Image" }).click();
     await expect(page.getByText("Drop an image here")).toBeVisible();
   });
