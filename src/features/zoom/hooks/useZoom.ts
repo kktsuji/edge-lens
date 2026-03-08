@@ -7,25 +7,66 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
 
-  // Wheel zoom — cursor-anchored
+  // Wheel/trackpad handler — cursor-anchored zoom and two-finger pan
+  //
+  // WheelEvent detection strategy for Mac trackpad vs mouse wheel:
+  //
+  // 1. ctrlKey === true  → pinch-to-zoom gesture (macOS fires ctrlKey on pinch).
+  //    Uses continuous Math.exp scaling instead of fixed steps for smooth feel.
+  //
+  // 2. ctrlKey === false && deltaX !== 0  → trackpad two-finger scroll with a
+  //    horizontal component. Mouse wheels never produce deltaX, so this is safe
+  //    to treat as pan without any risk of breaking mouse-wheel behavior.
+  //
+  // 3. ctrlKey === false && deltaX === 0  → traditional mouse wheel (or pure
+  //    vertical trackpad scroll, which is treated the same). Keeps existing
+  //    step-based zoom behavior unchanged.
+  //
+  // Deliberate tradeoff: pure vertical trackpad scroll (deltaX === 0) zooms
+  // instead of panning. Using a deltaY magnitude threshold to detect trackpad
+  // would risk breaking high-resolution mice; we prefer safety.
   const handleWheel = useCallback(
     (e: WheelEvent) => {
       e.preventDefault();
       const v = viewportRef.current;
 
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const cx = e.clientX - rect.left;
-      const cy = e.clientY - rect.top;
+      if (e.ctrlKey) {
+        // Case 1: Pinch-to-zoom — smooth continuous scaling
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const cx = e.clientX - rect.left;
+        const cy = e.clientY - rect.top;
 
-      const direction = e.deltaY < 0 ? 1 : -1;
-      const factor = direction > 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
-      const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom * factor));
+        const factor = Math.exp(-e.deltaY * 0.01);
+        const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom * factor));
 
-      // Keep the pixel under cursor fixed
-      const panX = cx - (cx - v.panX) * (newZoom / v.zoom);
-      const panY = cy - (cy - v.panY) * (newZoom / v.zoom);
+        // Keep the pixel under cursor fixed
+        const panX = cx - (cx - v.panX) * (newZoom / v.zoom);
+        const panY = cy - (cy - v.panY) * (newZoom / v.zoom);
 
-      setViewport({ zoom: newZoom, panX, panY });
+        setViewport({ zoom: newZoom, panX, panY });
+      } else if (e.deltaX !== 0) {
+        // Case 2: Trackpad two-finger scroll with horizontal component — pan
+        setViewport({
+          zoom: v.zoom,
+          panX: v.panX - e.deltaX,
+          panY: v.panY - e.deltaY,
+        });
+      } else {
+        // Case 3: Mouse wheel (or pure vertical trackpad scroll) — step zoom
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const cx = e.clientX - rect.left;
+        const cy = e.clientY - rect.top;
+
+        const direction = e.deltaY < 0 ? 1 : -1;
+        const factor = direction > 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+        const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom * factor));
+
+        // Keep the pixel under cursor fixed
+        const panX = cx - (cx - v.panX) * (newZoom / v.zoom);
+        const panY = cy - (cy - v.panY) * (newZoom / v.zoom);
+
+        setViewport({ zoom: newZoom, panX, panY });
+      }
     },
     [setViewport],
   );
