@@ -91,7 +91,7 @@ export function ExifPanel({ exifData }: ExifPanelProps) {
         <div className="space-y-1 text-xs text-gray-400">
           {rows.map(({ labelKey, value }) => (
             <div key={labelKey} className="flex justify-between gap-2">
-              <span className="shrink-0 text-gray-400">{t(labelKey)}</span>
+              <span className="shrink-0">{t(labelKey)}</span>
               <span className="truncate text-right">{value}</span>
             </div>
           ))}

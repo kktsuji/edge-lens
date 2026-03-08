@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { AxeBuilder } from "@axe-core/playwright";
 import path from "path";
+import { loadTestImage } from "./helpers.js";
 
 const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
 
@@ -19,16 +20,7 @@ test.describe("Accessibility", () => {
 
   test("no critical violations with image loaded", async ({ page }) => {
     await page.goto("/");
-
-    const fileChooserPromise = page.waitForEvent("filechooser");
-    await page
-      .locator("#main-content")
-      .getByRole("button", { name: "Open Image" })
-      .click();
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(FIXTURE);
-
-    await expect(page.getByText("test-2x2.png")).toBeVisible();
+    await loadTestImage(page, FIXTURE);
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa"])

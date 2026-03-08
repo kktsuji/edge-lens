@@ -103,6 +103,7 @@ export function HistogramChart({ data }: HistogramChartProps) {
       <Line
         data={chartData}
         options={options}
+        role="img"
         aria-label="Image color histogram"
       />
     </div>
