@@ -227,6 +227,28 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   const setGridLayout = useCallback(
     (layout: GridLayout) => {
+      // 1×1 means "return to single view"
+      if (layout.rows === 1 && layout.cols === 1) {
+        setGridState((prev) => {
+          if (!prev.enabled) return prev;
+          // Restore cell "0-0" to single view, close other bitmaps
+          const firstCell = prev.cells.find((c) => c.id === "0-0");
+          if (firstCell?.image.imageBitmap) {
+            setImage(firstCell.image);
+            setViewport(firstCell.viewport);
+            setRoiSelection(firstCell.roiSelection);
+            setLineProfile(firstCell.lineProfile);
+          }
+          for (const cell of prev.cells) {
+            if (cell.id !== "0-0" && cell.image.imageBitmap) {
+              cell.image.imageBitmap.close();
+            }
+          }
+          return { ...initialGridState };
+        });
+        return;
+      }
+
       setGridState((prev) => {
         // Close bitmaps for cells that will be removed
         const newIds = new Set<string>();

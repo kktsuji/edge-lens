@@ -6,7 +6,7 @@ import { GridLayoutSelector } from "./GridLayoutSelector";
 
 export function GridToggleButton() {
   const { t } = useTranslation();
-  const { gridState, setGridEnabled } = useGridActions();
+  const { gridState } = useGridActions();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
@@ -40,11 +40,7 @@ export function GridToggleButton() {
     <div className="relative hidden md:inline-flex" ref={wrapperRef}>
       <button
         onClick={() => {
-          if (gridState.enabled) {
-            setGridEnabled(false);
-          } else {
-            setIsDropdownOpen((v) => !v);
-          }
+          setIsDropdownOpen((v) => !v);
         }}
         title={`${t("grid.toggle")} (G)`}
         aria-label={`${t("grid.toggle")} (G)`}
@@ -73,24 +69,6 @@ export function GridToggleButton() {
           <rect x="14" y="14" width="7" height="7" />
         </svg>
       </button>
-      {!gridState.enabled && (
-        <button
-          onClick={() => setIsDropdownOpen((v) => !v)}
-          className="min-h-8 rounded px-0.5 py-0.5 text-xs text-gray-400 hover:bg-gray-700 hover:text-white sm:min-h-10"
-          aria-label={t("grid.layout")}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="10"
-            height="10"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path d="M7 10l5 5 5-5z" />
-          </svg>
-        </button>
-      )}
       {isDropdownOpen &&
         createPortal(
           <div

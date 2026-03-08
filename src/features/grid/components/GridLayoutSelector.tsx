@@ -7,6 +7,7 @@ interface GridLayoutSelectorProps {
 }
 
 const PRESETS = [
+  { rows: 1, cols: 1, label: "1 x 1" },
   { rows: 1, cols: 2, label: "1 x 2" },
   { rows: 2, cols: 1, label: "2 x 1" },
   { rows: 2, cols: 2, label: "2 x 2" },
@@ -16,7 +17,7 @@ const PRESETS = [
 
 export function GridLayoutSelector({ onClose }: GridLayoutSelectorProps) {
   const { t } = useTranslation();
-  const { setGridLayout } = useGridActions();
+  const { gridState, setGridLayout } = useGridActions();
   const [customRows, setCustomRows] = useState(2);
   const [customCols, setCustomCols] = useState(2);
 
@@ -35,15 +36,24 @@ export function GridLayoutSelector({ onClose }: GridLayoutSelectorProps) {
       <p className="mb-1 text-xs font-medium text-gray-400">
         {t("grid.layout")}
       </p>
-      {PRESETS.map(({ rows, cols, label }) => (
-        <button
-          key={label}
-          onClick={() => handlePreset(rows, cols)}
-          className="block w-full rounded px-2 py-1 text-left text-sm text-gray-200 hover:bg-gray-700"
-        >
-          {label}
-        </button>
-      ))}
+      {PRESETS.map(({ rows, cols, label }) => {
+        const isActive = gridState.enabled
+          ? gridState.layout.rows === rows && gridState.layout.cols === cols
+          : rows === 1 && cols === 1;
+        return (
+          <button
+            key={label}
+            onClick={() => handlePreset(rows, cols)}
+            className={`block w-full rounded px-2 py-1 text-left text-sm ${
+              isActive
+                ? "bg-blue-600 text-white"
+                : "text-gray-200 hover:bg-gray-700"
+            }`}
+          >
+            {label}
+          </button>
+        );
+      })}
       <div className="mt-2 border-t border-gray-600 pt-2">
         <p className="mb-1 text-xs font-medium text-gray-400">
           {t("grid.customLayout")}
