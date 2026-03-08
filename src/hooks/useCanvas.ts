@@ -5,9 +5,13 @@ import { useImageStore } from "./useImageStore";
 export function useCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  const { image, viewport, setViewport } = useImageStore();
+  const { image, viewport, setViewportLocal } = useImageStore();
   const rafRef = useRef<number>(0);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  // Track which imageBitmap we last computed the initial viewport for,
+  // so we only reset viewport on actual image changes — not container resizes.
+  const lastFittedBitmapRef = useRef<ImageBitmap | null>(null);
 
   // Track container size via ResizeObserver.
   // Depends on image.imageBitmap so the effect re-runs when the canvas
@@ -41,24 +45,27 @@ export function useCanvas(
     return () => observer.disconnect();
   }, [canvasRef, image.imageBitmap]);
 
-  // Set smart initial viewport whenever a new image or container size is available.
-  // Derive the viewport from the same containerSize used for canvas sizing to
-  // keep pan/zoom aligned with the actual canvas buffer dimensions.
+  // Set smart initial viewport when a NEW image is loaded.
+  // Only fires when the imageBitmap reference actually changes (not on
+  // container resizes), preventing sibling grid cells from resetting
+  // each other's viewports.
   useEffect(() => {
     if (!image.imageBitmap) return;
+    if (image.imageBitmap === lastFittedBitmapRef.current) return;
 
     const cw = containerSize.width;
     const ch = containerSize.height;
     if (!cw || !ch) return;
 
-    setViewport(computeInitialViewport(image.width, image.height, cw, ch));
+    lastFittedBitmapRef.current = image.imageBitmap;
+    setViewportLocal(computeInitialViewport(image.width, image.height, cw, ch));
   }, [
     image.imageBitmap,
     image.width,
     image.height,
     containerSize.width,
     containerSize.height,
-    setViewport,
+    setViewportLocal,
   ]);
 
   // Render image with zoom/pan transform

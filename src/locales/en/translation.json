@@ -67,5 +67,12 @@
   "exif.software": "Software",
   "exif.orientation": "Orientation",
   "exif.colorSpace": "Color Space",
-  "exif.gpsPresent": "GPS data present"
+  "exif.gpsPresent": "GPS data present",
+  "grid.toggle": "Grid View",
+  "grid.layout": "Grid Layout",
+  "grid.lock": "Lock Position",
+  "grid.unlock": "Unlock Position",
+  "grid.activeCell": "Cell",
+  "grid.dropMessage": "Drop an image here or click Open Image",
+  "grid.customLayout": "Custom"
 }

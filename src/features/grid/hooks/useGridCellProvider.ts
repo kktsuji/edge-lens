@@ -1,0 +1,195 @@
+import { useCallback, useContext, useMemo, useRef } from "react";
+import type { ImageStoreContextValue } from "../../../hooks/useImageStore";
+import {
+  ImageStoreContext,
+  useGridActions,
+} from "../../../hooks/useImageStore";
+import type {
+  ImageState,
+  LineProfile,
+  RoiSelection,
+  ViewportState,
+} from "../../../types";
+
+const emptyImage: ImageState = {
+  file: null,
+  name: "",
+  width: 0,
+  height: 0,
+  imageData: null,
+  imageBitmap: null,
+};
+
+const emptyViewport: ViewportState = { zoom: 1, panX: 0, panY: 0 };
+
+export function useGridCellProvider(cellId: string): ImageStoreContextValue {
+  const globalStore = useContext(ImageStoreContext)!;
+  const {
+    gridState,
+    updateCellViewport,
+    updateAllCellViewports,
+    loadImageToCell,
+    closeCellImage,
+    setCellRoiSelection,
+    setCellLineProfile,
+    setAllCellsRoiSelection,
+    setAllCellsLineProfile,
+  } = useGridActions();
+
+  const cell = gridState.cells.find((c) => c.id === cellId);
+
+  const image = useMemo(() => cell?.image ?? emptyImage, [cell?.image]);
+
+  const viewport = useMemo(
+    () => cell?.viewport ?? emptyViewport,
+    [cell?.viewport],
+  );
+
+  const roiSelection = cell?.roiSelection ?? null;
+  const lineProfile = cell?.lineProfile ?? null;
+
+  // Use refs so callbacks have stable references and don't cause
+  // useCanvas / useZoom effects to re-run on every grid state change.
+  const gridStateRef = useRef(gridState);
+  gridStateRef.current = gridState;
+
+  const setViewport = useCallback(
+    (vp: ViewportState) => {
+      const gs = gridStateRef.current;
+      if (gs.positionLocked) {
+        const currentVp = gs.cells.find((c) => c.id === cellId)?.viewport;
+        if (currentVp) {
+          const zoomRatio = vp.zoom / currentVp.zoom;
+          const panDeltaX = vp.panX - currentVp.panX;
+          const panDeltaY = vp.panY - currentVp.panY;
+          updateAllCellViewports((prev) => ({
+            zoom: prev.zoom * zoomRatio,
+            panX: prev.panX + panDeltaX,
+            panY: prev.panY + panDeltaY,
+          }));
+          return;
+        }
+      }
+      updateCellViewport(cellId, vp);
+    },
+    [cellId, updateCellViewport, updateAllCellViewports],
+  );
+
+  // setViewportLocal always targets only this cell, bypassing lock mode.
+  // Used by useCanvas for initial fit-to-screen so loading an image in
+  // one cell doesn't reset other cells' viewports.
+  const setViewportLocal = useCallback(
+    (vp: ViewportState) => {
+      updateCellViewport(cellId, vp);
+    },
+    [cellId, updateCellViewport],
+  );
+
+  const setZoom = useCallback(
+    (zoom: number) => {
+      setViewport({ ...viewport, zoom });
+    },
+    [viewport, setViewport],
+  );
+
+  const setPan = useCallback(
+    (panX: number, panY: number) => {
+      setViewport({ ...viewport, panX, panY });
+    },
+    [viewport, setViewport],
+  );
+
+  const loadImage = useCallback(
+    async (file: File) => {
+      await loadImageToCell(cellId, file);
+    },
+    [cellId, loadImageToCell],
+  );
+
+  const closeImage = useCallback(() => {
+    closeCellImage(cellId);
+  }, [cellId, closeCellImage]);
+
+  const setRoiSelection = useCallback(
+    (roi: RoiSelection | null) => {
+      const gs = gridStateRef.current;
+      if (gs.positionLocked) {
+        if (roi === null) {
+          setAllCellsRoiSelection(null);
+          return;
+        }
+        // Convert ROI from source cell's image coords to screen coords,
+        // then map to each cell's image coords so overlays appear at the
+        // same screen position across all cells.
+        const sourceVp = gs.cells.find((c) => c.id === cellId)?.viewport;
+        if (!sourceVp) {
+          setCellRoiSelection(cellId, roi);
+          return;
+        }
+        const sx = roi.x * sourceVp.zoom + sourceVp.panX;
+        const sy = roi.y * sourceVp.zoom + sourceVp.panY;
+        const sw = roi.width * sourceVp.zoom;
+        const sh = roi.height * sourceVp.zoom;
+        setAllCellsRoiSelection((c) => ({
+          x: (sx - c.viewport.panX) / c.viewport.zoom,
+          y: (sy - c.viewport.panY) / c.viewport.zoom,
+          width: sw / c.viewport.zoom,
+          height: sh / c.viewport.zoom,
+        }));
+      } else {
+        setCellRoiSelection(cellId, roi);
+      }
+    },
+    [cellId, setCellRoiSelection, setAllCellsRoiSelection],
+  );
+
+  const setLineProfile = useCallback(
+    (lp: LineProfile | null) => {
+      const gs = gridStateRef.current;
+      if (gs.positionLocked) {
+        if (lp === null) {
+          setAllCellsLineProfile(null);
+          return;
+        }
+        const sourceVp = gs.cells.find((c) => c.id === cellId)?.viewport;
+        if (!sourceVp) {
+          setCellLineProfile(cellId, lp);
+          return;
+        }
+        // Convert line endpoints to screen coords, then to each cell's image coords
+        const sx1 = lp.x1 * sourceVp.zoom + sourceVp.panX;
+        const sy1 = lp.y1 * sourceVp.zoom + sourceVp.panY;
+        const sx2 = lp.x2 * sourceVp.zoom + sourceVp.panX;
+        const sy2 = lp.y2 * sourceVp.zoom + sourceVp.panY;
+        setAllCellsLineProfile((c) => ({
+          x1: (sx1 - c.viewport.panX) / c.viewport.zoom,
+          y1: (sy1 - c.viewport.panY) / c.viewport.zoom,
+          x2: (sx2 - c.viewport.panX) / c.viewport.zoom,
+          y2: (sy2 - c.viewport.panY) / c.viewport.zoom,
+        }));
+      } else {
+        setCellLineProfile(cellId, lp);
+      }
+    },
+    [cellId, setCellLineProfile, setAllCellsLineProfile],
+  );
+
+  return {
+    image,
+    viewport,
+    toolMode: globalStore.toolMode,
+    roiSelection,
+    lineProfile,
+    isTouchPinching: globalStore.isTouchPinching,
+    loadImage,
+    closeImage,
+    setZoom,
+    setPan,
+    setViewport,
+    setViewportLocal,
+    setToolMode: globalStore.setToolMode,
+    setRoiSelection,
+    setLineProfile,
+    setIsTouchPinching: globalStore.setIsTouchPinching,
+  };
+}

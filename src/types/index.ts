@@ -58,6 +58,28 @@ export interface LineProfile {
   y2: number;
 }
 
+export interface GridLayout {
+  rows: number; // 1–4
+  cols: number; // 1–4
+}
+
+export interface GridCellState {
+  id: string; // "0-0", "0-1", "1-0", etc.
+  image: ImageState;
+  viewport: ViewportState;
+  roiSelection: RoiSelection | null;
+  lineProfile: LineProfile | null;
+  pixelInfo: PixelInfo | null;
+}
+
+export interface GridState {
+  enabled: boolean;
+  layout: GridLayout;
+  cells: GridCellState[];
+  activeCellId: string | null;
+  positionLocked: boolean;
+}
+
 export interface ExifData {
   make?: string;
   model?: string;

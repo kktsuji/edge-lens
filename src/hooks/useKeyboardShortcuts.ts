@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { MIN_ZOOM, MAX_ZOOM, ZOOM_FACTOR } from "../features/zoom/constants";
-import { useImageStore } from "./useImageStore";
+import { useImageStore, useGridActions } from "./useImageStore";
 
 export function useKeyboardShortcuts(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
@@ -22,6 +22,13 @@ export function useKeyboardShortcuts(
     setRoiSelection,
     setLineProfile,
   } = useImageStore();
+  const {
+    gridState,
+    setGridEnabled,
+    setGridPositionLocked,
+    updateCellViewport,
+    updateAllCellViewports,
+  } = useGridActions();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
 
@@ -57,6 +64,9 @@ export function useKeyboardShortcuts(
     }
   }, [lineProfile]);
 
+  const gridStateRef = useRef(gridState);
+  gridStateRef.current = gridState;
+
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
@@ -89,6 +99,8 @@ export function useKeyboardShortcuts(
           else setLineProfile(null);
         } else if (toolModeRef.current !== "navigate") {
           setToolMode("navigate");
+        } else if (gridStateRef.current.enabled) {
+          setGridEnabled(false);
         } else if (img.imageData) {
           opts.onCloseImage();
         }
@@ -101,13 +113,15 @@ export function useKeyboardShortcuts(
         return;
       }
 
+      const hasContent = img.imageData || gridStateRef.current.enabled;
+
       if (
         (e.key === "r" || e.key === "R") &&
         !e.ctrlKey &&
         !e.metaKey &&
         !e.altKey
       ) {
-        if (img.imageData) {
+        if (hasContent) {
           e.preventDefault();
           setToolMode("roi");
         }
@@ -120,7 +134,7 @@ export function useKeyboardShortcuts(
         !e.metaKey &&
         !e.altKey
       ) {
-        if (img.imageData) {
+        if (hasContent) {
           e.preventDefault();
           setToolMode("line-profile");
         }
@@ -133,13 +147,167 @@ export function useKeyboardShortcuts(
         !e.metaKey &&
         !e.altKey
       ) {
-        if (img.imageData) {
+        if (hasContent) {
           e.preventDefault();
           setToolMode("navigate");
         }
         return;
       }
 
+      if (
+        (e.key === "g" || e.key === "G") &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        // Only toggle grid on md+ screens
+        if (window.innerWidth >= 768) {
+          e.preventDefault();
+          setGridEnabled(!gridStateRef.current.enabled);
+        }
+        return;
+      }
+
+      if (
+        (e.key === "k" || e.key === "K") &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        if (gridStateRef.current.enabled) {
+          e.preventDefault();
+          setGridPositionLocked(!gridStateRef.current.positionLocked);
+        }
+        return;
+      }
+
+      // --- Zoom / fit shortcuts ---
+      // In grid mode, apply to all cells (locked) or active cell (unlocked).
+      // In single mode, apply to the single canvas.
+      const gs = gridStateRef.current;
+      if (gs.enabled) {
+        // Find the active cell's canvas by querying the DOM
+        const activeCell = gs.activeCellId
+          ? gs.cells.find((c) => c.id === gs.activeCellId)
+          : null;
+        if (!activeCell?.image.imageData) return;
+
+        const activeCellEl = document.querySelector(
+          `[data-cell-id="${gs.activeCellId}"] canvas`,
+        ) as HTMLCanvasElement | null;
+        if (!activeCellEl) return;
+
+        const cw = activeCellEl.clientWidth;
+        const ch = activeCellEl.clientHeight;
+        const cellVp = activeCell.viewport;
+        const cellImg = activeCell.image;
+
+        const applyZoom = (
+          newVp: (
+            prev: typeof cellVp,
+            pcw: number,
+            pch: number,
+          ) => typeof cellVp,
+        ) => {
+          if (gs.positionLocked) {
+            updateAllCellViewports((prev) => newVp(prev, cw, ch));
+          } else {
+            updateCellViewport(gs.activeCellId!, newVp(cellVp, cw, ch));
+          }
+        };
+
+        if (e.key === "+" || e.key === "=") {
+          e.preventDefault();
+          applyZoom((prev, pcw, pch) => {
+            const cx = pcw / 2;
+            const cy = pch / 2;
+            const nz = Math.min(MAX_ZOOM, prev.zoom * ZOOM_FACTOR);
+            return {
+              zoom: nz,
+              panX: cx - (cx - prev.panX) * (nz / prev.zoom),
+              panY: cy - (cy - prev.panY) * (nz / prev.zoom),
+            };
+          });
+          return;
+        }
+
+        if (e.key === "-") {
+          e.preventDefault();
+          applyZoom((prev, pcw, pch) => {
+            const cx = pcw / 2;
+            const cy = pch / 2;
+            const nz = Math.max(MIN_ZOOM, prev.zoom / ZOOM_FACTOR);
+            return {
+              zoom: nz,
+              panX: cx - (cx - prev.panX) * (nz / prev.zoom),
+              panY: cy - (cy - prev.panY) * (nz / prev.zoom),
+            };
+          });
+          return;
+        }
+
+        if (e.key === "0") {
+          e.preventDefault();
+          if (gs.positionLocked) {
+            // Fit each cell's image to its own container independently
+            for (const c of gs.cells) {
+              if (!c.image.imageData) continue;
+              const el = document.querySelector(
+                `[data-cell-id="${c.id}"] canvas`,
+              ) as HTMLCanvasElement | null;
+              if (!el) continue;
+              const w = el.clientWidth;
+              const h = el.clientHeight;
+              const zoom = Math.min(w / c.image.width, h / c.image.height);
+              updateCellViewport(c.id, {
+                zoom,
+                panX: (w - c.image.width * zoom) / 2,
+                panY: (h - c.image.height * zoom) / 2,
+              });
+            }
+          } else {
+            const zoom = Math.min(cw / cellImg.width, ch / cellImg.height);
+            updateCellViewport(gs.activeCellId!, {
+              zoom,
+              panX: (cw - cellImg.width * zoom) / 2,
+              panY: (ch - cellImg.height * zoom) / 2,
+            });
+          }
+          return;
+        }
+
+        if (e.key === "1") {
+          e.preventDefault();
+          if (gs.positionLocked) {
+            // Show each cell's image at 100% centered independently
+            for (const c of gs.cells) {
+              if (!c.image.imageData) continue;
+              const el = document.querySelector(
+                `[data-cell-id="${c.id}"] canvas`,
+              ) as HTMLCanvasElement | null;
+              if (!el) continue;
+              const w = el.clientWidth;
+              const h = el.clientHeight;
+              updateCellViewport(c.id, {
+                zoom: 1,
+                panX: (w - c.image.width) / 2,
+                panY: (h - c.image.height) / 2,
+              });
+            }
+          } else {
+            updateCellViewport(gs.activeCellId!, {
+              zoom: 1,
+              panX: (cw - cellImg.width) / 2,
+              panY: (ch - cellImg.height) / 2,
+            });
+          }
+          return;
+        }
+
+        return;
+      }
+
+      // Single-view mode
       if (!canvas || !img.imageData) return;
 
       const cw = canvas.clientWidth;
@@ -195,5 +363,15 @@ export function useKeyboardShortcuts(
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [canvasRef, setViewport, setToolMode, setRoiSelection, setLineProfile]);
+  }, [
+    canvasRef,
+    setViewport,
+    setToolMode,
+    setRoiSelection,
+    setLineProfile,
+    setGridEnabled,
+    setGridPositionLocked,
+    updateCellViewport,
+    updateAllCellViewports,
+  ]);
 }
