@@ -1,3 +1,4 @@
+import path from "node:path";
 import { expect, type Page } from "@playwright/test";
 
 /**
@@ -15,6 +16,6 @@ export async function loadTestImage(
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles(fixturePath);
 
-  const fileName = fixturePath.split("/").pop() ?? fixturePath;
+  const fileName = path.basename(fixturePath);
   await expect(page.getByText(fileName)).toBeVisible();
 }

@@ -36,6 +36,7 @@
     "@tailwindcss/vite": "^4.0.9",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
+    "@types/node": "^25.3.5",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react-swc": "^4.0.0",
