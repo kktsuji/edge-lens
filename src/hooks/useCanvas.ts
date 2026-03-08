@@ -11,7 +11,7 @@ export function useCanvas(
 
   // Track which imageBitmap we last computed the initial viewport for,
   // so we only reset viewport on actual image changes — not container resizes.
-  const lastFittedBitmapRef = useRef<ImageBitmap | null>(null);
+  const lastFittedBitmapRef = useRef<ImageBitmap | null>(image.imageBitmap);
 
   // Track container size via ResizeObserver.
   // Depends on image.imageBitmap so the effect re-runs when the canvas

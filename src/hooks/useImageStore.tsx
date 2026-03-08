@@ -218,28 +218,41 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     [image, viewport, roiSelection, lineProfile],
   );
 
-  const setGridLayout = useCallback((layout: GridLayout) => {
-    setGridState((prev) => {
-      // Close bitmaps for cells that will be removed
-      const newIds = new Set<string>();
-      for (let r = 0; r < layout.rows; r++) {
-        for (let c = 0; c < layout.cols; c++) {
-          newIds.add(`${r}-${c}`);
+  const setGridLayout = useCallback(
+    (layout: GridLayout) => {
+      setGridState((prev) => {
+        // Close bitmaps for cells that will be removed
+        const newIds = new Set<string>();
+        for (let r = 0; r < layout.rows; r++) {
+          for (let c = 0; c < layout.cols; c++) {
+            newIds.add(`${r}-${c}`);
+          }
         }
-      }
-      for (const cell of prev.cells) {
-        if (!newIds.has(cell.id) && cell.image.imageBitmap) {
-          cell.image.imageBitmap.close();
+        for (const cell of prev.cells) {
+          if (!newIds.has(cell.id) && cell.image.imageBitmap) {
+            cell.image.imageBitmap.close();
+          }
         }
-      }
-      const cells = buildCellGrid(layout, prev.cells);
-      const activeCellId =
-        prev.activeCellId && newIds.has(prev.activeCellId)
-          ? prev.activeCellId
-          : "0-0";
-      return { ...prev, layout, cells, enabled: true, activeCellId };
-    });
-  }, []);
+        const cells = buildCellGrid(layout, prev.cells);
+        // Copy single-view image to cell "0-0" when transitioning to grid
+        if (!prev.enabled) {
+          const firstCell = cells.find((c) => c.id === "0-0");
+          if (firstCell && image.imageData) {
+            firstCell.image = { ...image };
+            firstCell.viewport = { ...viewport };
+            firstCell.roiSelection = roiSelection;
+            firstCell.lineProfile = lineProfile;
+          }
+        }
+        const activeCellId =
+          prev.activeCellId && newIds.has(prev.activeCellId)
+            ? prev.activeCellId
+            : "0-0";
+        return { ...prev, layout, cells, enabled: true, activeCellId };
+      });
+    },
+    [image, viewport, roiSelection, lineProfile],
+  );
 
   const setGridPositionLocked = useCallback((locked: boolean) => {
     setGridState((prev) => ({ ...prev, positionLocked: locked }));
