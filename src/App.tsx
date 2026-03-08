@@ -25,17 +25,23 @@ import { RoiStatsPanel } from "./features/roi/components/RoiStatsPanel";
 import { useRoiSelection } from "./features/roi/hooks/useRoiSelection";
 import { useZoom } from "./features/zoom/hooks/useZoom";
 import { useCanvas } from "./hooks/useCanvas";
-import { useImageStore } from "./hooks/useImageStore";
+import { useImageStore, useGridActions } from "./hooks/useImageStore";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { validateImageFile } from "./utils/validation";
+import { GridContainer } from "./features/grid/components/GridContainer";
+import { GridToggleButton } from "./features/grid/components/GridToggleButton";
+import { LockToggleButton } from "./features/grid/components/LockToggleButton";
+import { GridSidebarContent } from "./features/grid/components/GridSidebarContent";
 
 function App() {
   const { t } = useTranslation();
   const { image, viewport, toolMode, loadImage, closeImage, setToolMode } =
     useImageStore();
+  const { gridState } = useGridActions();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
+  const isGridMode = gridState.enabled;
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -93,7 +99,7 @@ function App() {
       <Toolbar>
         <FilePickerButton inputRef={fileInputRef} />
         <CloseButton />
-        {hasImage && (
+        {(hasImage || isGridMode) && (
           <>
             <div className="mx-1 h-5 w-px bg-gray-600" />
             <button
@@ -138,12 +144,17 @@ function App() {
             <div className="mx-1 h-5 w-px bg-gray-600" />
           </>
         )}
-        {hasImage && (
+        <GridToggleButton />
+        <LockToggleButton />
+        {(hasImage || isGridMode) && (
+          <div className="mx-1 h-5 w-px bg-gray-600" />
+        )}
+        {!isGridMode && hasImage && (
           <span className="hidden text-xs text-gray-400 md:inline">
             {image.name} ({image.width}×{image.height})
           </span>
         )}
-        {hasImage && (
+        {!isGridMode && hasImage && (
           <span className="hidden text-xs text-gray-400 sm:inline">
             {Math.round(viewport.zoom * 100)}%
           </span>
@@ -163,7 +174,9 @@ function App() {
       </Toolbar>
       <div className="flex min-h-0 flex-1">
         <main id="main-content" className="relative flex-1 overflow-hidden">
-          {hasImage ? (
+          {isGridMode ? (
+            <GridContainer />
+          ) : hasImage ? (
             <div
               className="relative h-full w-full"
               onDrop={handleDrop}
@@ -192,13 +205,19 @@ function App() {
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen((v) => !v)}
         >
-          <LineProfilePanel />
-          <RoiStatsPanel />
-          <PixelInfoPanel pixelInfo={pixelInfo} />
-          <HistogramPanel data={histogramData} />
-          <ImageStatsPanel data={histogramData} />
-          <ExifPanel exifData={exifData} />
-          {!hasImage && <KeyboardShortcutsPanel />}
+          {isGridMode ? (
+            <GridSidebarContent />
+          ) : (
+            <>
+              <LineProfilePanel />
+              <RoiStatsPanel />
+              <PixelInfoPanel pixelInfo={pixelInfo} />
+              <HistogramPanel data={histogramData} />
+              <ImageStatsPanel data={histogramData} />
+              <ExifPanel exifData={exifData} />
+              {!hasImage && <KeyboardShortcutsPanel />}
+            </>
+          )}
         </Sidebar>
       </div>
       <CookieConsent />
