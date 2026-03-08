@@ -43,7 +43,7 @@ export function useCanvas(
 
     observer.observe(container);
     return () => observer.disconnect();
-  }, [canvasRef, image.imageBitmap]);
+  }, [canvasRef, image.imageBitmap, refitKey]);
 
   // Set smart initial viewport when a NEW image is loaded.
   // Only fires when the imageBitmap reference actually changes (not on
@@ -147,5 +147,5 @@ export function useCanvas(
     });
 
     return () => cancelAnimationFrame(rafRef.current);
-  }, [canvasRef, image.imageBitmap, viewport, containerSize]);
+  }, [canvasRef, image.imageBitmap, viewport, containerSize, refitKey]);
 }
