@@ -19,6 +19,7 @@ interface ImageStoreContextValue {
   toolMode: ToolMode;
   roiSelection: RoiSelection | null;
   lineProfile: LineProfile | null;
+  isTouchPinching: boolean;
   loadImage: (file: File) => Promise<void>;
   closeImage: () => void;
   setZoom: (zoom: number) => void;
@@ -27,6 +28,7 @@ interface ImageStoreContextValue {
   setToolMode: (mode: ToolMode) => void;
   setRoiSelection: (roi: RoiSelection | null) => void;
   setLineProfile: (lp: LineProfile | null) => void;
+  setIsTouchPinching: (v: boolean) => void;
 }
 
 const initialImage: ImageState = {
@@ -52,6 +54,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   const [toolMode, setToolMode] = useState<ToolMode>("navigate");
   const [roiSelection, setRoiSelection] = useState<RoiSelection | null>(null);
   const [lineProfile, setLineProfile] = useState<LineProfile | null>(null);
+  const [isTouchPinching, setIsTouchPinching] = useState(false);
 
   const loadImage = useCallback(async (file: File) => {
     const bitmap = await createImageBitmap(file);
@@ -104,6 +107,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         toolMode,
         roiSelection,
         lineProfile,
+        isTouchPinching,
         loadImage,
         closeImage,
         setZoom,
@@ -112,6 +116,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         setToolMode,
         setRoiSelection,
         setLineProfile,
+        setIsTouchPinching,
       }}
     >
       {children}

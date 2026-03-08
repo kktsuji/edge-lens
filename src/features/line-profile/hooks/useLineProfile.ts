@@ -5,7 +5,8 @@ import { screenToImage } from "../../../utils/coordinates";
 export function useLineProfile(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  const { toolMode, viewport, image, setLineProfile } = useImageStore();
+  const { toolMode, viewport, image, isTouchPinching, setLineProfile } =
+    useImageStore();
 
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
@@ -15,6 +16,9 @@ export function useLineProfile(
 
   const imageRef = useRef(image);
   imageRef.current = image;
+
+  const isTouchPinchingRef = useRef(isTouchPinching);
+  isTouchPinchingRef.current = isTouchPinching;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -33,13 +37,10 @@ export function useLineProfile(
       if (e.key === " ") isSpaceDown = false;
     };
 
-    const onMouseDown = (e: MouseEvent) => {
-      if (
-        e.button !== 0 ||
-        toolModeRef.current !== "line-profile" ||
-        isSpaceDown
-      )
-        return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0 || toolModeRef.current !== "line-profile") return;
+      if (isTouchPinchingRef.current) return;
+      if (e.pointerType !== "touch" && isSpaceDown) return;
 
       const rect = canvas.getBoundingClientRect();
       const screenX = e.clientX - rect.left;
@@ -58,10 +59,11 @@ export function useLineProfile(
         x2: x1,
         y2: y1,
       });
+      canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
 
-    const onMouseMove = (e: MouseEvent) => {
+    const onPointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
 
       const rect = canvas.getBoundingClientRect();
@@ -81,23 +83,23 @@ export function useLineProfile(
       });
     };
 
-    const onMouseUp = (e: MouseEvent) => {
+    const onPointerUp = (e: PointerEvent) => {
       if (e.button !== 0 || !isDragging) return;
       isDragging = false;
     };
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
-    canvas.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerup", onPointerUp);
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
-      canvas.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerup", onPointerUp);
     };
   }, [canvasRef, setLineProfile, image.imageBitmap]);
 }

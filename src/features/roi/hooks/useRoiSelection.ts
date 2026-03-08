@@ -5,7 +5,8 @@ import { screenToImage } from "../../../utils/coordinates";
 export function useRoiSelection(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  const { toolMode, viewport, image, setRoiSelection } = useImageStore();
+  const { toolMode, viewport, image, isTouchPinching, setRoiSelection } =
+    useImageStore();
 
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
@@ -15,6 +16,9 @@ export function useRoiSelection(
 
   const imageRef = useRef(image);
   imageRef.current = image;
+
+  const isTouchPinchingRef = useRef(isTouchPinching);
+  isTouchPinchingRef.current = isTouchPinching;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -33,9 +37,11 @@ export function useRoiSelection(
       if (e.key === " ") isSpaceDown = false;
     };
 
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0 || toolModeRef.current !== "roi" || isSpaceDown)
-        return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0 || toolModeRef.current !== "roi") return;
+      if (isTouchPinchingRef.current) return;
+      // For mouse, require no space key; for touch, skip space check
+      if (e.pointerType !== "touch" && isSpaceDown) return;
 
       const rect = canvas.getBoundingClientRect();
       const screenX = e.clientX - rect.left;
@@ -46,10 +52,11 @@ export function useRoiSelection(
       startImgX = imgPos.x;
       startImgY = imgPos.y;
       setRoiSelection({ x: imgPos.x, y: imgPos.y, width: 0, height: 0 });
+      canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
 
-    const onMouseMove = (e: MouseEvent) => {
+    const onPointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
 
       const rect = canvas.getBoundingClientRect();
@@ -58,8 +65,6 @@ export function useRoiSelection(
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
 
       const img = imageRef.current;
-      // x/y are always the smaller coordinate and x2/y2 the larger, so
-      // width and height are always >= 0 — no negative dimensions can occur.
       const x = Math.max(0, Math.min(startImgX, imgPos.x));
       const y = Math.max(0, Math.min(startImgY, imgPos.y));
       const x2 = Math.max(
@@ -74,23 +79,23 @@ export function useRoiSelection(
       setRoiSelection({ x, y, width: x2 - x, height: y2 - y });
     };
 
-    const onMouseUp = (e: MouseEvent) => {
+    const onPointerUp = (e: PointerEvent) => {
       if (e.button !== 0 || !isDragging) return;
       isDragging = false;
     };
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
-    canvas.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerup", onPointerUp);
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
-      canvas.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerup", onPointerUp);
     };
   }, [canvasRef, setRoiSelection, image.imageBitmap]);
 }

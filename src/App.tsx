@@ -39,6 +39,7 @@ function App() {
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleDrop = useCallback(
     async (e: DragEvent<HTMLElement>) => {
@@ -100,7 +101,7 @@ function App() {
               title={`${t("toolbar.navigate")} (N)`}
               aria-label={`${t("toolbar.navigate")} (N)`}
               aria-pressed={toolMode === "navigate"}
-              className={`rounded px-2 py-1 text-sm transition-colors ${
+              className={`min-h-10 min-w-10 rounded px-2 py-1 text-sm transition-colors ${
                 toolMode === "navigate"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -113,7 +114,7 @@ function App() {
               title={`${t("toolbar.lineProfile")} (L)`}
               aria-label={`${t("toolbar.lineProfile")} (L)`}
               aria-pressed={toolMode === "line-profile"}
-              className={`rounded px-2 py-1 text-sm transition-colors ${
+              className={`min-h-10 min-w-10 rounded px-2 py-1 text-sm transition-colors ${
                 toolMode === "line-profile"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -126,7 +127,7 @@ function App() {
               title={`${t("toolbar.roi")} (R)`}
               aria-label={`${t("toolbar.roi")} (R)`}
               aria-pressed={toolMode === "roi"}
-              className={`rounded px-2 py-1 text-sm transition-colors ${
+              className={`min-h-10 min-w-10 rounded px-2 py-1 text-sm transition-colors ${
                 toolMode === "roi"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -138,7 +139,7 @@ function App() {
           </>
         )}
         {hasImage && (
-          <span className="text-xs text-gray-400">
+          <span className="hidden text-xs text-gray-400 md:inline">
             {image.name} ({image.width}×{image.height})
           </span>
         )}
@@ -148,6 +149,13 @@ function App() {
           </span>
         )}
         <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => setIsSidebarOpen((v) => !v)}
+            className="min-h-10 min-w-10 rounded px-2 py-1 text-sm text-gray-400 hover:bg-gray-700 hover:text-white md:hidden"
+            aria-label="Toggle sidebar"
+          >
+            ☰
+          </button>
           <GitHubButton />
           <HelpButton onClick={() => setIsHelpOpen((v) => !v)} />
         </div>
@@ -179,7 +187,10 @@ function App() {
             <DropZone />
           )}
         </main>
-        <Sidebar>
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen((v) => !v)}
+        >
           <LineProfilePanel />
           <RoiStatsPanel />
           <PixelInfoPanel pixelInfo={pixelInfo} />

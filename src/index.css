@@ -4,4 +4,9 @@ html,
 body {
   overflow: hidden;
   height: 100%;
+  overscroll-behavior: none;
+}
+
+canvas {
+  touch-action: none;
 }
