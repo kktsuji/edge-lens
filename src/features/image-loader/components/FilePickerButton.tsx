@@ -50,7 +50,7 @@ export function FilePickerButton({
       >
         <span className="hidden sm:inline">{t("toolbar.open")}</span>
         <span className="sm:hidden" aria-hidden="true">
-          📂
+          ⊞
         </span>
       </button>
       <input

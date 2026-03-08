@@ -144,10 +144,8 @@ function App() {
           </span>
         )}
         {hasImage && (
-          <span className="text-xs text-gray-400">
-            <span className="hidden sm:inline">
-              {Math.round(viewport.zoom * 100)}%
-            </span>
+          <span className="hidden text-xs text-gray-400 sm:inline">
+            {Math.round(viewport.zoom * 100)}%
           </span>
         )}
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
