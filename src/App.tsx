@@ -101,7 +101,7 @@ function App() {
               title={`${t("toolbar.navigate")} (N)`}
               aria-label={`${t("toolbar.navigate")} (N)`}
               aria-pressed={toolMode === "navigate"}
-              className={`min-h-10 min-w-10 rounded px-2 py-1 text-sm transition-colors ${
+              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
                 toolMode === "navigate"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -114,7 +114,7 @@ function App() {
               title={`${t("toolbar.lineProfile")} (L)`}
               aria-label={`${t("toolbar.lineProfile")} (L)`}
               aria-pressed={toolMode === "line-profile"}
-              className={`min-h-10 min-w-10 rounded px-2 py-1 text-sm transition-colors ${
+              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
                 toolMode === "line-profile"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -127,7 +127,7 @@ function App() {
               title={`${t("toolbar.roi")} (R)`}
               aria-label={`${t("toolbar.roi")} (R)`}
               aria-pressed={toolMode === "roi"}
-              className={`min-h-10 min-w-10 rounded px-2 py-1 text-sm transition-colors ${
+              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
                 toolMode === "roi"
                   ? "bg-blue-600 text-white"
                   : "text-gray-400 hover:bg-gray-700 hover:text-white"
@@ -144,14 +144,14 @@ function App() {
           </span>
         )}
         {hasImage && (
-          <span className="text-xs text-gray-400">
+          <span className="hidden text-xs text-gray-400 sm:inline">
             {Math.round(viewport.zoom * 100)}%
           </span>
         )}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
           <button
             onClick={() => setIsSidebarOpen((v) => !v)}
-            className="min-h-10 min-w-10 rounded px-2 py-1 text-sm text-gray-400 hover:bg-gray-700 hover:text-white md:hidden"
+            className="min-h-8 min-w-8 rounded px-1 py-0.5 text-sm text-gray-400 hover:bg-gray-700 hover:text-white sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 md:hidden"
             aria-label="Toggle sidebar"
             aria-expanded={isSidebarOpen}
           >
