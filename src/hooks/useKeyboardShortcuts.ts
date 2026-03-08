@@ -245,7 +245,14 @@ export function useKeyboardShortcuts(
           ) => typeof cellVp,
         ) => {
           if (gs.positionLocked) {
-            updateAllCellViewports((prev) => newVp(prev, cw, ch));
+            updateAllCellViewports((prev, cid) => {
+              const el = document.querySelector(
+                `[data-cell-id="${cid}"] canvas`,
+              ) as HTMLCanvasElement | null;
+              const pcw = el?.clientWidth ?? cw;
+              const pch = el?.clientHeight ?? ch;
+              return newVp(prev, pcw, pch);
+            });
           } else {
             updateCellViewport(gs.activeCellId!, newVp(cellVp, cw, ch));
           }

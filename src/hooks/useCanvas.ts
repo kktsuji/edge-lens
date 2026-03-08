@@ -43,7 +43,7 @@ export function useCanvas(
 
     observer.observe(container);
     return () => observer.disconnect();
-  }, [canvasRef, image.imageBitmap, refitKey]);
+  }, [canvasRef, image.imageBitmap]);
 
   // Set smart initial viewport when a NEW image is loaded.
   // Only fires when the imageBitmap reference actually changes (not on

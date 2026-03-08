@@ -49,7 +49,9 @@ export interface GridActions {
   loadImageToCell: (cellId: string, file: File) => Promise<void>;
   closeCellImage: (cellId: string) => void;
   updateCellViewport: (cellId: string, viewport: ViewportState) => void;
-  updateAllCellViewports: (fn: (vp: ViewportState) => ViewportState) => void;
+  updateAllCellViewports: (
+    fn: (vp: ViewportState, cellId: string) => ViewportState,
+  ) => void;
   updateCellViewportsBatch: (updates: Map<string, ViewportState>) => void;
   setCellRoiSelection: (cellId: string, roi: RoiSelection | null) => void;
   setCellLineProfile: (cellId: string, lp: LineProfile | null) => void;
@@ -215,6 +217,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   // Fix #3, #7: read single-view state from refs, avoid state mutation
   const setGridEnabled = useCallback((enabled: boolean) => {
     const bitmapsToClose: ImageBitmap[] = [];
+    const restore: { cell: GridCellState | null } = { cell: null };
     setGridState((prev) => {
       if (enabled && !prev.enabled) {
         const layout =
@@ -246,14 +249,8 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         };
       }
       if (!enabled && prev.enabled) {
-        // Restore cell "0-0" to single view, collect other bitmaps to close
-        const firstCell = prev.cells.find((c) => c.id === "0-0");
-        if (firstCell?.image.imageBitmap) {
-          setImage(firstCell.image);
-          setViewport(firstCell.viewport);
-          setRoiSelection(firstCell.roiSelection);
-          setLineProfile(firstCell.lineProfile);
-        }
+        // Capture cell "0-0" for restoration after updater returns
+        restore.cell = prev.cells.find((c) => c.id === "0-0") ?? null;
         for (const cell of prev.cells) {
           if (cell.id !== "0-0" && cell.image.imageBitmap) {
             bitmapsToClose.push(cell.image.imageBitmap);
@@ -263,6 +260,13 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       }
       return prev;
     });
+    // Restore single-view state AFTER the updater returns
+    if (restore.cell?.image.imageBitmap) {
+      setImage(restore.cell.image);
+      setViewport(restore.cell.viewport);
+      setRoiSelection(restore.cell.roiSelection);
+      setLineProfile(restore.cell.lineProfile);
+    }
     for (const b of bitmapsToClose) b.close();
   }, []);
 
@@ -270,15 +274,10 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     // 1×1 means "return to single view"
     if (layout.rows === 1 && layout.cols === 1) {
       const bitmapsToClose: ImageBitmap[] = [];
+      const restore: { cell: GridCellState | null } = { cell: null };
       setGridState((prev) => {
         if (!prev.enabled) return prev;
-        const firstCell = prev.cells.find((c) => c.id === "0-0");
-        if (firstCell?.image.imageBitmap) {
-          setImage(firstCell.image);
-          setViewport(firstCell.viewport);
-          setRoiSelection(firstCell.roiSelection);
-          setLineProfile(firstCell.lineProfile);
-        }
+        restore.cell = prev.cells.find((c) => c.id === "0-0") ?? null;
         for (const cell of prev.cells) {
           if (cell.id !== "0-0" && cell.image.imageBitmap) {
             bitmapsToClose.push(cell.image.imageBitmap);
@@ -286,6 +285,13 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         }
         return { ...initialGridState };
       });
+      // Restore single-view state AFTER the updater returns
+      if (restore.cell?.image.imageBitmap) {
+        setImage(restore.cell.image);
+        setViewport(restore.cell.viewport);
+        setRoiSelection(restore.cell.roiSelection);
+        setLineProfile(restore.cell.lineProfile);
+      }
       for (const b of bitmapsToClose) b.close();
       setRefitKey((k) => k + 1);
       return;
@@ -420,12 +426,12 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   );
 
   const updateAllCellViewports = useCallback(
-    (fn: (vp: ViewportState) => ViewportState) => {
+    (fn: (vp: ViewportState, cellId: string) => ViewportState) => {
       setGridState((prev) => ({
         ...prev,
         cells: prev.cells.map((cell) => ({
           ...cell,
-          viewport: fn(cell.viewport),
+          viewport: fn(cell.viewport, cell.id),
         })),
       }));
     },

@@ -126,8 +126,13 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
         // Convert ROI from source cell's image coords to screen coords,
         // then map to each cell's image coords so overlays appear at the
         // same screen position across all cells.
-        const sourceVp = gs.cells.find((c) => c.id === cellId)?.viewport;
-        if (!sourceVp) {
+        const sourceCell = gs.cells.find((c) => c.id === cellId);
+        const sourceVp = sourceCell?.viewport;
+        if (
+          !sourceVp ||
+          !sourceCell?.image.width ||
+          !sourceCell?.image.height
+        ) {
           setCellRoiSelection(cellId, roi);
           return;
         }
@@ -171,8 +176,13 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
           setAllCellsLineProfile(null);
           return;
         }
-        const sourceVp = gs.cells.find((c) => c.id === cellId)?.viewport;
-        if (!sourceVp) {
+        const sourceCell = gs.cells.find((c) => c.id === cellId);
+        const sourceVp = sourceCell?.viewport;
+        if (
+          !sourceVp ||
+          !sourceCell?.image.width ||
+          !sourceCell?.image.height
+        ) {
           setCellLineProfile(cellId, lp);
           return;
         }
