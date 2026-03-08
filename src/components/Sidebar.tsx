@@ -12,6 +12,7 @@ export function Sidebar({ children, isOpen, onToggle }: SidebarProps) {
       {/* Backdrop overlay on mobile when sidebar is open */}
       {isOpen && (
         <button
+          type="button"
           className="fixed inset-0 z-30 bg-black/50 md:hidden"
           onClick={onToggle}
           aria-label="Close sidebar"

@@ -9,7 +9,7 @@ const TAP_DISTANCE_THRESHOLD = 5;
 export function usePixelInspector(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ): PixelInfo | null {
-  const { image, viewport } = useImageStore();
+  const { image, viewport, isTouchPinching } = useImageStore();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
 
@@ -62,7 +62,12 @@ export function usePixelInspector(
 
   const handlePointerUp = useCallback(
     (e: PointerEvent) => {
-      if (e.pointerType !== "touch" || !touchStartRef.current) return;
+      if (
+        e.pointerType !== "touch" ||
+        !touchStartRef.current ||
+        isTouchPinching
+      )
+        return;
       const dx = e.clientX - touchStartRef.current.x;
       const dy = e.clientY - touchStartRef.current.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -72,7 +77,7 @@ export function usePixelInspector(
         readPixel(e.clientX, e.clientY);
       }
     },
-    [readPixel],
+    [readPixel, isTouchPinching],
   );
 
   const handlePointerCancel = useCallback(() => {
