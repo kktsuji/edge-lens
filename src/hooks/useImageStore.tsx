@@ -24,6 +24,7 @@ export interface ImageStoreContextValue {
   roiSelection: RoiSelection | null;
   lineProfile: LineProfile | null;
   isTouchPinching: boolean;
+  refitKey: number;
   loadImage: (file: File) => Promise<void>;
   closeImage: () => void;
   setZoom: (zoom: number) => void;
@@ -78,6 +79,7 @@ const initialGridState: GridState = {
   cells: [],
   activeCellId: null,
   positionLocked: true,
+  layoutVersion: 0,
 };
 
 function createEmptyCell(id: string): GridCellState {
@@ -122,6 +124,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   const [lineProfile, setLineProfile] = useState<LineProfile | null>(null);
   const [isTouchPinching, setIsTouchPinching] = useState(false);
   const [gridState, setGridState] = useState<GridState>(initialGridState);
+  const [refitKey, setRefitKey] = useState(0);
 
   const loadImage = useCallback(async (file: File) => {
     const bitmap = await createImageBitmap(file);
@@ -246,6 +249,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
           }
           return { ...initialGridState };
         });
+        setRefitKey((k) => k + 1);
         return;
       }
 
@@ -277,7 +281,14 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
           prev.activeCellId && newIds.has(prev.activeCellId)
             ? prev.activeCellId
             : "0-0";
-        return { ...prev, layout, cells, enabled: true, activeCellId };
+        return {
+          ...prev,
+          layout,
+          cells,
+          enabled: true,
+          activeCellId,
+          layoutVersion: prev.layoutVersion + 1,
+        };
       });
     },
     [image, viewport, roiSelection, lineProfile],
@@ -456,6 +467,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         roiSelection,
         lineProfile,
         isTouchPinching,
+        refitKey,
         loadImage,
         closeImage,
         setZoom,

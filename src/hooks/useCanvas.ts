@@ -5,13 +5,13 @@ import { useImageStore } from "./useImageStore";
 export function useCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  const { image, viewport, setViewportLocal } = useImageStore();
+  const { image, viewport, setViewportLocal, refitKey } = useImageStore();
   const rafRef = useRef<number>(0);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   // Track which imageBitmap we last computed the initial viewport for,
   // so we only reset viewport on actual image changes — not container resizes.
-  const lastFittedBitmapRef = useRef<ImageBitmap | null>(image.imageBitmap);
+  const lastFittedBitmapRef = useRef<ImageBitmap | null>(null);
 
   // Track container size via ResizeObserver.
   // Depends on image.imageBitmap so the effect re-runs when the canvas
@@ -43,7 +43,7 @@ export function useCanvas(
 
     observer.observe(container);
     return () => observer.disconnect();
-  }, [canvasRef, image.imageBitmap]);
+  }, [canvasRef, image.imageBitmap, refitKey]);
 
   // Set smart initial viewport when a NEW image is loaded.
   // Only fires when the imageBitmap reference actually changes (not on
@@ -65,6 +65,41 @@ export function useCanvas(
     image.height,
     containerSize.width,
     containerSize.height,
+    setViewportLocal,
+  ]);
+
+  // Re-fit viewport when grid layout changes (refitKey increments).
+  const prevRefitKeyRef = useRef(refitKey);
+  useEffect(() => {
+    if (refitKey === prevRefitKeyRef.current) return;
+    prevRefitKeyRef.current = refitKey;
+
+    if (!image.imageBitmap) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const container = canvas.parentElement;
+    if (!container) return;
+
+    const rafId = requestAnimationFrame(() => {
+      const rect = container.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      setViewportLocal(
+        computeInitialViewport(
+          image.width,
+          image.height,
+          rect.width,
+          rect.height,
+        ),
+      );
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, [
+    refitKey,
+    image.imageBitmap,
+    image.width,
+    image.height,
+    canvasRef,
     setViewportLocal,
   ]);
 

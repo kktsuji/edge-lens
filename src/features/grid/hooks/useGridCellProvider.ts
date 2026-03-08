@@ -212,6 +212,7 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
     roiSelection,
     lineProfile,
     isTouchPinching: globalStore.isTouchPinching,
+    refitKey: gridState.layoutVersion,
     loadImage,
     closeImage,
     setZoom,

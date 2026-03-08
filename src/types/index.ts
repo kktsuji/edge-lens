@@ -78,6 +78,7 @@ export interface GridState {
   cells: GridCellState[];
   activeCellId: string | null;
   positionLocked: boolean;
+  layoutVersion: number;
 }
 
 export interface ExifData {
