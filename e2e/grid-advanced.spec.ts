@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
-import { drawOnCanvas, openGridMode, switchToolMode } from "./helpers.js";
+import {
+  drawOnCanvas,
+  loadTestImage,
+  openGridMode,
+  switchToolMode,
+} from "./helpers.js";
 
 const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
 
@@ -66,6 +71,41 @@ test.describe("Grid Advanced", () => {
     await dropdown.getByRole("button", { name: "OK" }).click();
 
     await expect(page.locator("[data-cell-id]")).toHaveCount(9);
+  });
+
+  test("single view image transfers to grid cell [1,1]", async ({ page }) => {
+    // Load image in single view
+    await loadTestImage(page, FIXTURE);
+    await expect(page.locator("#main-content canvas")).toBeVisible();
+    await expect(page.getByText("test-2x2.png")).toBeVisible();
+
+    // Switch to grid mode
+    await openGridMode(page);
+
+    // First cell should have a visible canvas with the transferred image
+    const firstCell = page.locator("[data-cell-id]").first();
+    await expect(firstCell.locator("canvas")).toBeVisible();
+  });
+
+  test("grid cell [1,1] image transfers to single view", async ({ page }) => {
+    // Load image in single view first
+    await loadTestImage(page, FIXTURE);
+    await expect(page.locator("#main-content canvas")).toBeVisible();
+
+    // Enter grid mode (transfers image to cell 0-0)
+    await openGridMode(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await expect(firstCell.locator("canvas")).toBeVisible();
+
+    // Exit grid mode via G key (toggles grid off, restores cell 0-0 to single view)
+    await page.keyboard.press("g");
+
+    // Grid cells should be gone
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+
+    // Single view canvas should be visible with the transferred image
+    await expect(page.locator("#main-content canvas")).toBeVisible();
+    await expect(page.getByText("test-2x2.png")).toBeVisible();
   });
 
   test("Escape exits grid mode", async ({ page }) => {
