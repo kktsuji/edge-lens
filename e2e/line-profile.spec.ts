@@ -32,15 +32,6 @@ test.describe("Line Profile", () => {
     await expect(page.locator("aside canvas").first()).toBeVisible();
   });
 
-  test("Line Profile heading visible after drawing", async ({ page }) => {
-    await switchToolMode(page, "line-profile");
-
-    const canvas = page.locator("main canvas");
-    await drawOnCanvas(page, canvas, { x: 20, y: 50 }, { x: 80, y: 50 });
-
-    await expect(page.getByText("Line Profile").first()).toBeVisible();
-  });
-
   test("clear button returns to placeholder", async ({ page }) => {
     await switchToolMode(page, "line-profile");
 

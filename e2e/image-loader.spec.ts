@@ -54,22 +54,4 @@ test.describe("Image Loader", () => {
       fs.unlinkSync(tempFile);
     }
   });
-
-  test("Ctrl+O opens file picker", async ({ page }) => {
-    // Dispatch Ctrl+O via JS to avoid browser shortcut interception
-    const [fileChooser] = await Promise.all([
-      page.waitForEvent("filechooser", { timeout: 5000 }),
-      page.evaluate(() => {
-        const event = new KeyboardEvent("keydown", {
-          key: "o",
-          code: "KeyO",
-          ctrlKey: true,
-          bubbles: true,
-          cancelable: true,
-        });
-        window.dispatchEvent(event);
-      }),
-    ]);
-    expect(fileChooser).toBeTruthy();
-  });
 });

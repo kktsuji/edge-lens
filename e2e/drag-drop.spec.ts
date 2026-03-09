@@ -91,7 +91,8 @@ test.describe("Drag and Drop", () => {
       );
     });
 
-    // The canvas should still be visible (image replaced)
+    // The replaced image should be visible with its filename
     await expect(page.locator("main canvas")).toBeVisible();
+    await expect(page.getByText("replaced.png")).toBeVisible();
   });
 });

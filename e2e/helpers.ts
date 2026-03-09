@@ -75,13 +75,18 @@ export async function openGridMode(page: Page): Promise<void> {
 }
 
 /**
- * Reads the zoom percentage text from the toolbar.
+ * Reads the zoom percentage text from the toolbar as a number.
  */
 export async function getZoomPercent(page: Page): Promise<number> {
-  const zoomText = await page
-    .locator("span")
-    .filter({ hasText: /^\d+%$/ })
-    .textContent();
-  if (!zoomText) throw new Error("Zoom percentage text not found");
-  return parseInt(zoomText.replace("%", ""), 10);
+  const text = await getZoomText(page);
+  return parseInt(text.replace("%", ""), 10);
+}
+
+/**
+ * Reads the zoom span text (e.g. "500%"), waiting for it to be visible.
+ */
+export async function getZoomText(page: Page): Promise<string> {
+  const span = page.locator("span").filter({ hasText: /^\d+%$/ });
+  await expect(span).toBeVisible();
+  return (await span.textContent())!;
 }

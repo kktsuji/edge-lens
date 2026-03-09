@@ -2,19 +2,13 @@ import { test, expect } from "@playwright/test";
 import path from "path";
 import {
   drawOnCanvas,
+  getZoomText,
   loadTestImage,
   openGridMode,
   switchToolMode,
 } from "./helpers.js";
 
 const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
-
-/** Read zoom span text, waiting for it to be visible. */
-async function readZoomText(page: import("@playwright/test").Page) {
-  const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-  await expect(span).toBeVisible();
-  return (await span.textContent())!;
-}
 
 /**
  * Helper to load an image into the first grid cell.
@@ -239,7 +233,7 @@ test.describe("Grid Advanced", () => {
     await expect(page.locator("[data-cell-id]")).toHaveCount(0);
     await expect(page.locator("main canvas")).toBeVisible();
 
-    const initialText = await readZoomText(page);
+    const initialText = await getZoomText(page);
     await page.keyboard.press("+");
 
     const span = page.locator("span").filter({ hasText: /^\d+%$/ });
@@ -358,6 +352,15 @@ test.describe("Grid Advanced", () => {
     await loadImageIntoFirstCell(page);
     await loadImageIntoSecondCell(page);
 
+    // Ensure position lock is enabled (aria-pressed="true" means locked)
+    const lockToggle = page.getByRole("button", {
+      name: /Lock Position|Unlock Position/,
+    });
+    if ((await lockToggle.getAttribute("aria-pressed")) !== "true") {
+      await page.keyboard.press("k");
+    }
+    await expect(lockToggle).toHaveAttribute("aria-pressed", "true");
+
     const cell0 = page.locator("[data-cell-id]").first();
     const cell1 = page.locator("[data-cell-id]").nth(1);
     await cell0.click();
@@ -376,12 +379,20 @@ test.describe("Grid Advanced", () => {
     await loadImageIntoFirstCell(page);
     await loadImageIntoSecondCell(page);
 
-    // Disable position lock
-    await page.keyboard.press("k");
+    // Ensure position lock is disabled (aria-pressed="false" means unlocked)
+    const lockToggle = page.getByRole("button", {
+      name: /Lock Position|Unlock Position/,
+    });
+    if ((await lockToggle.getAttribute("aria-pressed")) !== "false") {
+      await page.keyboard.press("k");
+    }
+    await expect(lockToggle).toHaveAttribute("aria-pressed", "false");
 
     const cell0 = page.locator("[data-cell-id]").first();
     const cell1 = page.locator("[data-cell-id]").nth(1);
     await cell0.click();
+    // Wait for cell0 to become active before zooming
+    await expect(cell0).toHaveClass(/ring-blue-500/);
 
     const zoom0Before = await cell0.getAttribute("data-zoom");
     const zoom1Before = await cell1.getAttribute("data-zoom");

@@ -1,15 +1,8 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
-import { loadTestImage } from "./helpers.js";
+import { getZoomText, loadTestImage } from "./helpers.js";
 
 const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
-
-/** Read zoom span text, waiting for it to be visible. */
-async function readZoomText(page: import("@playwright/test").Page) {
-  const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-  await expect(span).toBeVisible();
-  return (await span.textContent())!;
-}
 
 test.describe("Zoom", () => {
   test.beforeEach(async ({ page }) => {
@@ -22,7 +15,7 @@ test.describe("Zoom", () => {
   });
 
   test("zoom in with + key", async ({ page }) => {
-    const initialText = await readZoomText(page);
+    const initialText = await getZoomText(page);
 
     await page.keyboard.press("+");
 
@@ -32,7 +25,7 @@ test.describe("Zoom", () => {
   });
 
   test("zoom out with - key", async ({ page }) => {
-    const initialText = await readZoomText(page);
+    const initialText = await getZoomText(page);
 
     await page.keyboard.press("-");
 
@@ -43,12 +36,12 @@ test.describe("Zoom", () => {
 
   test("fit to screen with 0 key", async ({ page }) => {
     // Zoom in first to change from default
-    const initialText = await readZoomText(page);
+    const initialText = await getZoomText(page);
     await page.keyboard.press("+");
     const span = page.locator("span").filter({ hasText: /^\d+%$/ });
     await expect(span).not.toHaveText(initialText);
 
-    const zoomedText = await readZoomText(page);
+    const zoomedText = await getZoomText(page);
 
     // Fit to screen
     await page.keyboard.press("0");

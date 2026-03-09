@@ -18,8 +18,6 @@ test.describe("Pixel Inspector", () => {
 
   test("shows RGBA values on hover over canvas", async ({ page }) => {
     const canvas = page.locator("main canvas");
-    const box = await canvas.boundingBox();
-    if (!box) throw new Error("Canvas not found");
 
     // Hover at center of canvas — image is always centered here
     await canvas.hover();
