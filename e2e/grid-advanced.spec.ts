@@ -28,6 +28,18 @@ async function loadImageIntoFirstCell(page: import("@playwright/test").Page) {
   await expect(firstCell.locator("canvas")).toBeVisible();
 }
 
+/**
+ * Helper to load an image into the second grid cell.
+ */
+async function loadImageIntoSecondCell(page: import("@playwright/test").Page) {
+  const secondCell = page.locator("[data-cell-id]").nth(1);
+  const fileChooserPromise = page.waitForEvent("filechooser");
+  await secondCell.getByRole("button", { name: "Open Image" }).click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles(FIXTURE);
+  await expect(secondCell.locator("canvas")).toBeVisible();
+}
+
 test.describe("Grid Advanced", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -266,5 +278,232 @@ test.describe("Grid Advanced", () => {
     await drawOnCanvas(page, canvas, { x: 20, y: 50 }, { x: 80, y: 50 });
 
     await expect(page.getByText("Line Profile").first()).toBeVisible();
+  });
+
+  // --- Sidebar Panels in Grid Mode ---
+
+  test("pixel inspector shows info on hover in grid cell", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    const canvas = firstCell.locator("canvas");
+    await canvas.hover();
+
+    await expect(page.getByText("Position (y, x)")).toBeVisible();
+    await expect(page.getByText("Color")).toBeVisible();
+  });
+
+  test("histogram chart visible in grid cell with image", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    await expect(
+      page.locator('canvas[aria-label="Image color histogram"]'),
+    ).toBeVisible();
+  });
+
+  test("image stats visible in grid cell with image", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    await expect(page.getByText("Image Stats")).toBeVisible();
+  });
+
+  test("EXIF panel shows no data for PNG in grid cell", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    await expect(page.getByText("No EXIF data found.")).toBeVisible();
+  });
+
+  test("all sidebar panels visible in grid mode with image", async ({
+    page,
+  }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    await expect(page.getByText("Histogram")).toBeVisible();
+    await expect(page.getByText("Image Stats")).toBeVisible();
+    await expect(page.getByText("Pixel Inspector")).toBeVisible();
+    await expect(page.getByText("EXIF Metadata")).toBeVisible();
+  });
+
+  // --- Grid Interaction Features ---
+
+  test("active cell indicator updates when switching cells", async ({
+    page,
+  }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    await loadImageIntoSecondCell(page);
+
+    const secondCell = page.locator("[data-cell-id]").nth(1);
+    await secondCell.click();
+
+    await expect(page.getByText(/Cell \[1, 2\]/)).toBeVisible();
+  });
+
+  test("position lock synchronizes zoom across cells", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    await loadImageIntoSecondCell(page);
+
+    const cell0 = page.locator("[data-cell-id]").first();
+    const cell1 = page.locator("[data-cell-id]").nth(1);
+    await cell0.click();
+
+    const zoom0Before = await cell0.getAttribute("data-zoom");
+    const zoom1Before = await cell1.getAttribute("data-zoom");
+
+    await page.keyboard.press("+");
+
+    await expect(cell0).not.toHaveAttribute("data-zoom", zoom0Before!);
+    await expect(cell1).not.toHaveAttribute("data-zoom", zoom1Before!);
+  });
+
+  test("position lock disabled only zooms active cell", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    await loadImageIntoSecondCell(page);
+
+    // Disable position lock
+    await page.keyboard.press("k");
+
+    const cell0 = page.locator("[data-cell-id]").first();
+    const cell1 = page.locator("[data-cell-id]").nth(1);
+    await cell0.click();
+
+    const zoom0Before = await cell0.getAttribute("data-zoom");
+    const zoom1Before = await cell1.getAttribute("data-zoom");
+
+    await page.keyboard.press("+");
+
+    await expect(cell0).not.toHaveAttribute("data-zoom", zoom0Before!);
+    await expect(cell1).toHaveAttribute("data-zoom", zoom1Before!);
+  });
+
+  // --- Sidebar After Single-to-Grid Transition ---
+
+  test("pixel inspector works after single-to-grid transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    const canvas = firstCell.locator("canvas");
+    await canvas.hover();
+
+    await expect(page.getByText("Position (y, x)")).toBeVisible();
+    await expect(page.getByText("Color")).toBeVisible();
+  });
+
+  test("histogram works after single-to-grid transition", async ({ page }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    await expect(
+      page.locator('canvas[aria-label="Image color histogram"]'),
+    ).toBeVisible();
+  });
+
+  test("image stats works after single-to-grid transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    await expect(page.getByText("Image Stats")).toBeVisible();
+  });
+
+  test("all sidebar panels visible after single-to-grid transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    const firstCell = page.locator("[data-cell-id]").first();
+    await firstCell.click();
+
+    await expect(page.getByText("Histogram")).toBeVisible();
+    await expect(page.getByText("Image Stats")).toBeVisible();
+    await expect(page.getByText("Pixel Inspector")).toBeVisible();
+    await expect(page.getByText("EXIF Metadata")).toBeVisible();
+  });
+
+  // --- Sidebar After Grid-to-Single Transition ---
+
+  test("pixel inspector works after grid-to-single transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+
+    const canvas = page.locator("main canvas");
+    await expect(canvas).toBeVisible();
+    await expect(page.getByText("test-2x2.png")).toBeVisible();
+
+    // Fit image to screen so the tiny 2x2 image is large enough to hover on
+    await page.keyboard.press("0");
+    await page.mouse.move(0, 0);
+    await canvas.hover();
+
+    await expect(page.getByText("Position (y, x)")).toBeVisible();
+    await expect(page.getByText("Color")).toBeVisible();
+  });
+
+  test("histogram works after grid-to-single transition", async ({ page }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+    await expect(page.locator("#main-content canvas")).toBeVisible();
+
+    await expect(
+      page.locator('canvas[aria-label="Image color histogram"]'),
+    ).toBeVisible();
+  });
+
+  test("image stats works after grid-to-single transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+    await expect(page.locator("#main-content canvas")).toBeVisible();
+
+    await expect(page.getByText("Image Stats")).toBeVisible();
+  });
+
+  test("all sidebar panels visible after grid-to-single transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+    await expect(page.locator("#main-content canvas")).toBeVisible();
+
+    await expect(page.getByText("Histogram")).toBeVisible();
+    await expect(page.getByText("Image Stats")).toBeVisible();
+    await expect(page.getByText("Pixel Inspector")).toBeVisible();
+    await expect(page.getByText("EXIF Metadata")).toBeVisible();
   });
 });
