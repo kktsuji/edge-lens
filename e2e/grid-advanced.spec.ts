@@ -140,6 +140,7 @@ test.describe("Grid Advanced", () => {
     await cell.click();
 
     const initialZoom = await cell.getAttribute("data-zoom");
+    expect(initialZoom).not.toBeNull();
     await page.keyboard.press("+");
 
     await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
@@ -152,6 +153,7 @@ test.describe("Grid Advanced", () => {
     await cell.click();
 
     const initialZoom = await cell.getAttribute("data-zoom");
+    expect(initialZoom).not.toBeNull();
     await page.keyboard.press("-");
 
     await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
@@ -176,10 +178,12 @@ test.describe("Grid Advanced", () => {
 
     // Zoom in first to change from default
     const initialZoom = await cell.getAttribute("data-zoom");
+    expect(initialZoom).not.toBeNull();
     await page.keyboard.press("+");
     await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
 
     const zoomedValue = await cell.getAttribute("data-zoom");
+    expect(zoomedValue).not.toBeNull();
     await page.keyboard.press("0");
     await expect(cell).not.toHaveAttribute("data-zoom", zoomedValue!);
   });
@@ -193,6 +197,7 @@ test.describe("Grid Advanced", () => {
     await cell.click();
 
     const initialZoom = await cell.getAttribute("data-zoom");
+    expect(initialZoom).not.toBeNull();
     await page.keyboard.press("+");
 
     await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
@@ -367,6 +372,8 @@ test.describe("Grid Advanced", () => {
 
     const zoom0Before = await cell0.getAttribute("data-zoom");
     const zoom1Before = await cell1.getAttribute("data-zoom");
+    expect(zoom0Before).not.toBeNull();
+    expect(zoom1Before).not.toBeNull();
 
     await page.keyboard.press("+");
 
@@ -392,10 +399,12 @@ test.describe("Grid Advanced", () => {
     const cell1 = page.locator("[data-cell-id]").nth(1);
     await cell0.click();
     // Wait for cell0 to become active before zooming
-    await expect(cell0).toHaveClass(/ring-blue-500/);
+    await expect(cell0).toHaveAttribute("data-active", "true");
 
     const zoom0Before = await cell0.getAttribute("data-zoom");
     const zoom1Before = await cell1.getAttribute("data-zoom");
+    expect(zoom0Before).not.toBeNull();
+    expect(zoom1Before).not.toBeNull();
 
     await page.keyboard.press("+");
 

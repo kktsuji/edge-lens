@@ -89,6 +89,7 @@ test.describe("Keyboard Shortcuts", () => {
     await expect(zoomSpan).not.toHaveText("100%");
 
     const zoomedInText = await zoomSpan.textContent();
+    expect(zoomedInText).not.toBeNull();
 
     // Zoom out
     await page.keyboard.press("-");

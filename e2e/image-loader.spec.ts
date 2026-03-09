@@ -35,18 +35,15 @@ test.describe("Image Loader", () => {
       .click();
     const fileChooser = await fileChooserPromise;
 
-    // Use page.evaluate to set a file with unsupported MIME type
-    // The file chooser accepts only image/jpeg,image/png
-    // We'll create a temporary file programmatically
-    const tempFile = path.resolve(
-      import.meta.dirname,
-      "fixtures/test-unsupported.txt",
-    );
+    const os = await import("os");
     const fs = await import("fs");
+    const tempFile = path.join(
+      os.tmpdir(),
+      `test-unsupported-${process.pid}-${Date.now()}.txt`,
+    );
     fs.writeFileSync(tempFile, "not an image");
     try {
       await fileChooser.setFiles(tempFile);
-      // The error message should appear
       await expect(
         page.getByText("Unsupported format. Please use JPEG or PNG."),
       ).toBeVisible();

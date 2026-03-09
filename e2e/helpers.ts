@@ -88,5 +88,7 @@ export async function getZoomPercent(page: Page): Promise<number> {
 export async function getZoomText(page: Page): Promise<string> {
   const span = page.locator("span").filter({ hasText: /^\d+%$/ });
   await expect(span).toBeVisible();
-  return (await span.textContent())!;
+  const text = await span.textContent();
+  if (text === null) throw new Error("Zoom span has no text content");
+  return text;
 }

@@ -90,6 +90,7 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
     <div
       data-cell-id={cellId}
       data-zoom={Math.round(viewport.zoom * 100)}
+      data-active={isActive}
       className={`relative h-full w-full overflow-hidden ${
         isActive ? "ring-2 ring-blue-500" : ""
       }`}
