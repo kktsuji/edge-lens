@@ -25,4 +25,51 @@ test.describe("Image Loader", () => {
     await page.getByRole("button", { name: "Close Image" }).click();
     await expect(page.getByText("Drop an image here")).toBeVisible();
   });
+
+  test("rejects unsupported file format", async ({ page }) => {
+    // Create a temporary text file to simulate unsupported format
+    const fileChooserPromise = page.waitForEvent("filechooser");
+    await page
+      .locator("#main-content")
+      .getByRole("button", { name: "Open Image" })
+      .click();
+    const fileChooser = await fileChooserPromise;
+
+    // Use page.evaluate to set a file with unsupported MIME type
+    // The file chooser accepts only image/jpeg,image/png
+    // We'll create a temporary file programmatically
+    const tempFile = path.resolve(
+      import.meta.dirname,
+      "fixtures/test-unsupported.txt",
+    );
+    const fs = await import("fs");
+    fs.writeFileSync(tempFile, "not an image");
+    try {
+      await fileChooser.setFiles(tempFile);
+      // The error message should appear
+      await expect(
+        page.getByText("Unsupported format. Please use JPEG or PNG."),
+      ).toBeVisible();
+    } finally {
+      fs.unlinkSync(tempFile);
+    }
+  });
+
+  test("Ctrl+O opens file picker", async ({ page }) => {
+    // Dispatch Ctrl+O via JS to avoid browser shortcut interception
+    const [fileChooser] = await Promise.all([
+      page.waitForEvent("filechooser", { timeout: 5000 }),
+      page.evaluate(() => {
+        const event = new KeyboardEvent("keydown", {
+          key: "o",
+          code: "KeyO",
+          ctrlKey: true,
+          bubbles: true,
+          cancelable: true,
+        });
+        window.dispatchEvent(event);
+      }),
+    ]);
+    expect(fileChooser).toBeTruthy();
+  });
 });

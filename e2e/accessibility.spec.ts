@@ -31,4 +31,37 @@ test.describe("Accessibility", () => {
     );
     expect(critical).toHaveLength(0);
   });
+
+  test("no critical violations in grid mode", async ({ page }) => {
+    await page.goto("/");
+
+    // G key directly enables grid mode (default layout)
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]").first()).toBeVisible();
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa"])
+      .analyze();
+
+    const critical = results.violations.filter(
+      (v) => v.impact === "critical" || v.impact === "serious",
+    );
+    expect(critical).toHaveLength(0);
+  });
+
+  test("no critical violations with help dialog open", async ({ page }) => {
+    await page.goto("/");
+
+    await page.keyboard.press("?");
+    await expect(page.getByRole("dialog")).toBeVisible();
+
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa"])
+      .analyze();
+
+    const critical = results.violations.filter(
+      (v) => v.impact === "critical" || v.impact === "serious",
+    );
+    expect(critical).toHaveLength(0);
+  });
 });
