@@ -9,6 +9,13 @@ import {
 
 const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
 
+/** Read zoom span text, waiting for it to be visible. */
+async function readZoomText(page: import("@playwright/test").Page) {
+  const span = page.locator("span").filter({ hasText: /^\d+%$/ });
+  await expect(span).toBeVisible();
+  return (await span.textContent())!;
+}
+
 /**
  * Helper to load an image into the first grid cell.
  */
@@ -116,5 +123,148 @@ test.describe("Grid Advanced", () => {
     // Navigate mode is default, so Escape should exit grid
     await page.keyboard.press("Escape");
     await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+  });
+
+  // --- Zoom/Pan in Grid Cell ---
+
+  test("zoom in with + key works in grid cell", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const cell = page.locator("[data-cell-id]").first();
+    await cell.click();
+
+    const initialZoom = await cell.getAttribute("data-zoom");
+    await page.keyboard.press("+");
+
+    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+  });
+
+  test("zoom out with - key works in grid cell", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const cell = page.locator("[data-cell-id]").first();
+    await cell.click();
+
+    const initialZoom = await cell.getAttribute("data-zoom");
+    await page.keyboard.press("-");
+
+    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+  });
+
+  test("actual size (100%) with 1 key works in grid cell", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const cell = page.locator("[data-cell-id]").first();
+    await cell.click();
+
+    await page.keyboard.press("1");
+
+    await expect(cell).toHaveAttribute("data-zoom", "100");
+  });
+
+  test("fit to screen with 0 key works in grid cell", async ({ page }) => {
+    await openGridMode(page);
+    await loadImageIntoFirstCell(page);
+    const cell = page.locator("[data-cell-id]").first();
+    await cell.click();
+
+    // Zoom in first to change from default
+    const initialZoom = await cell.getAttribute("data-zoom");
+    await page.keyboard.press("+");
+    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+
+    const zoomedValue = await cell.getAttribute("data-zoom");
+    await page.keyboard.press("0");
+    await expect(cell).not.toHaveAttribute("data-zoom", zoomedValue!);
+  });
+
+  // --- Tools Work After Single-to-Grid Transition ---
+
+  test("zoom works after single-to-grid transition", async ({ page }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    const cell = page.locator("[data-cell-id]").first();
+    await cell.click();
+
+    const initialZoom = await cell.getAttribute("data-zoom");
+    await page.keyboard.press("+");
+
+    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+  });
+
+  test("ROI works after single-to-grid transition", async ({ page }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.locator("[data-cell-id]").first().click();
+
+    await switchToolMode(page, "roi");
+    const canvas = page.locator("[data-cell-id] canvas").first();
+    await drawOnCanvas(page, canvas, { x: 20, y: 20 }, { x: 80, y: 80 });
+
+    await expect(page.getByText("ROI Statistics")).toBeVisible();
+  });
+
+  test("line profile works after single-to-grid transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.locator("[data-cell-id]").first().click();
+
+    await switchToolMode(page, "line-profile");
+    const canvas = page.locator("[data-cell-id] canvas").first();
+    await drawOnCanvas(page, canvas, { x: 20, y: 50 }, { x: 80, y: 50 });
+
+    await expect(page.getByText("Line Profile").first()).toBeVisible();
+  });
+
+  // --- Tools Work After Grid-to-Single Transition ---
+
+  test("zoom works after grid-to-single transition", async ({ page }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+    await expect(page.locator("main canvas")).toBeVisible();
+
+    const initialText = await readZoomText(page);
+    await page.keyboard.press("+");
+
+    const span = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(span).not.toHaveText(initialText);
+  });
+
+  test("ROI works after grid-to-single transition", async ({ page }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+
+    const canvas = page.locator("#main-content canvas");
+    await expect(canvas).toBeVisible();
+    await expect(page.getByText("test-2x2.png")).toBeVisible();
+
+    await switchToolMode(page, "roi");
+    await drawOnCanvas(page, canvas, { x: 20, y: 20 }, { x: 80, y: 80 });
+
+    await expect(page.getByText("ROI Statistics")).toBeVisible();
+  });
+
+  test("line profile works after grid-to-single transition", async ({
+    page,
+  }) => {
+    await loadTestImage(page, FIXTURE);
+    await openGridMode(page);
+    await page.keyboard.press("g");
+    await expect(page.locator("[data-cell-id]")).toHaveCount(0);
+
+    const canvas = page.locator("#main-content canvas");
+    await expect(canvas).toBeVisible();
+    await expect(page.getByText("test-2x2.png")).toBeVisible();
+
+    await switchToolMode(page, "line-profile");
+    await drawOnCanvas(page, canvas, { x: 20, y: 50 }, { x: 80, y: 50 });
+
+    await expect(page.getByText("Line Profile").first()).toBeVisible();
   });
 });

@@ -5,8 +5,14 @@ import { screenToImage } from "../../../utils/coordinates";
 export function useRoiSelection(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  const { toolMode, viewport, image, isTouchPinching, setRoiSelection } =
-    useImageStore();
+  const {
+    toolMode,
+    viewport,
+    image,
+    isTouchPinching,
+    refitKey,
+    setRoiSelection,
+  } = useImageStore();
 
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
@@ -97,5 +103,5 @@ export function useRoiSelection(
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
     };
-  }, [canvasRef, setRoiSelection, image.imageBitmap]);
+  }, [canvasRef, setRoiSelection, image.imageBitmap, refitKey]);
 }

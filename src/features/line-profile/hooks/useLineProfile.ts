@@ -5,8 +5,14 @@ import { clipLineToRect, screenToImage } from "../../../utils/coordinates";
 export function useLineProfile(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
-  const { toolMode, viewport, image, isTouchPinching, setLineProfile } =
-    useImageStore();
+  const {
+    toolMode,
+    viewport,
+    image,
+    isTouchPinching,
+    refitKey,
+    setLineProfile,
+  } = useImageStore();
 
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
@@ -111,5 +117,12 @@ export function useLineProfile(
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
     };
-  }, [canvasRef, setLineProfile, image.imageBitmap, image.width, image.height]);
+  }, [
+    canvasRef,
+    setLineProfile,
+    image.imageBitmap,
+    image.width,
+    image.height,
+    refitKey,
+  ]);
 }
