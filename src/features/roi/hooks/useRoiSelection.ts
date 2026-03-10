@@ -103,5 +103,8 @@ export function useRoiSelection(
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
     };
+    // refitKey forces listener re-registration when the canvas DOM element
+    // changes (e.g. grid↔single transitions). canvasRef identity is stable so
+    // it alone cannot trigger re-attachment.
   }, [canvasRef, setRoiSelection, image.imageBitmap, refitKey]);
 }

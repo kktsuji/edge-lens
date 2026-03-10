@@ -109,6 +109,9 @@ export function usePixelInspector(
     handlePointerUp,
     handlePointerCancel,
     image.imageData,
+    // refitKey forces listener re-registration when the canvas DOM element
+    // changes (e.g. grid↔single transitions). canvasRef identity is stable so
+    // it alone cannot trigger re-attachment.
     refitKey,
   ]);
 

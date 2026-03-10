@@ -1,6 +1,11 @@
 import path from "node:path";
 import { expect, type Locator, type Page } from "@playwright/test";
 
+export const FIXTURE = path.resolve(
+  import.meta.dirname,
+  "fixtures/test-2x2.png",
+);
+
 /**
  * Opens an image file via the file picker in #main-content and waits for it to load.
  */
@@ -27,7 +32,7 @@ export async function switchToolMode(
   page: Page,
   mode: "navigate" | "roi" | "line-profile",
 ): Promise<void> {
-  const labels: Record<string, string> = {
+  const labels: Record<"navigate" | "roi" | "line-profile", string> = {
     navigate: "Navigate (N)",
     roi: "ROI Selection (R)",
     "line-profile": "Line Profile (L)",
@@ -75,20 +80,36 @@ export async function openGridMode(page: Page): Promise<void> {
 }
 
 /**
- * Reads the zoom percentage text from the toolbar as a number.
+ * Loads an image into a grid cell by index (0-based).
  */
-export async function getZoomPercent(page: Page): Promise<number> {
-  const text = await getZoomText(page);
-  return parseInt(text.replace("%", ""), 10);
+export async function loadImageIntoGridCell(
+  page: Page,
+  cellIndex: number,
+): Promise<void> {
+  const cell = page.locator("[data-cell-id]").nth(cellIndex);
+  const fileChooserPromise = page.waitForEvent("filechooser");
+  await cell.getByRole("button", { name: "Open Image" }).click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles(FIXTURE);
+  await expect(cell.locator("canvas")).toBeVisible();
 }
 
 /**
- * Reads the zoom span text (e.g. "500%"), waiting for it to be visible.
+ * Reads the zoom percentage from the toolbar as a number.
  */
-export async function getZoomText(page: Page): Promise<string> {
+export async function getZoomPercent(page: Page): Promise<number> {
   const span = page.locator("span").filter({ hasText: /^\d+%$/ });
   await expect(span).toBeVisible();
   const text = await span.textContent();
   if (text === null) throw new Error("Zoom span has no text content");
-  return text;
+  return parseInt(text.replace("%", ""), 10);
+}
+
+/**
+ * Reads the data-zoom attribute from a grid cell as a number.
+ */
+export async function getCellZoom(cell: Locator): Promise<number> {
+  const val = await cell.getAttribute("data-zoom");
+  if (val === null) throw new Error("data-zoom attribute not found");
+  return parseInt(val, 10);
 }

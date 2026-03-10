@@ -1,9 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
-import path from "path";
-import { loadTestImage } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
+import { FIXTURE, loadTestImage } from "./helpers.js";
 
 test.describe("Accessibility", () => {
   test("no critical violations on empty state", async ({ page }) => {

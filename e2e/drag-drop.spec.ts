@@ -1,8 +1,5 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
-import { loadTestImage } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
+import { FIXTURE, loadTestImage } from "./helpers.js";
 
 test.describe("Drag and Drop", () => {
   test.beforeEach(async ({ page }) => {
@@ -94,5 +91,7 @@ test.describe("Drag and Drop", () => {
     // The replaced image should be visible with its filename
     await expect(page.locator("main canvas")).toBeVisible();
     await expect(page.getByText("replaced.png")).toBeVisible();
+    // Original image filename should no longer be displayed
+    await expect(page.getByText("test-2x2.png")).toBeHidden();
   });
 });

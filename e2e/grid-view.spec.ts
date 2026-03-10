@@ -1,8 +1,5 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
-import { openGridMode } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
+import { FIXTURE, openGridMode } from "./helpers.js";
 
 test.describe("Grid View", () => {
   test.beforeEach(async ({ page }) => {
@@ -89,6 +86,6 @@ test.describe("Grid View", () => {
     await firstCell.click();
 
     // The active cell indicator should show in the sidebar
-    await expect(page.getByText("Cell")).toBeVisible();
+    await expect(page.getByText(/Cell \[1, 1\]/)).toBeVisible();
   });
 });

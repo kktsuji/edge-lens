@@ -1,8 +1,6 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
-import { loadTestImage } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
+import { FIXTURE, loadTestImage } from "./helpers.js";
 
 test.describe("Image Loader", () => {
   test.beforeEach(async ({ page }) => {

@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
-import { drawOnCanvas, loadTestImage, switchToolMode } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
+import {
+  FIXTURE,
+  drawOnCanvas,
+  loadTestImage,
+  switchToolMode,
+} from "./helpers.js";
 
 test.describe("Line Profile", () => {
   test.beforeEach(async ({ page }) => {

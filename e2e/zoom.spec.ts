@@ -1,8 +1,5 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
-import { getZoomText, loadTestImage } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
+import { FIXTURE, getZoomPercent, loadTestImage } from "./helpers.js";
 
 test.describe("Zoom", () => {
   test.beforeEach(async ({ page }) => {
@@ -15,37 +12,36 @@ test.describe("Zoom", () => {
   });
 
   test("zoom in with + key", async ({ page }) => {
-    const initialText = await getZoomText(page);
+    const initialZoom = await getZoomPercent(page);
 
     await page.keyboard.press("+");
 
-    // Wait for zoom text to change
     const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).not.toHaveText(initialText);
+    await expect(span).not.toHaveText(`${initialZoom}%`);
+    const newZoom = await getZoomPercent(page);
+    expect(newZoom).toBeGreaterThan(initialZoom);
   });
 
   test("zoom out with - key", async ({ page }) => {
-    const initialText = await getZoomText(page);
+    const initialZoom = await getZoomPercent(page);
 
     await page.keyboard.press("-");
 
-    // Wait for zoom text to change
     const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).not.toHaveText(initialText);
+    await expect(span).not.toHaveText(`${initialZoom}%`);
+    const newZoom = await getZoomPercent(page);
+    expect(newZoom).toBeLessThan(initialZoom);
   });
 
   test("fit to screen with 0 key", async ({ page }) => {
-    // Zoom in first to change from default
-    const initialText = await getZoomText(page);
-    await page.keyboard.press("+");
+    // Go to a known zoom level first
+    await page.keyboard.press("1");
     const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).not.toHaveText(initialText);
+    await expect(span).toHaveText("100%");
 
-    const zoomedText = await getZoomText(page);
-
-    // Fit to screen
+    // Fit to screen — for a 2x2 image the fit zoom will differ from 100%
     await page.keyboard.press("0");
-    await expect(span).not.toHaveText(zoomedText);
+    await expect(span).not.toHaveText("100%");
   });
 
   test("actual size (100%) with 1 key", async ({ page }) => {

@@ -1,38 +1,14 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
 import {
+  FIXTURE,
   drawOnCanvas,
-  getZoomText,
+  getCellZoom,
+  getZoomPercent,
+  loadImageIntoGridCell,
   loadTestImage,
   openGridMode,
   switchToolMode,
 } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
-
-/**
- * Helper to load an image into the first grid cell.
- */
-async function loadImageIntoFirstCell(page: import("@playwright/test").Page) {
-  const firstCell = page.locator("[data-cell-id]").first();
-  const fileChooserPromise = page.waitForEvent("filechooser");
-  await firstCell.getByRole("button", { name: "Open Image" }).click();
-  const fileChooser = await fileChooserPromise;
-  await fileChooser.setFiles(FIXTURE);
-  await expect(firstCell.locator("canvas")).toBeVisible();
-}
-
-/**
- * Helper to load an image into the second grid cell.
- */
-async function loadImageIntoSecondCell(page: import("@playwright/test").Page) {
-  const secondCell = page.locator("[data-cell-id]").nth(1);
-  const fileChooserPromise = page.waitForEvent("filechooser");
-  await secondCell.getByRole("button", { name: "Open Image" }).click();
-  const fileChooser = await fileChooserPromise;
-  await fileChooser.setFiles(FIXTURE);
-  await expect(secondCell.locator("canvas")).toBeVisible();
-}
 
 test.describe("Grid Advanced", () => {
   test.beforeEach(async ({ page }) => {
@@ -41,7 +17,7 @@ test.describe("Grid Advanced", () => {
 
   test("ROI selection works in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
 
     // Click the cell to activate it before switching tools
     const firstCell = page.locator("[data-cell-id]").first();
@@ -56,7 +32,7 @@ test.describe("Grid Advanced", () => {
 
   test("line profile works in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
 
     // Click the cell to activate it before switching tools
     const firstCell = page.locator("[data-cell-id]").first();
@@ -135,33 +111,35 @@ test.describe("Grid Advanced", () => {
 
   test("zoom in with + key works in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const cell = page.locator("[data-cell-id]").first();
     await cell.click();
 
-    const initialZoom = await cell.getAttribute("data-zoom");
-    expect(initialZoom).not.toBeNull();
+    const initialZoom = await getCellZoom(cell);
     await page.keyboard.press("+");
 
-    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+    await expect(cell).not.toHaveAttribute("data-zoom", String(initialZoom));
+    const newZoom = await getCellZoom(cell);
+    expect(newZoom).toBeGreaterThan(initialZoom);
   });
 
   test("zoom out with - key works in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const cell = page.locator("[data-cell-id]").first();
     await cell.click();
 
-    const initialZoom = await cell.getAttribute("data-zoom");
-    expect(initialZoom).not.toBeNull();
+    const initialZoom = await getCellZoom(cell);
     await page.keyboard.press("-");
 
-    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+    await expect(cell).not.toHaveAttribute("data-zoom", String(initialZoom));
+    const newZoom = await getCellZoom(cell);
+    expect(newZoom).toBeLessThan(initialZoom);
   });
 
   test("actual size (100%) with 1 key works in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const cell = page.locator("[data-cell-id]").first();
     await cell.click();
 
@@ -172,20 +150,17 @@ test.describe("Grid Advanced", () => {
 
   test("fit to screen with 0 key works in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const cell = page.locator("[data-cell-id]").first();
     await cell.click();
 
-    // Zoom in first to change from default
-    const initialZoom = await cell.getAttribute("data-zoom");
-    expect(initialZoom).not.toBeNull();
-    await page.keyboard.press("+");
-    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+    // Go to a known zoom level first
+    await page.keyboard.press("1");
+    await expect(cell).toHaveAttribute("data-zoom", "100");
 
-    const zoomedValue = await cell.getAttribute("data-zoom");
-    expect(zoomedValue).not.toBeNull();
+    // Fit to screen — for a 2x2 image the fit zoom will differ from 100%
     await page.keyboard.press("0");
-    await expect(cell).not.toHaveAttribute("data-zoom", zoomedValue!);
+    await expect(cell).not.toHaveAttribute("data-zoom", "100");
   });
 
   // --- Tools Work After Single-to-Grid Transition ---
@@ -196,11 +171,12 @@ test.describe("Grid Advanced", () => {
     const cell = page.locator("[data-cell-id]").first();
     await cell.click();
 
-    const initialZoom = await cell.getAttribute("data-zoom");
-    expect(initialZoom).not.toBeNull();
+    const initialZoom = await getCellZoom(cell);
     await page.keyboard.press("+");
 
-    await expect(cell).not.toHaveAttribute("data-zoom", initialZoom!);
+    await expect(cell).not.toHaveAttribute("data-zoom", String(initialZoom));
+    const newZoom = await getCellZoom(cell);
+    expect(newZoom).toBeGreaterThan(initialZoom);
   });
 
   test("ROI works after single-to-grid transition", async ({ page }) => {
@@ -238,11 +214,13 @@ test.describe("Grid Advanced", () => {
     await expect(page.locator("[data-cell-id]")).toHaveCount(0);
     await expect(page.locator("main canvas")).toBeVisible();
 
-    const initialText = await getZoomText(page);
+    const initialZoom = await getZoomPercent(page);
     await page.keyboard.press("+");
 
     const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).not.toHaveText(initialText);
+    await expect(span).not.toHaveText(`${initialZoom}%`);
+    const newZoom = await getZoomPercent(page);
+    expect(newZoom).toBeGreaterThan(initialZoom);
   });
 
   test("ROI works after grid-to-single transition", async ({ page }) => {
@@ -283,7 +261,7 @@ test.describe("Grid Advanced", () => {
 
   test("pixel inspector shows info on hover in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const firstCell = page.locator("[data-cell-id]").first();
     await firstCell.click();
 
@@ -296,7 +274,7 @@ test.describe("Grid Advanced", () => {
 
   test("histogram chart visible in grid cell with image", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const firstCell = page.locator("[data-cell-id]").first();
     await firstCell.click();
 
@@ -307,7 +285,7 @@ test.describe("Grid Advanced", () => {
 
   test("image stats visible in grid cell with image", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const firstCell = page.locator("[data-cell-id]").first();
     await firstCell.click();
 
@@ -316,7 +294,7 @@ test.describe("Grid Advanced", () => {
 
   test("EXIF panel shows no data for PNG in grid cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const firstCell = page.locator("[data-cell-id]").first();
     await firstCell.click();
 
@@ -327,7 +305,7 @@ test.describe("Grid Advanced", () => {
     page,
   }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
+    await loadImageIntoGridCell(page, 0);
     const firstCell = page.locator("[data-cell-id]").first();
     await firstCell.click();
 
@@ -343,8 +321,8 @@ test.describe("Grid Advanced", () => {
     page,
   }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
-    await loadImageIntoSecondCell(page);
+    await loadImageIntoGridCell(page, 0);
+    await loadImageIntoGridCell(page, 1);
 
     const secondCell = page.locator("[data-cell-id]").nth(1);
     await secondCell.click();
@@ -354,8 +332,8 @@ test.describe("Grid Advanced", () => {
 
   test("position lock synchronizes zoom across cells", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
-    await loadImageIntoSecondCell(page);
+    await loadImageIntoGridCell(page, 0);
+    await loadImageIntoGridCell(page, 1);
 
     // Ensure position lock is enabled (aria-pressed="true" means locked)
     const lockToggle = page.getByRole("button", {
@@ -370,21 +348,23 @@ test.describe("Grid Advanced", () => {
     const cell1 = page.locator("[data-cell-id]").nth(1);
     await cell0.click();
 
-    const zoom0Before = await cell0.getAttribute("data-zoom");
-    const zoom1Before = await cell1.getAttribute("data-zoom");
-    expect(zoom0Before).not.toBeNull();
-    expect(zoom1Before).not.toBeNull();
+    const zoom0Before = await getCellZoom(cell0);
+    const zoom1Before = await getCellZoom(cell1);
 
     await page.keyboard.press("+");
 
-    await expect(cell0).not.toHaveAttribute("data-zoom", zoom0Before!);
-    await expect(cell1).not.toHaveAttribute("data-zoom", zoom1Before!);
+    await expect(cell0).not.toHaveAttribute("data-zoom", String(zoom0Before));
+    await expect(cell1).not.toHaveAttribute("data-zoom", String(zoom1Before));
+    const zoom0After = await getCellZoom(cell0);
+    const zoom1After = await getCellZoom(cell1);
+    expect(zoom0After).toBeGreaterThan(zoom0Before);
+    expect(zoom1After).toBeGreaterThan(zoom1Before);
   });
 
   test("position lock disabled only zooms active cell", async ({ page }) => {
     await openGridMode(page);
-    await loadImageIntoFirstCell(page);
-    await loadImageIntoSecondCell(page);
+    await loadImageIntoGridCell(page, 0);
+    await loadImageIntoGridCell(page, 1);
 
     // Ensure position lock is disabled (aria-pressed="false" means unlocked)
     const lockToggle = page.getByRole("button", {
@@ -401,15 +381,15 @@ test.describe("Grid Advanced", () => {
     // Wait for cell0 to become active before zooming
     await expect(cell0).toHaveAttribute("data-active", "true");
 
-    const zoom0Before = await cell0.getAttribute("data-zoom");
-    const zoom1Before = await cell1.getAttribute("data-zoom");
-    expect(zoom0Before).not.toBeNull();
-    expect(zoom1Before).not.toBeNull();
+    const zoom0Before = await getCellZoom(cell0);
+    const zoom1Before = await getCellZoom(cell1);
 
     await page.keyboard.press("+");
 
-    await expect(cell0).not.toHaveAttribute("data-zoom", zoom0Before!);
-    await expect(cell1).toHaveAttribute("data-zoom", zoom1Before!);
+    await expect(cell0).not.toHaveAttribute("data-zoom", String(zoom0Before));
+    await expect(cell1).toHaveAttribute("data-zoom", String(zoom1Before));
+    const zoom0After = await getCellZoom(cell0);
+    expect(zoom0After).toBeGreaterThan(zoom0Before);
   });
 
   // --- Sidebar After Single-to-Grid Transition ---
