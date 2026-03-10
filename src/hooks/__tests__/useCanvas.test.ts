@@ -31,6 +31,10 @@ let observeCallback: ResizeObserverCallback | null = null;
 const disconnectMock = vi.fn();
 let addedElements: Element[] = [];
 
+const originalResizeObserver = globalThis.ResizeObserver;
+const originalRAF = globalThis.requestAnimationFrame;
+const originalCAF = globalThis.cancelAnimationFrame;
+
 beforeEach(() => {
   observeCallback = null;
   disconnectMock.mockClear();
@@ -59,6 +63,9 @@ afterEach(() => {
     el.parentNode?.removeChild(el);
   }
   addedElements = [];
+  globalThis.ResizeObserver = originalResizeObserver;
+  globalThis.requestAnimationFrame = originalRAF;
+  globalThis.cancelAnimationFrame = originalCAF;
 });
 
 function wrapper({ children }: { children: ReactNode }) {

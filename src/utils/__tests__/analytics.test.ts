@@ -12,16 +12,18 @@ describe("analytics", () => {
 
   afterEach(() => {
     window.dataLayer = originalDataLayer;
-    if (originalGtag) {
-      window.gtag = originalGtag;
-    }
+    window.gtag = originalGtag as typeof window.gtag;
+    vi.unstubAllEnvs();
     // Clean up any script tags added
     document
       .querySelectorAll('script[src*="googletagmanager"]')
-      .forEach((el) => el.remove());
+      .forEach((el) => {
+        el.remove();
+      });
   });
 
   it("initGA4 does nothing when measurement ID is empty", async () => {
+    vi.stubEnv("VITE_GA_MEASUREMENT_ID", "");
     const { initGA4 } = await import("../analytics");
     initGA4();
 
@@ -41,7 +43,6 @@ describe("analytics", () => {
       'script[src*="googletagmanager"]',
     );
     expect(scripts.length).toBe(1);
-    vi.unstubAllEnvs();
   });
 
   it("trackEvent is a no-op when GA4 is not initialized", async () => {
@@ -60,6 +61,5 @@ describe("analytics", () => {
 
     trackEvent("click", { button: "ok" });
     expect(gtagSpy).toHaveBeenCalledWith("event", "click", { button: "ok" });
-    vi.unstubAllEnvs();
   });
 });

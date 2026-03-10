@@ -10,6 +10,8 @@ import {
 import { useKeyboardShortcuts } from "../useKeyboardShortcuts";
 
 const closeMock = vi.fn();
+const originalCreateImageBitmap = globalThis.createImageBitmap;
+const originalOffscreenCanvas = globalThis.OffscreenCanvas;
 
 // Track DOM elements added during tests for cleanup
 let addedElements: Element[] = [];
@@ -50,6 +52,8 @@ afterEach(() => {
     el.parentNode?.removeChild(el);
   }
   addedElements = [];
+  globalThis.createImageBitmap = originalCreateImageBitmap;
+  globalThis.OffscreenCanvas = originalOffscreenCanvas;
 });
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -199,7 +203,11 @@ describe("useKeyboardShortcuts", () => {
   });
 
   it("G does not toggle grid on narrow screens", () => {
-    Object.defineProperty(window, "innerWidth", { value: 500 });
+    Object.defineProperty(window, "innerWidth", {
+      value: 500,
+      writable: true,
+      configurable: true,
+    });
     const { result } = renderHook(() => useShortcutsHarness(), { wrapper });
     act(() => fireKey("g"));
     expect(result.current.grid.gridState.enabled).toBe(false);

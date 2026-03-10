@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { ReactNode } from "react";
 import {
   ImageStoreProvider,
@@ -10,6 +10,8 @@ import {
 // --- Global mocks for browser APIs not available in jsdom ---
 
 const closeMock = vi.fn();
+const originalCreateImageBitmap = globalThis.createImageBitmap;
+const originalOffscreenCanvas = globalThis.OffscreenCanvas;
 
 beforeEach(() => {
   closeMock.mockClear();
@@ -31,6 +33,11 @@ beforeEach(() => {
       }),
     }),
   })) as unknown as typeof OffscreenCanvas;
+});
+
+afterEach(() => {
+  globalThis.createImageBitmap = originalCreateImageBitmap;
+  globalThis.OffscreenCanvas = originalOffscreenCanvas;
 });
 
 function wrapper({ children }: { children: ReactNode }) {
