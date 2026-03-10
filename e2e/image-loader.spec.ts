@@ -1,8 +1,5 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
-import { loadTestImage } from "./helpers.js";
-
-const FIXTURE = path.resolve(import.meta.dirname, "fixtures/test-2x2.png");
+import { FIXTURE, FIXTURE_UNSUPPORTED, loadTestImage } from "./helpers.js";
 
 test.describe("Image Loader", () => {
   test.beforeEach(async ({ page }) => {
@@ -24,5 +21,20 @@ test.describe("Image Loader", () => {
 
     await page.getByRole("button", { name: "Close Image" }).click();
     await expect(page.getByText("Drop an image here")).toBeVisible();
+  });
+
+  test("rejects unsupported file format", async ({ page }) => {
+    // Create a temporary text file to simulate unsupported format
+    const fileChooserPromise = page.waitForEvent("filechooser");
+    await page
+      .locator("#main-content")
+      .getByRole("button", { name: "Open Image" })
+      .click();
+    const fileChooser = await fileChooserPromise;
+
+    await fileChooser.setFiles(FIXTURE_UNSUPPORTED);
+    await expect(
+      page.getByText("Unsupported format. Please use JPEG or PNG."),
+    ).toBeVisible();
   });
 });

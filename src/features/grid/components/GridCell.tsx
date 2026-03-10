@@ -26,7 +26,7 @@ interface GridCellProps {
 
 function GridCellContent({ cellId, isActive }: GridCellProps) {
   const { t } = useTranslation();
-  const { image, toolMode } = useImageStore();
+  const { image, viewport, toolMode } = useImageStore();
   const { setActiveCellId, setCellPixelInfo, loadImageToCell } =
     useGridActions();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -89,6 +89,8 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
   return (
     <div
       data-cell-id={cellId}
+      data-zoom={Math.round(viewport.zoom * 100)}
+      data-active={isActive}
       className={`relative h-full w-full overflow-hidden ${
         isActive ? "ring-2 ring-blue-500" : ""
       }`}

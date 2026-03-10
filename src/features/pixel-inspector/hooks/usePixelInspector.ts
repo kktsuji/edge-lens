@@ -9,7 +9,7 @@ const TAP_DISTANCE_THRESHOLD = 5;
 export function usePixelInspector(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ): PixelInfo | null {
-  const { image, viewport, isTouchPinching } = useImageStore();
+  const { image, viewport, isTouchPinching, refitKey } = useImageStore();
   const viewportRef = useRef(viewport);
   viewportRef.current = viewport;
 
@@ -109,6 +109,10 @@ export function usePixelInspector(
     handlePointerUp,
     handlePointerCancel,
     image.imageData,
+    // refitKey forces listener re-registration when the canvas DOM element
+    // changes (e.g. grid↔single transitions). canvasRef identity is stable so
+    // it alone cannot trigger re-attachment.
+    refitKey,
   ]);
 
   return pixelInfo;
