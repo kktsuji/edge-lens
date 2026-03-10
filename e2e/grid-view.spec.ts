@@ -7,6 +7,8 @@ test.describe("Grid View", () => {
   });
 
   test("G key enables grid mode; Escape exits it", async ({ page }) => {
+    // Click body to ensure page focus for keyboard events
+    await page.locator("body").click();
     // G key directly enables grid mode (default 1x2 layout)
     await page.keyboard.press("g");
     await expect(page.locator("[data-cell-id]").first()).toBeVisible();

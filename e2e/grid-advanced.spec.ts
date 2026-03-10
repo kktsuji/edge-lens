@@ -98,6 +98,8 @@ test.describe("Grid Advanced", () => {
   });
 
   test("Escape exits grid mode", async ({ page }) => {
+    // Click body to ensure page focus for keyboard events
+    await page.locator("body").click();
     // Use G key to enable grid directly
     await page.keyboard.press("g");
     await expect(page.locator("[data-cell-id]").first()).toBeVisible();

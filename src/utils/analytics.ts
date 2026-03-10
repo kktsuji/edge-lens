@@ -5,6 +5,7 @@ let initialized = false;
 export function initGA4() {
   if (initialized) return;
   if (typeof window === "undefined") return;
+  if (!GA_MEASUREMENT_ID) return;
 
   const script = document.createElement("script");
   script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;

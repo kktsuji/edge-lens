@@ -32,6 +32,8 @@ test.describe("Accessibility", () => {
   test("no critical violations in grid mode", async ({ page }) => {
     await page.goto("/");
 
+    // Click body to ensure page focus for keyboard events
+    await page.locator("body").click();
     // G key directly enables grid mode (default layout)
     await page.keyboard.press("g");
     await expect(page.locator("[data-cell-id]").first()).toBeVisible();
@@ -49,6 +51,8 @@ test.describe("Accessibility", () => {
   test("no critical violations with help dialog open", async ({ page }) => {
     await page.goto("/");
 
+    // Click body to ensure page focus for keyboard events
+    await page.locator("body").click();
     await page.keyboard.press("?");
     await expect(page.getByRole("dialog")).toBeVisible();
 
