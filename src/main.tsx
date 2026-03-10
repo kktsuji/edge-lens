@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { ImageStoreProvider } from "./hooks/useImageStore";
 import "./i18n";
 import "./index.css";
@@ -10,8 +11,10 @@ initGA4();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ImageStoreProvider>
-      <App />
-    </ImageStoreProvider>
+    <AppErrorBoundary>
+      <ImageStoreProvider>
+        <App />
+      </ImageStoreProvider>
+    </AppErrorBoundary>
   </StrictMode>,
 );

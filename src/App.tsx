@@ -27,7 +27,7 @@ import { useZoom } from "./features/zoom/hooks/useZoom";
 import { useCanvas } from "./hooks/useCanvas";
 import { useImageStore, useGridActions } from "./hooks/useImageStore";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
-import { validateImageFile } from "./utils/validation";
+import { handleFileSelection } from "./utils/validation";
 import { GridContainer } from "./features/grid/components/GridContainer";
 import { GridToggleButton } from "./features/grid/components/GridToggleButton";
 import { LockToggleButton } from "./features/grid/components/LockToggleButton";
@@ -44,34 +44,40 @@ function App() {
   const isGridMode = gridState.enabled;
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [dropError, setDropError] = useState<string | null>(null);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const dragDepthRef = useRef(0);
 
   const handleDrop = useCallback(
     async (e: DragEvent<HTMLElement>) => {
       e.preventDefault();
+      dragDepthRef.current = 0;
       setIsDraggingOver(false);
       const file = e.dataTransfer.files[0];
       if (!file) return;
-      const result = validateImageFile(file);
-      if (!result.valid) return;
-      try {
-        await loadImage(file);
-      } catch {
-        // ignore unsupported format silently when dropping on canvas
-      }
+      await handleFileSelection(file, loadImage, setDropError);
     },
     [loadImage],
   );
 
+  const handleDragEnter = useCallback((e: DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    dragDepthRef.current += 1;
+    setIsDraggingOver(true);
+  }, []);
+
   const handleDragOver = useCallback((e: DragEvent<HTMLElement>) => {
     e.preventDefault();
-    setIsDraggingOver(true);
   }, []);
 
   const handleDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
     e.preventDefault();
-    setIsDraggingOver(false);
+    dragDepthRef.current -= 1;
+    if (dragDepthRef.current <= 0) {
+      dragDepthRef.current = 0;
+      setIsDraggingOver(false);
+    }
   }, []);
 
   useCanvas(canvasRef);
@@ -180,11 +186,13 @@ function App() {
             <div
               className="relative h-full w-full"
               onDrop={handleDrop}
+              onDragEnter={handleDragEnter}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
             >
               <canvas
                 ref={canvasRef}
+                aria-label={image.name || undefined}
                 className={`h-full w-full ${toolMode === "roi" || toolMode === "line-profile" ? "cursor-crosshair" : ""}`}
               />
               <RoiSelectionOverlay />
@@ -193,6 +201,13 @@ function App() {
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center border-2 border-dashed border-blue-400 bg-blue-400/20">
                   <p className="text-lg font-medium text-blue-300">
                     Drop to replace image
+                  </p>
+                </div>
+              )}
+              {dropError && (
+                <div className="pointer-events-none absolute bottom-2 left-2 right-2">
+                  <p role="alert" className="text-center text-sm text-red-400">
+                    {t(dropError)}
                   </p>
                 </div>
               )}

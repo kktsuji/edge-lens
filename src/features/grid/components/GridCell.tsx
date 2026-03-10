@@ -107,6 +107,7 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
         >
           <canvas
             ref={canvasRef}
+            aria-label={image.name || undefined}
             className={`h-full w-full ${toolMode === "roi" || toolMode === "line-profile" ? "cursor-crosshair" : ""}`}
           />
           <RoiSelectionOverlay />

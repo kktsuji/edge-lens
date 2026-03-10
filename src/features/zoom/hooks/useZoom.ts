@@ -126,6 +126,12 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       canvas.style.cursor = "";
     };
 
+    const onWindowBlur = () => {
+      isSpaceDown = false;
+      if (isPanning) isPanning = false;
+      canvas.style.cursor = "";
+    };
+
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
 
@@ -166,6 +172,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerup", onPointerUp);
@@ -174,6 +181,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);

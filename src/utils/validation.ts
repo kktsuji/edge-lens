@@ -1,6 +1,10 @@
 const ALLOWED_TYPES = ["image/jpeg", "image/png"];
 const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
 
+// Magic byte signatures for supported formats
+const JPEG_MAGIC = [0xff, 0xd8, 0xff];
+const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47];
+
 export interface ValidationResult {
   valid: boolean;
   error?: string;
@@ -21,6 +25,11 @@ export async function handleFileSelection(
     setError(result.error!);
     return;
   }
+  const magicOk = await verifyMagicBytes(file);
+  if (!magicOk) {
+    setError("error.unsupportedFormat");
+    return;
+  }
   try {
     await loadFn(file);
   } catch {
@@ -38,4 +47,25 @@ export function validateImageFile(file: File): ValidationResult {
   }
 
   return { valid: true };
+}
+
+/**
+ * Verify file content matches its claimed MIME type by checking magic bytes.
+ * Returns true if the file header matches JPEG or PNG signatures.
+ */
+export function verifyMagicBytes(file: File): Promise<boolean> {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const header = new Uint8Array(reader.result as ArrayBuffer);
+      const matchesJpeg = JPEG_MAGIC.every((b, i) => header[i] === b);
+      const matchesPng = PNG_MAGIC.every((b, i) => header[i] === b);
+      resolve(matchesJpeg || matchesPng);
+    };
+    reader.onerror = () => {
+      // If reading fails, fall through to let createImageBitmap handle it
+      resolve(true);
+    };
+    reader.readAsArrayBuffer(file.slice(0, 4));
+  });
 }

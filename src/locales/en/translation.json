@@ -79,5 +79,15 @@
   "grid.rows": "Rows",
   "grid.columns": "Columns",
   "grid.ok": "OK",
-  "grid.sidebarEmpty": "Click a cell or load an image to view details."
+  "grid.sidebarEmpty": "Click a cell or load an image to view details.",
+  "dropzone.heroTagline": "Browser-based image analyzer — your images never leave your device.",
+  "dropzone.noUpload": "No images uploaded",
+  "dropzone.offlineAnalysis": "Analysis works offline",
+  "dropzone.openSource": "Open source",
+  "chart.red": "Red",
+  "chart.green": "Green",
+  "chart.blue": "Blue",
+  "chart.luminance": "Luminance",
+  "chart.histogramAria": "Image color histogram",
+  "chart.lineProfileAria": "Line profile intensity chart"
 }

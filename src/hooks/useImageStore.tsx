@@ -152,9 +152,19 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   // Track load version per cell to prevent race conditions (Bug #2)
   const cellLoadVersionRef = useRef(new Map<string, number>());
 
+  // Track load version for single-view to prevent race conditions
+  const singleLoadVersionRef = useRef(0);
+
   const loadImage = useCallback(async (file: File) => {
+    const version = ++singleLoadVersionRef.current;
     const bitmap = await createImageBitmap(file);
     try {
+      // A newer load has started — discard this result
+      if (singleLoadVersionRef.current !== version) {
+        bitmap.close();
+        return;
+      }
+
       const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
       const ctx = offscreen.getContext("2d");
       if (!ctx) throw new Error("Failed to get 2d context");
@@ -277,6 +287,10 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setGridLayout = useCallback((layout: GridLayout) => {
+    // Clamp layout to valid bounds (1–4 rows/cols)
+    const rows = Math.max(1, Math.min(4, Math.round(layout.rows)));
+    const cols = Math.max(1, Math.min(4, Math.round(layout.cols)));
+    layout = { rows, cols };
     const prev = gridStateRef.current;
 
     // 1×1 means "return to single view"
@@ -585,28 +599,48 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     ],
   );
 
+  const storeValue = useMemo<ImageStoreContextValue>(
+    () => ({
+      image,
+      viewport,
+      toolMode,
+      roiSelection,
+      lineProfile,
+      isTouchPinching,
+      refitKey,
+      loadImage,
+      closeImage,
+      setZoom,
+      setPan,
+      setViewport,
+      setViewportLocal: setViewport,
+      setToolMode,
+      setRoiSelection,
+      setLineProfile,
+      setIsTouchPinching,
+    }),
+    [
+      image,
+      viewport,
+      toolMode,
+      roiSelection,
+      lineProfile,
+      isTouchPinching,
+      refitKey,
+      loadImage,
+      closeImage,
+      setZoom,
+      setPan,
+      setViewport,
+      setToolMode,
+      setRoiSelection,
+      setLineProfile,
+      setIsTouchPinching,
+    ],
+  );
+
   return (
-    <ImageStoreContext.Provider
-      value={{
-        image,
-        viewport,
-        toolMode,
-        roiSelection,
-        lineProfile,
-        isTouchPinching,
-        refitKey,
-        loadImage,
-        closeImage,
-        setZoom,
-        setPan,
-        setViewport,
-        setViewportLocal: setViewport,
-        setToolMode,
-        setRoiSelection,
-        setLineProfile,
-        setIsTouchPinching,
-      }}
-    >
+    <ImageStoreContext.Provider value={storeValue}>
       <GridActionsContext.Provider value={gridActions}>
         {children}
       </GridActionsContext.Provider>

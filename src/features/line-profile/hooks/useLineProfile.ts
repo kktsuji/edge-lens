@@ -43,6 +43,15 @@ export function useLineProfile(
       if (e.key === " ") isSpaceDown = false;
     };
 
+    const onWindowBlur = () => {
+      isSpaceDown = false;
+      isDragging = false;
+    };
+
+    const onPointerCancel = () => {
+      isDragging = false;
+    };
+
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0 || toolModeRef.current !== "line-profile") return;
       if (isTouchPinchingRef.current) return;
@@ -106,16 +115,20 @@ export function useLineProfile(
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerCancel);
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerCancel);
     };
   }, [
     canvasRef,

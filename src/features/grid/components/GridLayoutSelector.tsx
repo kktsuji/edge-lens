@@ -76,7 +76,7 @@ export function GridLayoutSelector({ onClose }: GridLayoutSelectorProps) {
             onChange={(e) => {
               const n = Number(e.target.value);
               if (!Number.isFinite(n)) return;
-              setCustomRows(Math.max(1, Math.min(4, n)));
+              setCustomRows(Math.max(1, Math.min(4, Math.round(n))));
             }}
             className="w-12 rounded border border-gray-600 bg-gray-700 px-1 py-0.5 text-center text-sm text-white"
             aria-label={t("grid.rows")}
@@ -91,7 +91,7 @@ export function GridLayoutSelector({ onClose }: GridLayoutSelectorProps) {
             onChange={(e) => {
               const n = Number(e.target.value);
               if (!Number.isFinite(n)) return;
-              setCustomCols(Math.max(1, Math.min(4, n)));
+              setCustomCols(Math.max(1, Math.min(4, Math.round(n))));
             }}
             className="w-12 rounded border border-gray-600 bg-gray-700 px-1 py-0.5 text-center text-sm text-white"
             aria-label={t("grid.columns")}

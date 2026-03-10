@@ -4,12 +4,28 @@ import { initGA4 } from "../utils/analytics";
 
 const STORAGE_KEY = "edgelens-cookie-consent";
 
+function safeGetItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSetItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage unavailable (e.g. Safari private browsing)
+  }
+}
+
 export function CookieConsent() {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = safeGetItem(STORAGE_KEY);
     if (stored === "accepted") {
       initGA4();
     } else if (stored === null) {
@@ -18,13 +34,13 @@ export function CookieConsent() {
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem(STORAGE_KEY, "accepted");
+    safeSetItem(STORAGE_KEY, "accepted");
     initGA4();
     setVisible(false);
   };
 
   const handleDecline = () => {
-    localStorage.setItem(STORAGE_KEY, "declined");
+    safeSetItem(STORAGE_KEY, "declined");
     setVisible(false);
   };
 

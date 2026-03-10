@@ -39,7 +39,7 @@ export function LineProfilePanel() {
         )}
       </div>
       {samples ? (
-        <ChartErrorBoundary>
+        <ChartErrorBoundary resetKey={samples}>
           <Suspense
             fallback={
               <div className="h-40 animate-pulse rounded bg-gray-700" />

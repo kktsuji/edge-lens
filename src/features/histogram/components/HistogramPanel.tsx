@@ -20,7 +20,7 @@ export function HistogramPanel({ data }: HistogramPanelProps) {
         {t("histogram.title")}
       </h2>
       {data ? (
-        <ChartErrorBoundary>
+        <ChartErrorBoundary resetKey={data}>
           <Suspense
             fallback={
               <div className="h-40 animate-pulse rounded bg-gray-700" />

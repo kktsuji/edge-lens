@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 interface Props {
@@ -20,6 +21,48 @@ export const shortcuts = [
 
 export function KeyboardShortcutsHelp({ onClose }: Props) {
   const { t } = useTranslation();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    // Move focus into the dialog on open
+    const closeBtn = dialog.querySelector<HTMLElement>("button");
+    closeBtn?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      // Focus trap: cycle Tab within the dialog
+      if (e.key === "Tab") {
+        const focusable = dialog.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0]!;
+        const last = focusable[focusable.length - 1]!;
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   return (
     <div
@@ -27,6 +70,7 @@ export function KeyboardShortcutsHelp({ onClose }: Props) {
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         className="w-80 rounded-lg bg-gray-800 shadow-xl"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
