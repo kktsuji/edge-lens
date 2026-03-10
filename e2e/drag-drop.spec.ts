@@ -16,7 +16,7 @@ test.describe("Drag and Drop", () => {
       ctx.fillStyle = "red";
       ctx.fillRect(0, 0, 2, 2);
       const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((b) => resolve(b!), "image/png"),
+        canvas.toBlob((b: Blob | null) => resolve(b!), "image/png"),
       );
       const file = new File([blob], "dropped.png", {
         type: "image/png",
@@ -62,7 +62,7 @@ test.describe("Drag and Drop", () => {
       ctx.fillStyle = "blue";
       ctx.fillRect(0, 0, 4, 4);
       const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((b) => resolve(b!), "image/png"),
+        canvas.toBlob((b: Blob | null) => resolve(b!), "image/png"),
       );
       const file = new File([blob], "replaced.png", {
         type: "image/png",
