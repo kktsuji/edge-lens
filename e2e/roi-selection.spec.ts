@@ -31,11 +31,15 @@ test.describe("ROI Selection", () => {
     const canvas = page.locator("main canvas");
     await drawOnCanvas(page, canvas, { x: 30, y: 30 }, { x: 70, y: 70 });
 
-    await expect(page.getByText("ROI Statistics")).toBeVisible();
-    // "Mean" etc. exist in both Image Stats and ROI Stats panels, use first()
-    await expect(page.getByText("Mean").first()).toBeVisible();
-    await expect(page.getByText("Median").first()).toBeVisible();
-    await expect(page.getByText("Std Dev").first()).toBeVisible();
+    // Scope assertions to the ROI Statistics panel (grandparent of the heading)
+    const roiPanel = page
+      .getByText("ROI Statistics")
+      .locator("..")
+      .locator("..");
+    await expect(roiPanel).toBeVisible();
+    await expect(roiPanel.getByText("Mean")).toBeVisible();
+    await expect(roiPanel.getByText("Median")).toBeVisible();
+    await expect(roiPanel.getByText("Std Dev")).toBeVisible();
   });
 
   test("ROI stats show position and size", async ({ page }) => {

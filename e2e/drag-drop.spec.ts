@@ -24,8 +24,8 @@ test.describe("Drag and Drop", () => {
       const dt = new DataTransfer();
       dt.items.add(file);
 
-      // Target the DropZone div (first child of #main-content)
-      const target = document.querySelector("#main-content")?.firstElementChild;
+      // Target the DropZone div
+      const target = document.querySelector('[data-testid="drop-zone"]');
       if (!target) throw new Error("DropZone element not found");
       target.dispatchEvent(
         new DragEvent("dragover", {
@@ -70,7 +70,9 @@ test.describe("Drag and Drop", () => {
       const dt = new DataTransfer();
       dt.items.add(file);
 
-      const target = document.querySelector("#main-content")?.firstElementChild;
+      const target =
+        document.querySelector('[data-testid="drop-zone"]') ??
+        document.querySelector("#main-content")?.firstElementChild;
       if (!target) throw new Error("Canvas wrapper not found");
       target.dispatchEvent(
         new DragEvent("dragover", {

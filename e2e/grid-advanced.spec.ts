@@ -335,13 +335,10 @@ test.describe("Grid Advanced", () => {
     await loadImageIntoGridCell(page, 0);
     await loadImageIntoGridCell(page, 1);
 
-    // Ensure position lock is enabled (aria-pressed="true" means locked)
+    // Position lock defaults to enabled; assert and fail if not
     const lockToggle = page.getByRole("button", {
       name: /Lock Position|Unlock Position/,
     });
-    if ((await lockToggle.getAttribute("aria-pressed")) !== "true") {
-      await page.keyboard.press("k");
-    }
     await expect(lockToggle).toHaveAttribute("aria-pressed", "true");
 
     const cell0 = page.locator("[data-cell-id]").first();
@@ -366,13 +363,12 @@ test.describe("Grid Advanced", () => {
     await loadImageIntoGridCell(page, 0);
     await loadImageIntoGridCell(page, 1);
 
-    // Ensure position lock is disabled (aria-pressed="false" means unlocked)
+    // Position lock defaults to enabled; toggle it off and assert
     const lockToggle = page.getByRole("button", {
       name: /Lock Position|Unlock Position/,
     });
-    if ((await lockToggle.getAttribute("aria-pressed")) !== "false") {
-      await page.keyboard.press("k");
-    }
+    await expect(lockToggle).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("k");
     await expect(lockToggle).toHaveAttribute("aria-pressed", "false");
 
     const cell0 = page.locator("[data-cell-id]").first();

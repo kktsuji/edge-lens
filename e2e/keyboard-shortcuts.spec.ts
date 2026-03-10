@@ -75,10 +75,9 @@ test.describe("Keyboard Shortcuts", () => {
   });
 
   test("+/- keys change zoom percentage", async ({ page }) => {
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-
     // Set to 100% first (verifies canvas ref and keyboard handler work)
     await page.keyboard.press("1");
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
     await expect(zoomSpan).toHaveText("100%");
 
     // Zoom in with "="  (same as "+", avoids shift key issues)

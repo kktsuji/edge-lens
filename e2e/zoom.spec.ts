@@ -16,8 +16,8 @@ test.describe("Zoom", () => {
 
     await page.keyboard.press("+");
 
-    const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).not.toHaveText(`${initialZoom}%`);
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(zoomSpan).not.toHaveText(`${initialZoom}%`);
     const newZoom = await getZoomPercent(page);
     expect(newZoom).toBeGreaterThan(initialZoom);
   });
@@ -27,8 +27,8 @@ test.describe("Zoom", () => {
 
     await page.keyboard.press("-");
 
-    const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).not.toHaveText(`${initialZoom}%`);
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(zoomSpan).not.toHaveText(`${initialZoom}%`);
     const newZoom = await getZoomPercent(page);
     expect(newZoom).toBeLessThan(initialZoom);
   });
@@ -36,18 +36,18 @@ test.describe("Zoom", () => {
   test("fit to screen with 0 key", async ({ page }) => {
     // Go to a known zoom level first
     await page.keyboard.press("1");
-    const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).toHaveText("100%");
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(zoomSpan).toHaveText("100%");
 
     // Fit to screen — for a 2x2 image the fit zoom will differ from 100%
     await page.keyboard.press("0");
-    await expect(span).not.toHaveText("100%");
+    await expect(zoomSpan).not.toHaveText("100%");
   });
 
   test("actual size (100%) with 1 key", async ({ page }) => {
     await page.keyboard.press("1");
 
-    const span = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(span).toHaveText("100%");
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(zoomSpan).toHaveText("100%");
   });
 });

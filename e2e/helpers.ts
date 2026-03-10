@@ -6,6 +6,11 @@ export const FIXTURE = path.resolve(
   "fixtures/test-2x2.png",
 );
 
+export const FIXTURE_UNSUPPORTED = path.resolve(
+  import.meta.dirname,
+  "fixtures/test-unsupported.txt",
+);
+
 /**
  * Opens an image file via the file picker in #main-content and waits for it to load.
  */
@@ -27,6 +32,7 @@ export async function loadTestImage(
 
 /**
  * Clicks the toolbar button matching the given tool mode.
+ * Keep in sync with ToolMode in src/types/index.ts
  */
 export async function switchToolMode(
   page: Page,

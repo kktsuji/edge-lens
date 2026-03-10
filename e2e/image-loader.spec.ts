@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
-import { FIXTURE, loadTestImage } from "./helpers.js";
+import { FIXTURE, FIXTURE_UNSUPPORTED, loadTestImage } from "./helpers.js";
 
 test.describe("Image Loader", () => {
   test.beforeEach(async ({ page }) => {
@@ -33,20 +32,9 @@ test.describe("Image Loader", () => {
       .click();
     const fileChooser = await fileChooserPromise;
 
-    const os = await import("os");
-    const fs = await import("fs");
-    const tempFile = path.join(
-      os.tmpdir(),
-      `test-unsupported-${process.pid}-${Date.now()}.txt`,
-    );
-    fs.writeFileSync(tempFile, "not an image");
-    try {
-      await fileChooser.setFiles(tempFile);
-      await expect(
-        page.getByText("Unsupported format. Please use JPEG or PNG."),
-      ).toBeVisible();
-    } finally {
-      fs.unlinkSync(tempFile);
-    }
+    await fileChooser.setFiles(FIXTURE_UNSUPPORTED);
+    await expect(
+      page.getByText("Unsupported format. Please use JPEG or PNG."),
+    ).toBeVisible();
   });
 });

@@ -64,6 +64,7 @@ export function DropZone() {
 
   return (
     <div
+      data-testid="drop-zone"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

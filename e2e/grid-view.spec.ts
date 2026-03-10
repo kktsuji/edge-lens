@@ -6,7 +6,7 @@ test.describe("Grid View", () => {
     await page.goto("/");
   });
 
-  test("G key toggles grid mode on/off", async ({ page }) => {
+  test("G key enables grid mode; Escape exits it", async ({ page }) => {
     // G key directly enables grid mode (default 1x2 layout)
     await page.keyboard.press("g");
     await expect(page.locator("[data-cell-id]").first()).toBeVisible();
