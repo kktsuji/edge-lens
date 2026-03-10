@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { ReactNode } from "react";
 import { useRef } from "react";
 import {
@@ -10,6 +10,9 @@ import {
 import { useKeyboardShortcuts } from "../useKeyboardShortcuts";
 
 const closeMock = vi.fn();
+
+// Track DOM elements added during tests for cleanup
+let addedElements: Element[] = [];
 
 beforeEach(() => {
   closeMock.mockClear();
@@ -38,6 +41,15 @@ beforeEach(() => {
     configurable: true,
     value: 1024,
   });
+
+  addedElements = [];
+});
+
+afterEach(() => {
+  for (const el of addedElements) {
+    el.parentNode?.removeChild(el);
+  }
+  addedElements = [];
 });
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -77,6 +89,18 @@ function createMockCanvas(): HTMLCanvasElement {
   Object.defineProperty(canvas, "clientWidth", { value: 800 });
   Object.defineProperty(canvas, "clientHeight", { value: 600 });
   return canvas;
+}
+
+function appendGridCellToBody(cellId: string): HTMLDivElement {
+  const cellCanvas = document.createElement("canvas");
+  Object.defineProperty(cellCanvas, "clientWidth", { value: 400 });
+  Object.defineProperty(cellCanvas, "clientHeight", { value: 300 });
+  const cellDiv = document.createElement("div");
+  cellDiv.setAttribute("data-cell-id", cellId);
+  cellDiv.appendChild(cellCanvas);
+  document.body.appendChild(cellDiv);
+  addedElements.push(cellDiv);
+  return cellDiv;
 }
 
 describe("useKeyboardShortcuts", () => {
@@ -490,13 +514,7 @@ describe("useKeyboardShortcuts", () => {
     act(() => result.current.grid.setGridEnabled(true));
 
     // Mock the DOM query for grid cell canvas
-    const cellCanvas = document.createElement("canvas");
-    Object.defineProperty(cellCanvas, "clientWidth", { value: 400 });
-    Object.defineProperty(cellCanvas, "clientHeight", { value: 300 });
-    const cellDiv = document.createElement("div");
-    cellDiv.setAttribute("data-cell-id", "0-0");
-    cellDiv.appendChild(cellCanvas);
-    document.body.appendChild(cellDiv);
+    appendGridCellToBody("0-0");
 
     await act(async () => {
       await result.current.grid.loadImageToCell(
@@ -511,8 +529,6 @@ describe("useKeyboardShortcuts", () => {
       (c) => c.id === "0-0",
     );
     expect(cell?.viewport.zoom).toBeGreaterThan(1);
-
-    document.body.removeChild(cellDiv);
   });
 
   it("- zooms out in grid mode", async () => {
@@ -527,13 +543,7 @@ describe("useKeyboardShortcuts", () => {
     });
     act(() => result.current.grid.setGridEnabled(true));
 
-    const cellCanvas = document.createElement("canvas");
-    Object.defineProperty(cellCanvas, "clientWidth", { value: 400 });
-    Object.defineProperty(cellCanvas, "clientHeight", { value: 300 });
-    const cellDiv = document.createElement("div");
-    cellDiv.setAttribute("data-cell-id", "0-0");
-    cellDiv.appendChild(cellCanvas);
-    document.body.appendChild(cellDiv);
+    appendGridCellToBody("0-0");
 
     await act(async () => {
       await result.current.grid.loadImageToCell(
@@ -554,8 +564,6 @@ describe("useKeyboardShortcuts", () => {
       (c) => c.id === "0-0",
     );
     expect(cell?.viewport.zoom).toBeLessThan(5);
-
-    document.body.removeChild(cellDiv);
   });
 
   it("0 fits to canvas in grid mode (unlocked)", async () => {
@@ -571,13 +579,7 @@ describe("useKeyboardShortcuts", () => {
     act(() => result.current.grid.setGridEnabled(true));
     act(() => result.current.grid.setGridPositionLocked(false));
 
-    const cellCanvas = document.createElement("canvas");
-    Object.defineProperty(cellCanvas, "clientWidth", { value: 400 });
-    Object.defineProperty(cellCanvas, "clientHeight", { value: 300 });
-    const cellDiv = document.createElement("div");
-    cellDiv.setAttribute("data-cell-id", "0-0");
-    cellDiv.appendChild(cellCanvas);
-    document.body.appendChild(cellDiv);
+    appendGridCellToBody("0-0");
 
     await act(async () => {
       await result.current.grid.loadImageToCell(
@@ -592,8 +594,6 @@ describe("useKeyboardShortcuts", () => {
     );
     // 100x100 image in 400x300 canvas → zoom = 3
     expect(cell?.viewport.zoom).toBe(3);
-
-    document.body.removeChild(cellDiv);
   });
 
   it("1 shows 100% zoom in grid mode (unlocked)", async () => {
@@ -609,13 +609,7 @@ describe("useKeyboardShortcuts", () => {
     act(() => result.current.grid.setGridEnabled(true));
     act(() => result.current.grid.setGridPositionLocked(false));
 
-    const cellCanvas = document.createElement("canvas");
-    Object.defineProperty(cellCanvas, "clientWidth", { value: 400 });
-    Object.defineProperty(cellCanvas, "clientHeight", { value: 300 });
-    const cellDiv = document.createElement("div");
-    cellDiv.setAttribute("data-cell-id", "0-0");
-    cellDiv.appendChild(cellCanvas);
-    document.body.appendChild(cellDiv);
+    appendGridCellToBody("0-0");
 
     await act(async () => {
       await result.current.grid.loadImageToCell(
@@ -631,8 +625,6 @@ describe("useKeyboardShortcuts", () => {
     expect(cell?.viewport.zoom).toBe(1);
     // panX = (400 - 100) / 2 = 150
     expect(cell?.viewport.panX).toBe(150);
-
-    document.body.removeChild(cellDiv);
   });
 
   it("0 fits each cell independently in grid mode (locked)", async () => {
@@ -647,13 +639,7 @@ describe("useKeyboardShortcuts", () => {
     });
     act(() => result.current.grid.setGridEnabled(true));
 
-    const cellCanvas = document.createElement("canvas");
-    Object.defineProperty(cellCanvas, "clientWidth", { value: 400 });
-    Object.defineProperty(cellCanvas, "clientHeight", { value: 300 });
-    const cellDiv = document.createElement("div");
-    cellDiv.setAttribute("data-cell-id", "0-0");
-    cellDiv.appendChild(cellCanvas);
-    document.body.appendChild(cellDiv);
+    appendGridCellToBody("0-0");
 
     await act(async () => {
       await result.current.grid.loadImageToCell(
@@ -667,8 +653,6 @@ describe("useKeyboardShortcuts", () => {
       (c) => c.id === "0-0",
     );
     expect(cell?.viewport.zoom).toBe(3);
-
-    document.body.removeChild(cellDiv);
   });
 
   it("1 shows 100% for all cells in grid mode (locked)", async () => {
@@ -683,13 +667,7 @@ describe("useKeyboardShortcuts", () => {
     });
     act(() => result.current.grid.setGridEnabled(true));
 
-    const cellCanvas = document.createElement("canvas");
-    Object.defineProperty(cellCanvas, "clientWidth", { value: 400 });
-    Object.defineProperty(cellCanvas, "clientHeight", { value: 300 });
-    const cellDiv = document.createElement("div");
-    cellDiv.setAttribute("data-cell-id", "0-0");
-    cellDiv.appendChild(cellCanvas);
-    document.body.appendChild(cellDiv);
+    appendGridCellToBody("0-0");
 
     await act(async () => {
       await result.current.grid.loadImageToCell(
@@ -703,7 +681,5 @@ describe("useKeyboardShortcuts", () => {
       (c) => c.id === "0-0",
     );
     expect(cell?.viewport.zoom).toBe(1);
-
-    document.body.removeChild(cellDiv);
   });
 });

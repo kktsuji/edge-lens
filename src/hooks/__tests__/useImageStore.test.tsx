@@ -109,13 +109,14 @@ describe("single-view state", () => {
     expect(result.current.lineProfile).toBeNull();
   });
 
-  it("loadImage replaces previous image", async () => {
+  it("loadImage replaces previous image and releases stale bitmap", async () => {
     const { result } = renderHook(() => useImageStore(), { wrapper });
 
     await act(async () => {
       await result.current.loadImage(createTestFile("a.png"));
     });
     expect(result.current.image.name).toBe("a.png");
+    const firstBitmap = result.current.image.imageBitmap;
 
     (
       globalThis.createImageBitmap as ReturnType<typeof vi.fn>
@@ -124,22 +125,26 @@ describe("single-view state", () => {
       await result.current.loadImage(createTestFile("b.png"));
     });
 
+    // The previous bitmap should no longer be referenced
+    expect(result.current.image.imageBitmap).not.toBe(firstBitmap);
     expect(result.current.image.name).toBe("b.png");
     expect(result.current.image.width).toBe(60);
   });
 
-  it("closeImage resets all state", async () => {
+  it("closeImage resets all state and releases bitmap", async () => {
     const { result } = renderHook(() => useImageStore(), { wrapper });
 
     await act(async () => {
       await result.current.loadImage(createTestFile());
     });
+    expect(result.current.image.imageBitmap).not.toBeNull();
 
     act(() => {
       result.current.closeImage();
     });
 
     expect(result.current.image.file).toBeNull();
+    expect(result.current.image.imageBitmap).toBeNull();
     expect(result.current.image.imageData).toBeNull();
     expect(result.current.viewport.zoom).toBe(1);
     expect(result.current.toolMode).toBe("navigate");

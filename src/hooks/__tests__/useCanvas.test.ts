@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { ReactNode } from "react";
 import { createElement, useRef } from "react";
 import { ImageStoreProvider } from "../useImageStore";
@@ -29,10 +29,12 @@ import { useCanvas } from "../useCanvas";
 
 let observeCallback: ResizeObserverCallback | null = null;
 const disconnectMock = vi.fn();
+let addedElements: Element[] = [];
 
 beforeEach(() => {
   observeCallback = null;
   disconnectMock.mockClear();
+  addedElements = [];
 
   globalThis.ResizeObserver = vi.fn().mockImplementation((cb) => {
     observeCallback = cb;
@@ -50,6 +52,13 @@ beforeEach(() => {
       return 1;
     });
   globalThis.cancelAnimationFrame = vi.fn();
+});
+
+afterEach(() => {
+  for (const el of addedElements) {
+    el.parentNode?.removeChild(el);
+  }
+  addedElements = [];
 });
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -75,6 +84,7 @@ describe("useCanvas", () => {
     const container = document.createElement("div");
     container.appendChild(canvas);
     document.body.appendChild(container);
+    addedElements.push(container);
 
     // Mock getBoundingClientRect
     container.getBoundingClientRect = vi.fn().mockReturnValue({
@@ -92,7 +102,6 @@ describe("useCanvas", () => {
     renderHook(
       () => {
         const ref = useRef<HTMLCanvasElement>(canvas);
-        (ref as { current: HTMLCanvasElement }).current = canvas;
         useCanvas(ref);
         return ref;
       },
@@ -101,8 +110,6 @@ describe("useCanvas", () => {
 
     expect(globalThis.ResizeObserver).toHaveBeenCalled();
     expect(observeCallback).not.toBeNull();
-
-    document.body.removeChild(container);
   });
 
   it("disconnects ResizeObserver on unmount", () => {
@@ -110,6 +117,7 @@ describe("useCanvas", () => {
     const container = document.createElement("div");
     container.appendChild(canvas);
     document.body.appendChild(container);
+    addedElements.push(container);
     container.getBoundingClientRect = vi.fn().mockReturnValue({
       width: 800,
       height: 600,
@@ -125,7 +133,6 @@ describe("useCanvas", () => {
     const { unmount } = renderHook(
       () => {
         const ref = useRef<HTMLCanvasElement>(canvas);
-        (ref as { current: HTMLCanvasElement }).current = canvas;
         useCanvas(ref);
         return ref;
       },
@@ -134,7 +141,5 @@ describe("useCanvas", () => {
 
     unmount();
     expect(disconnectMock).toHaveBeenCalled();
-
-    document.body.removeChild(container);
   });
 });
