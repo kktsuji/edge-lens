@@ -24,7 +24,12 @@ const emptyImage: ImageState = {
 const emptyViewport: ViewportState = { zoom: 1, panX: 0, panY: 0 };
 
 export function useGridCellProvider(cellId: string): ImageStoreContextValue {
-  const globalStore = useContext(ImageStoreContext)!;
+  const globalStore = useContext(ImageStoreContext);
+  if (!globalStore) {
+    throw new Error(
+      "useGridCellProvider must be used within ImageStoreProvider",
+    );
+  }
   const {
     gridState,
     updateCellViewport,
@@ -64,7 +69,7 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
       if (gs.positionLocked) {
         const currentVp = gs.cells.find((c) => c.id === cellId)?.viewport;
         if (currentVp) {
-          const zoomRatio = vp.zoom / currentVp.zoom;
+          const zoomRatio = vp.zoom / (currentVp.zoom || 1);
           const panDeltaX = vp.panX - currentVp.panX;
           const panDeltaY = vp.panY - currentVp.panY;
           updateAllCellViewports((prev) => ({

@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useImageStore } from "../../../hooks/useImageStore";
-import { validateImageFile } from "../../../utils/validation";
+import { handleFileSelection } from "../../../utils/validation";
 
 interface FilePickerButtonProps {
   inputRef?: React.RefObject<HTMLInputElement | null>;
@@ -18,23 +18,9 @@ export function FilePickerButton({
 
   const handleChange = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
-      setError(null);
       const file = e.target.files?.[0];
       if (!file) return;
-
-      const result = validateImageFile(file);
-      if (!result.valid) {
-        setError(result.error!);
-        // Reset input so the same file can be re-selected
-        if (inputRef.current) inputRef.current.value = "";
-        return;
-      }
-
-      try {
-        await loadImage(file);
-      } catch {
-        setError("error.unsupportedFormat");
-      }
+      await handleFileSelection(file, loadImage, setError);
       if (inputRef.current) inputRef.current.value = "";
     },
     [loadImage],

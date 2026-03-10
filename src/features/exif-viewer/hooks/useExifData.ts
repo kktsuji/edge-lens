@@ -55,8 +55,12 @@ export function useExifData(): ExifData | null {
           hasGps: raw.GPSLatitude != null,
         });
       })
-      .catch(() => {
-        if (!cancelled) setExifData({});
+      .catch((err) => {
+        if (cancelled) return;
+        if (import.meta.env.DEV) {
+          console.warn("EXIF parsing failed:", err);
+        }
+        setExifData({});
       });
 
     return () => {

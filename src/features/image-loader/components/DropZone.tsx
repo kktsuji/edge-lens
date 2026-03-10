@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useImageStore } from "../../../hooks/useImageStore";
-import { validateImageFile } from "../../../utils/validation";
+import { handleFileSelection } from "../../../utils/validation";
 
 export function DropZone() {
   const { t } = useTranslation();
@@ -18,17 +18,7 @@ export function DropZone() {
 
   const handleFile = useCallback(
     async (file: File) => {
-      setError(null);
-      const result = validateImageFile(file);
-      if (!result.valid) {
-        setError(result.error!);
-        return;
-      }
-      try {
-        await loadImage(file);
-      } catch {
-        setError("error.unsupportedFormat");
-      }
+      await handleFileSelection(file, loadImage, setError);
     },
     [loadImage],
   );

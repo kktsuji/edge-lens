@@ -154,31 +154,33 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   const loadImage = useCallback(async (file: File) => {
     const bitmap = await createImageBitmap(file);
-    const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = offscreen.getContext("2d");
-    if (!ctx) {
-      bitmap.close();
-      throw new Error("Failed to get 2d context");
-    }
-    ctx.drawImage(bitmap, 0, 0);
-    const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+    try {
+      const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = offscreen.getContext("2d");
+      if (!ctx) throw new Error("Failed to get 2d context");
+      ctx.drawImage(bitmap, 0, 0);
+      const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
-    // Close the previous bitmap before replacing it.
-    // Read from ref because React 19 may defer setState updaters.
-    imageRef.current.imageBitmap?.close();
-    setImage({
-      file,
-      name: file.name,
-      width: bitmap.width,
-      height: bitmap.height,
-      imageData,
-      imageBitmap: bitmap,
-    });
-    setViewport(initialViewport);
-    setToolMode("navigate");
-    setRoiSelection(null);
-    setLineProfile(null);
-    setIsTouchPinching(false);
+      // Close the previous bitmap before replacing it.
+      // Read from ref because React 19 may defer setState updaters.
+      imageRef.current.imageBitmap?.close();
+      setImage({
+        file,
+        name: file.name,
+        width: bitmap.width,
+        height: bitmap.height,
+        imageData,
+        imageBitmap: bitmap,
+      });
+      setViewport(initialViewport);
+      setToolMode("navigate");
+      setRoiSelection(null);
+      setLineProfile(null);
+      setIsTouchPinching(false);
+    } catch (err) {
+      bitmap.close();
+      throw err;
+    }
   }, []);
 
   // Fix #2: use state updaters to read latest state instead of closures
@@ -374,45 +376,47 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     versionMap.set(cellId, version);
 
     const bitmap = await createImageBitmap(file);
-    const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = offscreen.getContext("2d");
-    if (!ctx) {
-      bitmap.close();
-      throw new Error("Failed to get 2d context");
-    }
-    ctx.drawImage(bitmap, 0, 0);
-    const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+    try {
+      const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = offscreen.getContext("2d");
+      if (!ctx) throw new Error("Failed to get 2d context");
+      ctx.drawImage(bitmap, 0, 0);
+      const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
-    // A newer load has started for this cell — discard this result
-    if (versionMap.get(cellId) !== version) {
-      bitmap.close();
-      return;
-    }
+      // A newer load has started for this cell — discard this result
+      if (versionMap.get(cellId) !== version) {
+        bitmap.close();
+        return;
+      }
 
-    // Close old cell bitmap from ref before replacing state
-    const oldCell = gridStateRef.current.cells.find((c) => c.id === cellId);
-    const oldBitmap = oldCell?.image.imageBitmap;
-    setGridState((prev) => ({
-      ...prev,
-      cells: prev.cells.map((cell) => {
-        if (cell.id !== cellId) return cell;
-        return {
-          ...cell,
-          image: {
-            file,
-            name: file.name,
-            width: bitmap.width,
-            height: bitmap.height,
-            imageData,
-            imageBitmap: bitmap,
-          },
-          viewport: { ...initialViewport },
-          roiSelection: null,
-          lineProfile: null,
-        };
-      }),
-    }));
-    oldBitmap?.close();
+      // Close old cell bitmap from ref before replacing state
+      const oldCell = gridStateRef.current.cells.find((c) => c.id === cellId);
+      const oldBitmap = oldCell?.image.imageBitmap;
+      setGridState((prev) => ({
+        ...prev,
+        cells: prev.cells.map((cell) => {
+          if (cell.id !== cellId) return cell;
+          return {
+            ...cell,
+            image: {
+              file,
+              name: file.name,
+              width: bitmap.width,
+              height: bitmap.height,
+              imageData,
+              imageBitmap: bitmap,
+            },
+            viewport: { ...initialViewport },
+            roiSelection: null,
+            lineProfile: null,
+          };
+        }),
+      }));
+      oldBitmap?.close();
+    } catch (err) {
+      bitmap.close();
+      throw err;
+    }
   }, []);
 
   const closeCellImage = useCallback((cellId: string) => {

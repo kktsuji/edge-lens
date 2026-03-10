@@ -67,8 +67,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom * factor));
 
         // Keep the pixel under cursor fixed
-        const panX = cx - (cx - v.panX) * (newZoom / v.zoom);
-        const panY = cy - (cy - v.panY) * (newZoom / v.zoom);
+        const safeZoom = v.zoom || 1;
+        const panX = cx - (cx - v.panX) * (newZoom / safeZoom);
+        const panY = cy - (cy - v.panY) * (newZoom / safeZoom);
 
         setViewport({ zoom: newZoom, panX, panY });
       } else if (Math.abs(deltaX) > 1) {
@@ -89,8 +90,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom * factor));
 
         // Keep the pixel under cursor fixed
-        const panX = cx - (cx - v.panX) * (newZoom / v.zoom);
-        const panY = cy - (cy - v.panY) * (newZoom / v.zoom);
+        const safeZoom = v.zoom || 1;
+        const panX = cx - (cx - v.panX) * (newZoom / safeZoom);
+        const panY = cy - (cy - v.panY) * (newZoom / safeZoom);
 
         setViewport({ zoom: newZoom, panX, panY });
       }
@@ -236,8 +238,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       const v = viewportRef.current;
 
       // Zoom anchored at midpoint
-      const panX = cx - (lastMidpoint.x - v.panX) * (newZoom / v.zoom);
-      const panY = cy - (lastMidpoint.y - v.panY) * (newZoom / v.zoom);
+      const safeZoom = v.zoom || 1;
+      const panX = cx - (lastMidpoint.x - v.panX) * (newZoom / safeZoom);
+      const panY = cy - (lastMidpoint.y - v.panY) * (newZoom / safeZoom);
 
       lastMidpoint = { x: cx, y: cy };
       setViewport({ zoom: newZoom, panX, panY });
