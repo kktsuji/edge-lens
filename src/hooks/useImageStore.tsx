@@ -156,7 +156,10 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     const bitmap = await createImageBitmap(file);
     const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
     const ctx = offscreen.getContext("2d");
-    if (!ctx) throw new Error("Failed to get 2d context");
+    if (!ctx) {
+      bitmap.close();
+      throw new Error("Failed to get 2d context");
+    }
     ctx.drawImage(bitmap, 0, 0);
     const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
@@ -345,6 +348,14 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       layoutVersion: prev.layoutVersion + 1,
     });
     for (const b of bitmapsToClose) b.close();
+
+    // Clean up version map for removed cells
+    const versionMap = cellLoadVersionRef.current;
+    for (const cell of prev.cells) {
+      if (!newIds.has(cell.id)) {
+        versionMap.delete(cell.id);
+      }
+    }
   }, []);
 
   const setGridPositionLocked = useCallback((locked: boolean) => {
@@ -419,6 +430,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       ),
     }));
     oldBitmap?.close();
+    versionMap.delete(cellId);
   }, []);
 
   const updateCellViewport = useCallback(

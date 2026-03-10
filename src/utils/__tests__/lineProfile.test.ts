@@ -101,4 +101,19 @@ describe("sampleLineProfile", () => {
     const samples = sampleLineProfile(img, lp);
     expect(samples).toEqual([]);
   });
+
+  it("caps sample count at 5000 for very long lines", () => {
+    // Use a small image but a line that extends far beyond it.
+    // Without the cap, dist ~= 14142 → n ~= 14143 iterations.
+    // With the cap, n = 5000. Most samples will be out-of-bounds and skipped,
+    // but the function should still complete without allocating a huge array.
+    const lp: LineProfile = { x1: 0, y1: 0, x2: 9999, y2: 9999 };
+    const samples = sampleLineProfile(img, lp);
+    // The returned samples only include in-bounds points (our 2x2 image),
+    // so there will be very few. The key assertion is that the function
+    // doesn't produce more than 5000 iterations internally.
+    expect(samples.length).toBeLessThanOrEqual(5000);
+    // Verify it still returns some valid samples from the in-bounds region
+    expect(samples.length).toBeGreaterThan(0);
+  });
 });

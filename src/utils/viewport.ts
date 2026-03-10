@@ -14,6 +14,15 @@ export function computeInitialViewport(
   containerWidth: number,
   containerHeight: number,
 ): ViewportState {
+  if (
+    imageWidth <= 0 ||
+    imageHeight <= 0 ||
+    containerWidth <= 0 ||
+    containerHeight <= 0
+  ) {
+    return { zoom: 1, panX: 0, panY: 0 };
+  }
+
   const fitsInContainer =
     imageWidth <= containerWidth && imageHeight <= containerHeight;
 

@@ -46,4 +46,24 @@ describe("computeInitialViewport", () => {
     expect(vp.panX).toBeCloseTo((800 - 400 * expectedZoom) / 2);
     expect(vp.panY).toBeCloseTo(0);
   });
+
+  it("returns default viewport when imageWidth is 0", () => {
+    const vp = computeInitialViewport(0, 600, 800, 600);
+    expect(vp).toEqual({ zoom: 1, panX: 0, panY: 0 });
+  });
+
+  it("returns default viewport when imageHeight is 0", () => {
+    const vp = computeInitialViewport(800, 0, 800, 600);
+    expect(vp).toEqual({ zoom: 1, panX: 0, panY: 0 });
+  });
+
+  it("returns default viewport when containerWidth is 0", () => {
+    const vp = computeInitialViewport(800, 600, 0, 600);
+    expect(vp).toEqual({ zoom: 1, panX: 0, panY: 0 });
+  });
+
+  it("returns default viewport when containerHeight is 0", () => {
+    const vp = computeInitialViewport(800, 600, 800, 0);
+    expect(vp).toEqual({ zoom: 1, panX: 0, panY: 0 });
+  });
 });

@@ -14,7 +14,10 @@ export function LineProfileOverlay() {
   const sy2 = y2 * zoom + panY;
 
   return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full">
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden="true"
+    >
       <line
         x1={sx1}
         y1={sy1}

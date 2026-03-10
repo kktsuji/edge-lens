@@ -1,5 +1,6 @@
 import { Suspense, lazy, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { ChartErrorBoundary } from "../../../components/ChartErrorBoundary";
 import { useImageStore } from "../../../hooks/useImageStore";
 import { sampleLineProfile } from "../../../utils/lineProfile";
 
@@ -38,11 +39,15 @@ export function LineProfilePanel() {
         )}
       </div>
       {samples ? (
-        <Suspense
-          fallback={<div className="h-40 animate-pulse rounded bg-gray-700" />}
-        >
-          <LineProfileChart samples={samples} />
-        </Suspense>
+        <ChartErrorBoundary>
+          <Suspense
+            fallback={
+              <div className="h-40 animate-pulse rounded bg-gray-700" />
+            }
+          >
+            <LineProfileChart samples={samples} />
+          </Suspense>
+        </ChartErrorBoundary>
       ) : (
         <p className="text-xs text-gray-400">{t("lineProfile.placeholder")}</p>
       )}
