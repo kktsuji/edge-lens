@@ -142,6 +142,8 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   roiSelectionRef.current = roiSelection;
   const lineProfileRef = useRef(lineProfile);
   lineProfileRef.current = lineProfile;
+  const gridStateRef = useRef(gridState);
+  gridStateRef.current = gridState;
 
   // Ref for active cell id so setCellPixelInfo stays stable (#1)
   const activeCellIdRef = useRef(gridState.activeCellId);
@@ -158,19 +160,17 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     ctx.drawImage(bitmap, 0, 0);
     const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
-    const stale: { bitmap: ImageBitmap | null } = { bitmap: null };
-    setImage((prev) => {
-      stale.bitmap = prev.imageBitmap;
-      return {
-        file,
-        name: file.name,
-        width: bitmap.width,
-        height: bitmap.height,
-        imageData,
-        imageBitmap: bitmap,
-      };
+    // Close the previous bitmap before replacing it.
+    // Read from ref because React 19 may defer setState updaters.
+    imageRef.current.imageBitmap?.close();
+    setImage({
+      file,
+      name: file.name,
+      width: bitmap.width,
+      height: bitmap.height,
+      imageData,
+      imageBitmap: bitmap,
     });
-    stale.bitmap?.close();
     setViewport(initialViewport);
     setToolMode("navigate");
     setRoiSelection(null);
@@ -180,21 +180,20 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   // Fix #2: use state updaters to read latest state instead of closures
   const closeImage = useCallback(() => {
-    const stale: { bitmap: ImageBitmap | null } = { bitmap: null };
-    setImage((prev) => {
-      stale.bitmap = prev.imageBitmap;
-      return initialImage;
-    });
+    // Collect bitmaps to close from refs before resetting state.
+    // React 19 may defer setState updaters, so we cannot rely on
+    // reading prev inside the updater and closing after setState.
     const bitmapsToClose = new Set<ImageBitmap>();
-    if (stale.bitmap) bitmapsToClose.add(stale.bitmap);
-    setGridState((prev) => {
-      for (const cell of prev.cells) {
-        if (cell.image.imageBitmap) {
-          bitmapsToClose.add(cell.image.imageBitmap);
-        }
+    if (imageRef.current.imageBitmap) {
+      bitmapsToClose.add(imageRef.current.imageBitmap);
+    }
+    for (const cell of gridStateRef.current.cells) {
+      if (cell.image.imageBitmap) {
+        bitmapsToClose.add(cell.image.imageBitmap);
       }
-      return { ...initialGridState };
-    });
+    }
+    setImage(initialImage);
+    setGridState({ ...initialGridState });
     for (const b of bitmapsToClose) b.close();
     setViewport(initialViewport);
     setToolMode("navigate");
@@ -216,121 +215,18 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   // Fix #3, #7: read single-view state from refs, avoid state mutation
   const setGridEnabled = useCallback((enabled: boolean) => {
-    const bitmapsToClose: ImageBitmap[] = [];
-    const restore: { cell: GridCellState | null } = { cell: null };
-    setGridState((prev) => {
-      if (enabled && !prev.enabled) {
-        const layout =
-          prev.layout.rows === 1 && prev.layout.cols === 1
-            ? { rows: 1, cols: 2 }
-            : prev.layout;
-        const img = imageRef.current;
-        const vp = viewportRef.current;
-        const roi = roiSelectionRef.current;
-        const lp = lineProfileRef.current;
-        const cells = buildCellGrid(layout, prev.cells).map((c) => {
-          if (c.id === "0-0" && img.imageData) {
-            return {
-              ...c,
-              image: { ...img },
-              viewport: { ...vp },
-              roiSelection: roi,
-              lineProfile: lp,
-            };
-          }
-          return c;
-        });
-        return {
-          ...prev,
-          enabled: true,
-          layout,
-          cells,
-          activeCellId: "0-0",
-        };
-      }
-      if (!enabled && prev.enabled) {
-        // Capture cell "0-0" for restoration after updater returns
-        restore.cell = prev.cells.find((c) => c.id === "0-0") ?? null;
-        for (const cell of prev.cells) {
-          if (cell.id !== "0-0" && cell.image.imageBitmap) {
-            bitmapsToClose.push(cell.image.imageBitmap);
-          }
-        }
-        return { ...initialGridState };
-      }
-      return prev;
-    });
-    // Restore single-view state AFTER the updater returns
-    if (restore.cell?.image.imageBitmap) {
-      setImage(restore.cell.image);
-      setViewport(restore.cell.viewport);
-      setRoiSelection(restore.cell.roiSelection);
-      setLineProfile(restore.cell.lineProfile);
-    } else if (restore.cell) {
-      // Cell 0-0 exists but has no image — reset to clean state
-      setImage(initialImage);
-      setViewport(initialViewport);
-      setRoiSelection(null);
-      setLineProfile(null);
-    }
-    for (const b of bitmapsToClose) b.close();
-    setRefitKey((k) => k + 1);
-  }, []);
-
-  const setGridLayout = useCallback((layout: GridLayout) => {
-    // 1×1 means "return to single view"
-    if (layout.rows === 1 && layout.cols === 1) {
-      const bitmapsToClose: ImageBitmap[] = [];
-      const restore: { cell: GridCellState | null } = { cell: null };
-      setGridState((prev) => {
-        if (!prev.enabled) return prev;
-        restore.cell = prev.cells.find((c) => c.id === "0-0") ?? null;
-        for (const cell of prev.cells) {
-          if (cell.id !== "0-0" && cell.image.imageBitmap) {
-            bitmapsToClose.push(cell.image.imageBitmap);
-          }
-        }
-        return { ...initialGridState };
-      });
-      // Restore single-view state AFTER the updater returns
-      if (restore.cell?.image.imageBitmap) {
-        setImage(restore.cell.image);
-        setViewport(restore.cell.viewport);
-        setRoiSelection(restore.cell.roiSelection);
-        setLineProfile(restore.cell.lineProfile);
-      } else {
-        // Cell 0-0 missing or has no image — reset to clean state
-        setImage(initialImage);
-        setViewport(initialViewport);
-        setRoiSelection(null);
-        setLineProfile(null);
-      }
-      for (const b of bitmapsToClose) b.close();
-      setRefitKey((k) => k + 1);
-      return;
-    }
-
-    const bitmapsToClose: ImageBitmap[] = [];
-    setGridState((prev) => {
-      // Collect bitmaps for cells that will be removed
-      const newIds = new Set<string>();
-      for (let r = 0; r < layout.rows; r++) {
-        for (let c = 0; c < layout.cols; c++) {
-          newIds.add(`${r}-${c}`);
-        }
-      }
-      for (const cell of prev.cells) {
-        if (!newIds.has(cell.id) && cell.image.imageBitmap) {
-          bitmapsToClose.push(cell.image.imageBitmap);
-        }
-      }
+    const prev = gridStateRef.current;
+    if (enabled && !prev.enabled) {
+      const layout =
+        prev.layout.rows === 1 && prev.layout.cols === 1
+          ? { rows: 1, cols: 2 }
+          : prev.layout;
       const img = imageRef.current;
       const vp = viewportRef.current;
       const roi = roiSelectionRef.current;
       const lp = lineProfileRef.current;
       const cells = buildCellGrid(layout, prev.cells).map((c) => {
-        // Copy single-view image to cell "0-0" when transitioning to grid
-        if (!prev.enabled && c.id === "0-0" && img.imageData) {
+        if (c.id === "0-0" && img.imageData) {
           return {
             ...c,
             image: { ...img },
@@ -341,18 +237,112 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         }
         return c;
       });
-      const activeCellId =
-        prev.activeCellId && newIds.has(prev.activeCellId)
-          ? prev.activeCellId
-          : "0-0";
-      return {
+      setGridState({
         ...prev,
+        enabled: true,
         layout,
         cells,
-        enabled: true,
-        activeCellId,
-        layoutVersion: prev.layoutVersion + 1,
-      };
+        activeCellId: "0-0",
+      });
+    } else if (!enabled && prev.enabled) {
+      // Read cell "0-0" and collect bitmaps from refs before resetting state
+      const restoreCell = prev.cells.find((c) => c.id === "0-0") ?? null;
+      const bitmapsToClose: ImageBitmap[] = [];
+      for (const cell of prev.cells) {
+        if (cell.id !== "0-0" && cell.image.imageBitmap) {
+          bitmapsToClose.push(cell.image.imageBitmap);
+        }
+      }
+      setGridState({ ...initialGridState });
+      // Restore single-view state from cell "0-0"
+      if (restoreCell?.image.imageBitmap) {
+        setImage(restoreCell.image);
+        setViewport(restoreCell.viewport);
+        setRoiSelection(restoreCell.roiSelection);
+        setLineProfile(restoreCell.lineProfile);
+      } else if (restoreCell) {
+        setImage(initialImage);
+        setViewport(initialViewport);
+        setRoiSelection(null);
+        setLineProfile(null);
+      }
+      for (const b of bitmapsToClose) b.close();
+    }
+    setRefitKey((k) => k + 1);
+  }, []);
+
+  const setGridLayout = useCallback((layout: GridLayout) => {
+    const prev = gridStateRef.current;
+
+    // 1×1 means "return to single view"
+    if (layout.rows === 1 && layout.cols === 1) {
+      if (!prev.enabled) return;
+      const restoreCell = prev.cells.find((c) => c.id === "0-0") ?? null;
+      const bitmapsToClose: ImageBitmap[] = [];
+      for (const cell of prev.cells) {
+        if (cell.id !== "0-0" && cell.image.imageBitmap) {
+          bitmapsToClose.push(cell.image.imageBitmap);
+        }
+      }
+      setGridState({ ...initialGridState });
+      // Restore single-view state from cell "0-0"
+      if (restoreCell?.image.imageBitmap) {
+        setImage(restoreCell.image);
+        setViewport(restoreCell.viewport);
+        setRoiSelection(restoreCell.roiSelection);
+        setLineProfile(restoreCell.lineProfile);
+      } else {
+        setImage(initialImage);
+        setViewport(initialViewport);
+        setRoiSelection(null);
+        setLineProfile(null);
+      }
+      for (const b of bitmapsToClose) b.close();
+      setRefitKey((k) => k + 1);
+      return;
+    }
+
+    // Collect bitmaps for cells that will be removed
+    const newIds = new Set<string>();
+    for (let r = 0; r < layout.rows; r++) {
+      for (let c = 0; c < layout.cols; c++) {
+        newIds.add(`${r}-${c}`);
+      }
+    }
+    const bitmapsToClose: ImageBitmap[] = [];
+    for (const cell of prev.cells) {
+      if (!newIds.has(cell.id) && cell.image.imageBitmap) {
+        bitmapsToClose.push(cell.image.imageBitmap);
+      }
+    }
+    const img = imageRef.current;
+    const vp = viewportRef.current;
+    const roi = roiSelectionRef.current;
+    const lp = lineProfileRef.current;
+    const cells = buildCellGrid(layout, prev.cells).map((c) => {
+      // Copy single-view image to cell "0-0" when transitioning to grid
+      if (!prev.enabled && c.id === "0-0" && img.imageData) {
+        return {
+          ...c,
+          image: { ...img },
+          viewport: { ...vp },
+          roiSelection: roi,
+          lineProfile: lp,
+        };
+      }
+      return c;
+    });
+    const activeCellId =
+      prev.activeCellId && newIds.has(prev.activeCellId)
+        ? prev.activeCellId
+        : "0-0";
+    setGridState({
+      ...prev,
+      layout,
+      cells,
+      enabled: true,
+      activeCellId,
+      layoutVersion: prev.layoutVersion + 1,
     });
     for (const b of bitmapsToClose) b.close();
   }, []);
@@ -388,12 +378,13 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const stale: { bitmap: ImageBitmap | null } = { bitmap: null };
+    // Close old cell bitmap from ref before replacing state
+    const oldCell = gridStateRef.current.cells.find((c) => c.id === cellId);
+    const oldBitmap = oldCell?.image.imageBitmap;
     setGridState((prev) => ({
       ...prev,
       cells: prev.cells.map((cell) => {
         if (cell.id !== cellId) return cell;
-        stale.bitmap = cell.image.imageBitmap;
         return {
           ...cell,
           image: {
@@ -410,7 +401,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         };
       }),
     }));
-    stale.bitmap?.close();
+    oldBitmap?.close();
   }, []);
 
   const closeCellImage = useCallback((cellId: string) => {
@@ -418,16 +409,16 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     const versionMap = cellLoadVersionRef.current;
     versionMap.set(cellId, (versionMap.get(cellId) ?? 0) + 1);
 
-    const stale: { bitmap: ImageBitmap | null } = { bitmap: null };
+    // Close old cell bitmap from ref before replacing state
+    const oldCell = gridStateRef.current.cells.find((c) => c.id === cellId);
+    const oldBitmap = oldCell?.image.imageBitmap;
     setGridState((prev) => ({
       ...prev,
-      cells: prev.cells.map((cell) => {
-        if (cell.id !== cellId) return cell;
-        stale.bitmap = cell.image.imageBitmap;
-        return createEmptyCell(cellId);
-      }),
+      cells: prev.cells.map((cell) =>
+        cell.id === cellId ? createEmptyCell(cellId) : cell,
+      ),
     }));
-    stale.bitmap?.close();
+    oldBitmap?.close();
   }, []);
 
   const updateCellViewport = useCallback(

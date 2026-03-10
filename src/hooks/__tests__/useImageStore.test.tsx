@@ -132,7 +132,8 @@ describe("single-view state", () => {
       await result.current.loadImage(createTestFile("b.png"));
     });
 
-    // The previous bitmap should no longer be referenced
+    // The previous bitmap should be closed and no longer be referenced
+    expect(closeMock).toHaveBeenCalled();
     expect(result.current.image.imageBitmap).not.toBe(firstBitmap);
     expect(result.current.image.name).toBe("b.png");
     expect(result.current.image.width).toBe(60);

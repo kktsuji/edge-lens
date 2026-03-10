@@ -56,6 +56,10 @@ describe("analytics", () => {
     const { initGA4, trackEvent } = await import("../analytics");
     initGA4();
 
+    // Verify initGA4 actually injected the script before overwriting gtag
+    const scripts = document.querySelectorAll("script[src*='gtag']");
+    expect(scripts.length).toBe(1);
+
     const gtagSpy = vi.fn();
     window.gtag = gtagSpy;
 
