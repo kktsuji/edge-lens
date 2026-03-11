@@ -384,6 +384,51 @@ describe("grid actions", () => {
     expect(cell?.image.imageData).toBeNull();
   });
 
+  it("closeCellImage discards in-flight loadImageToCell after close then reload", async () => {
+    const { result } = renderHook(() => useGridActions(), { wrapper });
+    act(() => result.current.setGridEnabled(true));
+
+    // Start a slow load that we will intercept
+    let resolveFirst!: (v: ImageBitmap) => void;
+    const firstBitmapClose = vi.fn();
+    vi.mocked(globalThis.createImageBitmap).mockImplementationOnce(
+      () =>
+        new Promise<ImageBitmap>((resolve) => {
+          resolveFirst = resolve;
+        }),
+    );
+
+    // Start a load but don't await — it's blocked on createImageBitmap
+    const firstLoadPromise = result.current
+      .loadImageToCell("0-0", createTestFile("first.png"))
+      .catch(() => {});
+
+    // Close the cell while the first load is still in-flight
+    act(() => result.current.closeCellImage("0-0"));
+
+    // Start a second load that completes immediately
+    await act(async () => {
+      await result.current.loadImageToCell("0-0", createTestFile("second.png"));
+    });
+
+    // Now let the first load finish — it should be discarded
+    await act(async () => {
+      resolveFirst({
+        width: 50,
+        height: 50,
+        close: firstBitmapClose,
+      } as unknown as ImageBitmap);
+      await firstLoadPromise;
+    });
+
+    // The cell should still have the second image, not the first
+    const cell = result.current.gridState.cells.find((c) => c.id === "0-0");
+    expect(cell?.image.name).toBe("second.png");
+    expect(cell?.image.width).toBe(100);
+    // The stale first bitmap should have been closed
+    expect(firstBitmapClose).toHaveBeenCalled();
+  });
+
   it("updateCellViewport updates a single cell viewport", () => {
     const { result } = renderHook(() => useGridActions(), { wrapper });
     act(() => result.current.setGridEnabled(true));

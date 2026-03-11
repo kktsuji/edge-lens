@@ -364,14 +364,6 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       layoutVersion: prev.layoutVersion + 1,
     });
     for (const b of bitmapsToClose) b.close();
-
-    // Clean up version map for removed cells
-    const versionMap = cellLoadVersionRef.current;
-    for (const cell of prev.cells) {
-      if (!newIds.has(cell.id)) {
-        versionMap.delete(cell.id);
-      }
-    }
   }, []);
 
   const setGridPositionLocked = useCallback((locked: boolean) => {
@@ -448,7 +440,6 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
       ),
     }));
     oldBitmap?.close();
-    versionMap.delete(cellId);
   }, []);
 
   const updateCellViewport = useCallback(
