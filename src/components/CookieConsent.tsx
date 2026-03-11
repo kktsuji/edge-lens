@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { initGA4 } from "../utils/analytics";
+import { safeGetItem, safeSetItem } from "../utils/storage";
 
 const STORAGE_KEY = "edgelens-cookie-consent";
 
@@ -9,7 +10,7 @@ export function CookieConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = safeGetItem(STORAGE_KEY);
     if (stored === "accepted") {
       initGA4();
     } else if (stored === null) {
@@ -18,13 +19,13 @@ export function CookieConsent() {
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem(STORAGE_KEY, "accepted");
+    safeSetItem(STORAGE_KEY, "accepted");
     initGA4();
     setVisible(false);
   };
 
   const handleDecline = () => {
-    localStorage.setItem(STORAGE_KEY, "declined");
+    safeSetItem(STORAGE_KEY, "declined");
     setVisible(false);
   };
 

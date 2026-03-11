@@ -15,7 +15,7 @@ import { useLineProfile } from "../../line-profile/hooks/useLineProfile";
 import { usePixelInspector } from "../../pixel-inspector/hooks/usePixelInspector";
 import { RoiSelectionOverlay } from "../../roi/components/RoiSelectionOverlay";
 import { LineProfileOverlay } from "../../line-profile/components/LineProfileOverlay";
-import { validateImageFile } from "../../../utils/validation";
+import { handleFileSelection } from "../../../utils/validation";
 import { GridCellProvider } from "./GridCellProvider";
 import { GridCellDropZone } from "./GridCellDropZone";
 
@@ -32,6 +32,7 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hasImage = !!image.imageData;
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [dropError, setDropError] = useState<string | null>(null);
   const dragDepthRef = useRef(0);
 
   useCanvas(canvasRef);
@@ -45,9 +46,20 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
     setCellPixelInfo(cellId, pixelInfo);
   }, [cellId, pixelInfo, setCellPixelInfo]);
 
+  useEffect(() => {
+    if (!dropError) return;
+    const timer = setTimeout(() => setDropError(null), 4000);
+    return () => clearTimeout(timer);
+  }, [dropError]);
+
   const handleActivate = useCallback(() => {
     setActiveCellId(cellId);
   }, [cellId, setActiveCellId]);
+
+  const loadFile = useCallback(
+    (file: File) => loadImageToCell(cellId, file),
+    [cellId, loadImageToCell],
+  );
 
   const handleDrop = useCallback(
     async (e: DragEvent<HTMLElement>) => {
@@ -56,15 +68,9 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
       setIsDraggingOver(false);
       const file = e.dataTransfer.files[0];
       if (!file) return;
-      const result = validateImageFile(file);
-      if (!result.valid) return;
-      try {
-        await loadImageToCell(cellId, file);
-      } catch (err) {
-        console.error("Failed to load image into grid cell:", err);
-      }
+      await handleFileSelection(file, loadFile, setDropError);
     },
-    [cellId, loadImageToCell],
+    [loadFile],
   );
 
   const handleDragEnter = useCallback((e: DragEvent<HTMLElement>) => {
@@ -107,6 +113,7 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
         >
           <canvas
             ref={canvasRef}
+            aria-label={image.name || undefined}
             className={`h-full w-full ${toolMode === "roi" || toolMode === "line-profile" ? "cursor-crosshair" : ""}`}
           />
           <RoiSelectionOverlay />
@@ -115,6 +122,13 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center border-2 border-dashed border-blue-400 bg-blue-400/20">
               <p className="text-sm font-medium text-blue-300">
                 {t("grid.dropToReplace")}
+              </p>
+            </div>
+          )}
+          {dropError && (
+            <div className="pointer-events-none absolute bottom-2 left-2 right-2">
+              <p role="alert" className="text-center text-xs text-red-400">
+                {t(dropError)}
               </p>
             </div>
           )}

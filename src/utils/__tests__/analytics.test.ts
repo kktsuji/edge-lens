@@ -33,6 +33,28 @@ describe("analytics", () => {
     expect(scripts.length).toBe(0);
   });
 
+  it("initGA4 does nothing when measurement ID has invalid format", async () => {
+    vi.stubEnv("VITE_GA_MEASUREMENT_ID", "INVALID-ID");
+    const { initGA4 } = await import("../analytics");
+    initGA4();
+
+    const scripts = document.querySelectorAll(
+      'script[src*="googletagmanager"]',
+    );
+    expect(scripts.length).toBe(0);
+  });
+
+  it("initGA4 does nothing when measurement ID contains special characters", async () => {
+    vi.stubEnv("VITE_GA_MEASUREMENT_ID", 'G-"><script>alert(1)</script>');
+    const { initGA4 } = await import("../analytics");
+    initGA4();
+
+    const scripts = document.querySelectorAll(
+      'script[src*="googletagmanager"]',
+    );
+    expect(scripts.length).toBe(0);
+  });
+
   it("initGA4 is idempotent — second call does not add another script", async () => {
     vi.stubEnv("VITE_GA_MEASUREMENT_ID", "G-TEST123");
     const { initGA4 } = await import("../analytics");

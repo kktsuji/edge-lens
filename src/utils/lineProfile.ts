@@ -1,4 +1,5 @@
 import type { LineProfile } from "../types";
+import { luminance } from "./color";
 import { getPixelAt } from "./pixel";
 
 export interface LineProfileSample {
@@ -15,7 +16,7 @@ export function sampleLineProfile(
 ): LineProfileSample[] {
   const { x1, y1, x2, y2 } = lp;
   const dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  const n = Math.max(2, Math.round(dist) + 1);
+  const n = Math.max(2, Math.min(Math.round(dist) + 1, 5000));
   const samples: LineProfileSample[] = [];
 
   for (let i = 0; i < n; i++) {
@@ -29,7 +30,7 @@ export function sampleLineProfile(
         r: pixel.r,
         g: pixel.g,
         b: pixel.b,
-        luminance: 0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b,
+        luminance: luminance(pixel.r, pixel.g, pixel.b),
       });
     }
   }

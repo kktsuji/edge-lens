@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useImageStore } from "../../../hooks/useImageStore";
-import { validateImageFile } from "../../../utils/validation";
+import { handleFileSelection } from "../../../utils/validation";
 
 export function DropZone() {
   const { t } = useTranslation();
@@ -18,17 +18,7 @@ export function DropZone() {
 
   const handleFile = useCallback(
     async (file: File) => {
-      setError(null);
-      const result = validateImageFile(file);
-      if (!result.valid) {
-        setError(result.error!);
-        return;
-      }
-      try {
-        await loadImage(file);
-      } catch {
-        setError("error.unsupportedFormat");
-      }
+      await handleFileSelection(file, loadImage, setError);
     },
     [loadImage],
   );
@@ -43,11 +33,11 @@ export function DropZone() {
   );
 
   const handleDrop = useCallback(
-    (e: DragEvent) => {
+    async (e: DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
+      if (file) await handleFile(file);
     },
     [handleFile],
   );
@@ -76,19 +66,18 @@ export function DropZone() {
     >
       <div className="mb-30 text-center">
         <h1 className="mb-10 text-5xl font-bold text-white">🔍 EdgeLens</h1>
-        <p className="text-lg text-gray-300">
-          Browser-based image analyzer — your images never leave your device.
-        </p>
+        <p className="text-lg text-gray-300">{t("app.tagline")}</p>
         <p className="mt-3 text-base font-medium text-gray-300">
-          🚫 No images uploaded&nbsp;&nbsp;|&nbsp;&nbsp;✅ Analysis works
-          offline&nbsp;&nbsp;|&nbsp;&nbsp;🔓{" "}
+          🚫 {t("dropzone.noUpload")}&nbsp;&nbsp;|&nbsp;&nbsp;✅{" "}
+          {t("dropzone.offlineAnalysis")}
+          &nbsp;&nbsp;|&nbsp;&nbsp;🔓{" "}
           <a
             href="https://github.com/kktsuji/edge-lens"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 underline hover:text-white"
           >
-            Open source
+            {t("dropzone.openSource")}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="12"

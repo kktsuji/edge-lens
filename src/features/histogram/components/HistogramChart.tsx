@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { useTranslation } from "react-i18next";
 import type { HistogramData } from "../../../types";
 
 ChartJS.register(
@@ -28,11 +29,12 @@ interface HistogramChartProps {
 const labels = Array.from({ length: 256 }, (_, i) => i.toString());
 
 export function HistogramChart({ data }: HistogramChartProps) {
+  const { t } = useTranslation();
   const chartData = {
     labels,
     datasets: [
       {
-        label: "Red",
+        label: t("chart.red"),
         data: data.red,
         borderColor: "rgba(239,68,68,0.8)",
         backgroundColor: "rgba(239,68,68,0.1)",
@@ -41,7 +43,7 @@ export function HistogramChart({ data }: HistogramChartProps) {
         borderWidth: 1,
       },
       {
-        label: "Green",
+        label: t("chart.green"),
         data: data.green,
         borderColor: "rgba(34,197,94,0.8)",
         backgroundColor: "rgba(34,197,94,0.1)",
@@ -50,7 +52,7 @@ export function HistogramChart({ data }: HistogramChartProps) {
         borderWidth: 1,
       },
       {
-        label: "Blue",
+        label: t("chart.blue"),
         data: data.blue,
         borderColor: "rgba(59,130,246,0.8)",
         backgroundColor: "rgba(59,130,246,0.1)",
@@ -59,7 +61,7 @@ export function HistogramChart({ data }: HistogramChartProps) {
         borderWidth: 1,
       },
       {
-        label: "Luminance",
+        label: t("chart.luminance"),
         data: data.luminance,
         borderColor: "rgba(156,163,175,0.8)",
         backgroundColor: "rgba(156,163,175,0.1)",
@@ -104,7 +106,7 @@ export function HistogramChart({ data }: HistogramChartProps) {
         data={chartData}
         options={options}
         role="img"
-        aria-label="Image color histogram"
+        aria-label={t("chart.histogramAria")}
       />
     </div>
   );

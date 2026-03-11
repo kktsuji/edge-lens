@@ -43,11 +43,23 @@ export function useRoiSelection(
       if (e.key === " ") isSpaceDown = false;
     };
 
+    const onWindowBlur = () => {
+      isSpaceDown = false;
+      isDragging = false;
+    };
+
+    const onPointerCancel = () => {
+      isDragging = false;
+    };
+
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0 || toolModeRef.current !== "roi") return;
       if (isTouchPinchingRef.current) return;
       // For mouse, require no space key; for touch, skip space check
       if (e.pointerType !== "touch" && isSpaceDown) return;
+
+      const img = imageRef.current;
+      if (img.width <= 0 || img.height <= 0) return;
 
       const rect = canvas.getBoundingClientRect();
       const screenX = e.clientX - rect.left;
@@ -55,9 +67,9 @@ export function useRoiSelection(
       const imgPos = screenToImage(screenX, screenY, viewportRef.current);
 
       isDragging = true;
-      startImgX = imgPos.x;
-      startImgY = imgPos.y;
-      setRoiSelection({ x: imgPos.x, y: imgPos.y, width: 0, height: 0 });
+      startImgX = Math.max(0, Math.min(img.width, imgPos.x));
+      startImgY = Math.max(0, Math.min(img.height, imgPos.y));
+      setRoiSelection({ x: startImgX, y: startImgY, width: 0, height: 0 });
       canvas.setPointerCapture(e.pointerId);
       e.preventDefault();
     };
@@ -92,16 +104,20 @@ export function useRoiSelection(
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerCancel);
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerCancel);
     };
   }, [
     canvasRef,

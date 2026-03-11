@@ -1,5 +1,6 @@
 import { Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
+import { ChartErrorBoundary } from "../../../components/ChartErrorBoundary";
 import type { HistogramData } from "../../../types";
 
 const HistogramChart = lazy(() =>
@@ -19,11 +20,15 @@ export function HistogramPanel({ data }: HistogramPanelProps) {
         {t("histogram.title")}
       </h2>
       {data ? (
-        <Suspense
-          fallback={<div className="h-40 animate-pulse rounded bg-gray-700" />}
-        >
-          <HistogramChart data={data} />
-        </Suspense>
+        <ChartErrorBoundary resetKey={data}>
+          <Suspense
+            fallback={
+              <div className="h-40 animate-pulse rounded bg-gray-700" />
+            }
+          >
+            <HistogramChart data={data} />
+          </Suspense>
+        </ChartErrorBoundary>
       ) : (
         <p className="text-xs text-gray-400">{t("histogram.placeholder")}</p>
       )}

@@ -67,8 +67,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom * factor));
 
         // Keep the pixel under cursor fixed
-        const panX = cx - (cx - v.panX) * (newZoom / v.zoom);
-        const panY = cy - (cy - v.panY) * (newZoom / v.zoom);
+        const safeZoom = v.zoom || 1;
+        const panX = cx - (cx - v.panX) * (newZoom / safeZoom);
+        const panY = cy - (cy - v.panY) * (newZoom / safeZoom);
 
         setViewport({ zoom: newZoom, panX, panY });
       } else if (Math.abs(deltaX) > 1) {
@@ -89,8 +90,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.zoom * factor));
 
         // Keep the pixel under cursor fixed
-        const panX = cx - (cx - v.panX) * (newZoom / v.zoom);
-        const panY = cy - (cy - v.panY) * (newZoom / v.zoom);
+        const safeZoom = v.zoom || 1;
+        const panX = cx - (cx - v.panX) * (newZoom / safeZoom);
+        const panY = cy - (cy - v.panY) * (newZoom / safeZoom);
 
         setViewport({ zoom: newZoom, panX, panY });
       }
@@ -120,7 +122,13 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key !== " ") return;
       isSpaceDown = false;
-      if (isPanning) isPanning = false;
+      isPanning = false;
+      canvas.style.cursor = "";
+    };
+
+    const onWindowBlur = () => {
+      isSpaceDown = false;
+      isPanning = false;
       canvas.style.cursor = "";
     };
 
@@ -164,6 +172,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onWindowBlur);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerup", onPointerUp);
@@ -172,6 +181,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onWindowBlur);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);
@@ -236,8 +246,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       const v = viewportRef.current;
 
       // Zoom anchored at midpoint
-      const panX = cx - (lastMidpoint.x - v.panX) * (newZoom / v.zoom);
-      const panY = cy - (lastMidpoint.y - v.panY) * (newZoom / v.zoom);
+      const safeZoom = v.zoom || 1;
+      const panX = cx - (lastMidpoint.x - v.panX) * (newZoom / safeZoom);
+      const panY = cy - (lastMidpoint.y - v.panY) * (newZoom / safeZoom);
 
       lastMidpoint = { x: cx, y: cy };
       setViewport({ zoom: newZoom, panX, panY });

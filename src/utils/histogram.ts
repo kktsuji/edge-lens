@@ -4,12 +4,13 @@ import type {
   ImageStats,
   RoiSelection,
 } from "../types";
+import { luminance } from "./color";
 
 export function computeHistogram(imageData: ImageData): HistogramData {
   const red = new Array<number>(256).fill(0);
   const green = new Array<number>(256).fill(0);
   const blue = new Array<number>(256).fill(0);
-  const luminance = new Array<number>(256).fill(0);
+  const luminanceArr = new Array<number>(256).fill(0);
 
   const data = imageData.data;
   for (let i = 0; i < data.length; i += 4) {
@@ -21,12 +22,11 @@ export function computeHistogram(imageData: ImageData): HistogramData {
     green[g]!++;
     blue[b]!++;
 
-    // ITU-R BT.601 luminance
-    const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-    luminance[lum]!++;
+    const lum = Math.round(luminance(r, g, b));
+    luminanceArr[lum]!++;
   }
 
-  return { red, green, blue, luminance };
+  return { red, green, blue, luminance: luminanceArr };
 }
 
 export function computeRoiHistogram(
@@ -36,7 +36,7 @@ export function computeRoiHistogram(
   const red = new Array<number>(256).fill(0);
   const green = new Array<number>(256).fill(0);
   const blue = new Array<number>(256).fill(0);
-  const luminance = new Array<number>(256).fill(0);
+  const luminanceArr = new Array<number>(256).fill(0);
 
   const { width: imgWidth } = imageData;
   const data = imageData.data;
@@ -65,12 +65,12 @@ export function computeRoiHistogram(
       green[g]!++;
       blue[b]!++;
 
-      const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-      luminance[lum]!++;
+      const lum = Math.round(luminance(r, g, b));
+      luminanceArr[lum]!++;
     }
   }
 
-  return { red, green, blue, luminance };
+  return { red, green, blue, luminance: luminanceArr };
 }
 
 export function computeChannelStats(bins: number[]): ChannelStats {

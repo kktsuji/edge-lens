@@ -152,34 +152,51 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   // Track load version per cell to prevent race conditions (Bug #2)
   const cellLoadVersionRef = useRef(new Map<string, number>());
 
-  const loadImage = useCallback(async (file: File) => {
-    const bitmap = await createImageBitmap(file);
-    const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = offscreen.getContext("2d");
-    if (!ctx) throw new Error("Failed to get 2d context");
-    ctx.drawImage(bitmap, 0, 0);
-    const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+  // Track load version for single-view to prevent race conditions
+  const singleLoadVersionRef = useRef(0);
 
-    // Close the previous bitmap before replacing it.
-    // Read from ref because React 19 may defer setState updaters.
-    imageRef.current.imageBitmap?.close();
-    setImage({
-      file,
-      name: file.name,
-      width: bitmap.width,
-      height: bitmap.height,
-      imageData,
-      imageBitmap: bitmap,
-    });
-    setViewport(initialViewport);
-    setToolMode("navigate");
-    setRoiSelection(null);
-    setLineProfile(null);
-    setIsTouchPinching(false);
+  const loadImage = useCallback(async (file: File) => {
+    const version = ++singleLoadVersionRef.current;
+    const bitmap = await createImageBitmap(file);
+    try {
+      // A newer load has started — discard this result
+      if (singleLoadVersionRef.current !== version) {
+        bitmap.close();
+        return;
+      }
+
+      const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = offscreen.getContext("2d");
+      if (!ctx) throw new Error("Failed to get 2d context");
+      ctx.drawImage(bitmap, 0, 0);
+      const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+
+      // Close the previous bitmap before replacing it.
+      // Read from ref because React 19 may defer setState updaters.
+      imageRef.current.imageBitmap?.close();
+      setImage({
+        file,
+        name: file.name,
+        width: bitmap.width,
+        height: bitmap.height,
+        imageData,
+        imageBitmap: bitmap,
+      });
+      setViewport(initialViewport);
+      setToolMode("navigate");
+      setRoiSelection(null);
+      setLineProfile(null);
+      setIsTouchPinching(false);
+    } catch (err) {
+      bitmap.close();
+      throw err;
+    }
   }, []);
 
   // Fix #2: use state updaters to read latest state instead of closures
   const closeImage = useCallback(() => {
+    // Invalidate any pending loadImage so it discards its result
+    ++singleLoadVersionRef.current;
     // Collect bitmaps to close from refs before resetting state.
     // React 19 may defer setState updaters, so we cannot rely on
     // reading prev inside the updater and closing after setState.
@@ -272,10 +289,16 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setGridLayout = useCallback((layout: GridLayout) => {
+    // Clamp layout to valid bounds (1–4 rows/cols)
+    const normalizeDimension = (value: number) =>
+      Number.isFinite(value) ? Math.max(1, Math.min(4, Math.round(value))) : 1;
+    const rows = normalizeDimension(layout.rows);
+    const cols = normalizeDimension(layout.cols);
+    const normalized = { rows, cols };
     const prev = gridStateRef.current;
 
     // 1×1 means "return to single view"
-    if (layout.rows === 1 && layout.cols === 1) {
+    if (normalized.rows === 1 && normalized.cols === 1) {
       if (!prev.enabled) return;
       const restoreCell = prev.cells.find((c) => c.id === "0-0") ?? null;
       const bitmapsToClose: ImageBitmap[] = [];
@@ -304,8 +327,8 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
     // Collect bitmaps for cells that will be removed
     const newIds = new Set<string>();
-    for (let r = 0; r < layout.rows; r++) {
-      for (let c = 0; c < layout.cols; c++) {
+    for (let r = 0; r < normalized.rows; r++) {
+      for (let c = 0; c < normalized.cols; c++) {
         newIds.add(`${r}-${c}`);
       }
     }
@@ -319,7 +342,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     const vp = viewportRef.current;
     const roi = roiSelectionRef.current;
     const lp = lineProfileRef.current;
-    const cells = buildCellGrid(layout, prev.cells).map((c) => {
+    const cells = buildCellGrid(normalized, prev.cells).map((c) => {
       // Copy single-view image to cell "0-0" when transitioning to grid
       if (!prev.enabled && c.id === "0-0" && img.imageData) {
         return {
@@ -338,7 +361,7 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
         : "0-0";
     setGridState({
       ...prev,
-      layout,
+      layout: normalized,
       cells,
       enabled: true,
       activeCellId,
@@ -363,45 +386,47 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     versionMap.set(cellId, version);
 
     const bitmap = await createImageBitmap(file);
-    const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = offscreen.getContext("2d");
-    if (!ctx) {
-      bitmap.close();
-      throw new Error("Failed to get 2d context");
-    }
-    ctx.drawImage(bitmap, 0, 0);
-    const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+    try {
+      const offscreen = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = offscreen.getContext("2d");
+      if (!ctx) throw new Error("Failed to get 2d context");
+      ctx.drawImage(bitmap, 0, 0);
+      const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
 
-    // A newer load has started for this cell — discard this result
-    if (versionMap.get(cellId) !== version) {
-      bitmap.close();
-      return;
-    }
+      // A newer load has started for this cell — discard this result
+      if (versionMap.get(cellId) !== version) {
+        bitmap.close();
+        return;
+      }
 
-    // Close old cell bitmap from ref before replacing state
-    const oldCell = gridStateRef.current.cells.find((c) => c.id === cellId);
-    const oldBitmap = oldCell?.image.imageBitmap;
-    setGridState((prev) => ({
-      ...prev,
-      cells: prev.cells.map((cell) => {
-        if (cell.id !== cellId) return cell;
-        return {
-          ...cell,
-          image: {
-            file,
-            name: file.name,
-            width: bitmap.width,
-            height: bitmap.height,
-            imageData,
-            imageBitmap: bitmap,
-          },
-          viewport: { ...initialViewport },
-          roiSelection: null,
-          lineProfile: null,
-        };
-      }),
-    }));
-    oldBitmap?.close();
+      // Close old cell bitmap from ref before replacing state
+      const oldCell = gridStateRef.current.cells.find((c) => c.id === cellId);
+      const oldBitmap = oldCell?.image.imageBitmap;
+      setGridState((prev) => ({
+        ...prev,
+        cells: prev.cells.map((cell) => {
+          if (cell.id !== cellId) return cell;
+          return {
+            ...cell,
+            image: {
+              file,
+              name: file.name,
+              width: bitmap.width,
+              height: bitmap.height,
+              imageData,
+              imageBitmap: bitmap,
+            },
+            viewport: { ...initialViewport },
+            roiSelection: null,
+            lineProfile: null,
+          };
+        }),
+      }));
+      oldBitmap?.close();
+    } catch (err) {
+      bitmap.close();
+      throw err;
+    }
   }, []);
 
   const closeCellImage = useCallback((cellId: string) => {
@@ -569,28 +594,48 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
     ],
   );
 
+  const storeValue = useMemo<ImageStoreContextValue>(
+    () => ({
+      image,
+      viewport,
+      toolMode,
+      roiSelection,
+      lineProfile,
+      isTouchPinching,
+      refitKey,
+      loadImage,
+      closeImage,
+      setZoom,
+      setPan,
+      setViewport,
+      setViewportLocal: setViewport,
+      setToolMode,
+      setRoiSelection,
+      setLineProfile,
+      setIsTouchPinching,
+    }),
+    [
+      image,
+      viewport,
+      toolMode,
+      roiSelection,
+      lineProfile,
+      isTouchPinching,
+      refitKey,
+      loadImage,
+      closeImage,
+      setZoom,
+      setPan,
+      setViewport,
+      setToolMode,
+      setRoiSelection,
+      setLineProfile,
+      setIsTouchPinching,
+    ],
+  );
+
   return (
-    <ImageStoreContext.Provider
-      value={{
-        image,
-        viewport,
-        toolMode,
-        roiSelection,
-        lineProfile,
-        isTouchPinching,
-        refitKey,
-        loadImage,
-        closeImage,
-        setZoom,
-        setPan,
-        setViewport,
-        setViewportLocal: setViewport,
-        setToolMode,
-        setRoiSelection,
-        setLineProfile,
-        setIsTouchPinching,
-      }}
-    >
+    <ImageStoreContext.Provider value={storeValue}>
       <GridActionsContext.Provider value={gridActions}>
         {children}
       </GridActionsContext.Provider>

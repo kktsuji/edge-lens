@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useGridActions } from "../../../hooks/useImageStore";
-import { validateImageFile } from "../../../utils/validation";
+import { handleFileSelection } from "../../../utils/validation";
 
 interface GridCellDropZoneProps {
   cellId: string;
@@ -20,29 +20,24 @@ export function GridCellDropZone({ cellId }: GridCellDropZoneProps) {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = useCallback(
-    async (file: File) => {
-      setError(null);
-      const result = validateImageFile(file);
-      if (!result.valid) {
-        setError(result.error!);
-        return;
-      }
-      try {
-        await loadImageToCell(cellId, file);
-      } catch {
-        setError("error.unsupportedFormat");
-      }
-    },
+  const loadFile = useCallback(
+    (file: File) => loadImageToCell(cellId, file),
     [cellId, loadImageToCell],
   );
 
+  const handleFile = useCallback(
+    async (file: File) => {
+      await handleFileSelection(file, loadFile, setError);
+    },
+    [loadFile],
+  );
+
   const handleDrop = useCallback(
-    (e: DragEvent) => {
+    async (e: DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
+      if (file) await handleFile(file);
     },
     [handleFile],
   );

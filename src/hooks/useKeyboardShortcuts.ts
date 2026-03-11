@@ -265,11 +265,12 @@ export function useKeyboardShortcuts(
           applyZoom((prev, pcw, pch) => {
             const cx = pcw / 2;
             const cy = pch / 2;
-            const nz = Math.min(MAX_ZOOM, prev.zoom * ZOOM_FACTOR);
+            const safeZoom = prev.zoom || 1;
+            const nz = Math.min(MAX_ZOOM, safeZoom * ZOOM_FACTOR);
             return {
               zoom: nz,
-              panX: cx - (cx - prev.panX) * (nz / prev.zoom),
-              panY: cy - (cy - prev.panY) * (nz / prev.zoom),
+              panX: cx - (cx - prev.panX) * (nz / safeZoom),
+              panY: cy - (cy - prev.panY) * (nz / safeZoom),
             };
           });
           return;
@@ -280,11 +281,12 @@ export function useKeyboardShortcuts(
           applyZoom((prev, pcw, pch) => {
             const cx = pcw / 2;
             const cy = pch / 2;
-            const nz = Math.max(MIN_ZOOM, prev.zoom / ZOOM_FACTOR);
+            const safeZoom = prev.zoom || 1;
+            const nz = Math.max(MIN_ZOOM, safeZoom / ZOOM_FACTOR);
             return {
               zoom: nz,
-              panX: cx - (cx - prev.panX) * (nz / prev.zoom),
-              panY: cy - (cy - prev.panY) * (nz / prev.zoom),
+              panX: cx - (cx - prev.panX) * (nz / safeZoom),
+              panY: cy - (cy - prev.panY) * (nz / safeZoom),
             };
           });
           return;
@@ -365,11 +367,12 @@ export function useKeyboardShortcuts(
         e.preventDefault();
         const cx = cw / 2;
         const cy = ch / 2;
-        const newZoom = Math.min(MAX_ZOOM, v.zoom * ZOOM_FACTOR);
+        const safeZoom = v.zoom || 1;
+        const newZoom = Math.min(MAX_ZOOM, safeZoom * ZOOM_FACTOR);
         setViewport({
           zoom: newZoom,
-          panX: cx - (cx - v.panX) * (newZoom / v.zoom),
-          panY: cy - (cy - v.panY) * (newZoom / v.zoom),
+          panX: cx - (cx - v.panX) * (newZoom / safeZoom),
+          panY: cy - (cy - v.panY) * (newZoom / safeZoom),
         });
         return;
       }
@@ -378,11 +381,12 @@ export function useKeyboardShortcuts(
         e.preventDefault();
         const cx = cw / 2;
         const cy = ch / 2;
-        const newZoom = Math.max(MIN_ZOOM, v.zoom / ZOOM_FACTOR);
+        const safeZoom = v.zoom || 1;
+        const newZoom = Math.max(MIN_ZOOM, safeZoom / ZOOM_FACTOR);
         setViewport({
           zoom: newZoom,
-          panX: cx - (cx - v.panX) * (newZoom / v.zoom),
-          panY: cy - (cy - v.panY) * (newZoom / v.zoom),
+          panX: cx - (cx - v.panX) * (newZoom / safeZoom),
+          panY: cy - (cy - v.panY) * (newZoom / safeZoom),
         });
         return;
       }

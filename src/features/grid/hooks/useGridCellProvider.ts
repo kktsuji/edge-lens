@@ -24,7 +24,12 @@ const emptyImage: ImageState = {
 const emptyViewport: ViewportState = { zoom: 1, panX: 0, panY: 0 };
 
 export function useGridCellProvider(cellId: string): ImageStoreContextValue {
-  const globalStore = useContext(ImageStoreContext)!;
+  const globalStore = useContext(ImageStoreContext);
+  if (!globalStore) {
+    throw new Error(
+      "useGridCellProvider must be used within ImageStoreProvider",
+    );
+  }
   const {
     gridState,
     updateCellViewport,
@@ -64,7 +69,7 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
       if (gs.positionLocked) {
         const currentVp = gs.cells.find((c) => c.id === cellId)?.viewport;
         if (currentVp) {
-          const zoomRatio = vp.zoom / currentVp.zoom;
+          const zoomRatio = vp.zoom / (currentVp.zoom || 1);
           const panDeltaX = vp.panX - currentVp.panX;
           const panDeltaY = vp.panY - currentVp.panY;
           updateAllCellViewports((prev) => ({
@@ -145,10 +150,11 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
           const imgH = c.image.height;
           if (!imgW || !imgH) return null;
 
-          const rawX = (sx - c.viewport.panX) / c.viewport.zoom;
-          const rawY = (sy - c.viewport.panY) / c.viewport.zoom;
-          const rawW = sw / c.viewport.zoom;
-          const rawH = sh / c.viewport.zoom;
+          const safeZoom = c.viewport.zoom || 1;
+          const rawX = (sx - c.viewport.panX) / safeZoom;
+          const rawY = (sy - c.viewport.panY) / safeZoom;
+          const rawW = sw / safeZoom;
+          const rawH = sh / safeZoom;
 
           const x1 = Math.max(0, Math.min(imgW, rawX));
           const y1 = Math.max(0, Math.min(imgH, rawY));
@@ -196,10 +202,11 @@ export function useGridCellProvider(cellId: string): ImageStoreContextValue {
           const imgH = c.image.height;
           if (!imgW || !imgH) return null;
 
-          const rawX1 = (sx1 - c.viewport.panX) / c.viewport.zoom;
-          const rawY1 = (sy1 - c.viewport.panY) / c.viewport.zoom;
-          const rawX2 = (sx2 - c.viewport.panX) / c.viewport.zoom;
-          const rawY2 = (sy2 - c.viewport.panY) / c.viewport.zoom;
+          const safeZoom = c.viewport.zoom || 1;
+          const rawX1 = (sx1 - c.viewport.panX) / safeZoom;
+          const rawY1 = (sy1 - c.viewport.panY) / safeZoom;
+          const rawX2 = (sx2 - c.viewport.panX) / safeZoom;
+          const rawY2 = (sy2 - c.viewport.panY) / safeZoom;
 
           return clipLineToRect(
             rawX1,

@@ -16,7 +16,10 @@ export function RoiSelectionOverlay() {
   const screenH = height * zoom;
 
   return (
-    <svg className="pointer-events-none absolute inset-0 h-full w-full">
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden="true"
+    >
       <rect
         x={screenX}
         y={screenY}

@@ -139,6 +139,65 @@ describe("single-view state", () => {
     expect(result.current.image.width).toBe(60);
   });
 
+  it("concurrent loadImage calls discard the first and apply the second", async () => {
+    const { result } = renderHook(() => useImageStore(), { wrapper });
+
+    const closeMock1 = vi.fn();
+    const closeMock2 = vi.fn();
+
+    let resolveFirst!: (v: ImageBitmap) => void;
+    let resolveSecond!: (v: ImageBitmap) => void;
+
+    const createBitmapSpy = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<ImageBitmap>((r) => {
+            resolveFirst = r;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<ImageBitmap>((r) => {
+            resolveSecond = r;
+          }),
+      );
+    globalThis.createImageBitmap = createBitmapSpy;
+
+    // Start two concurrent loads
+    let p1: Promise<void>;
+    let p2: Promise<void>;
+    act(() => {
+      p1 = result.current.loadImage(createTestFile("first.png"));
+      p2 = result.current.loadImage(createTestFile("second.png"));
+    });
+
+    // Resolve second first, then first
+    await act(async () => {
+      resolveSecond({
+        width: 200,
+        height: 200,
+        close: closeMock2,
+      } as unknown as ImageBitmap);
+      await p2!;
+    });
+
+    await act(async () => {
+      resolveFirst({
+        width: 50,
+        height: 50,
+        close: closeMock1,
+      } as unknown as ImageBitmap);
+      await p1!;
+    });
+
+    // First load should be discarded (bitmap closed)
+    expect(closeMock1).toHaveBeenCalled();
+    // Second load's state should be applied
+    expect(result.current.image.name).toBe("second.png");
+    expect(result.current.image.width).toBe(200);
+  });
+
   it("closeImage resets all state and releases bitmap", async () => {
     const { result } = renderHook(() => useImageStore(), { wrapper });
 
@@ -156,6 +215,42 @@ describe("single-view state", () => {
     expect(result.current.image.imageData).toBeNull();
     expect(result.current.viewport.zoom).toBe(1);
     expect(result.current.toolMode).toBe("navigate");
+  });
+
+  it("closeImage invalidates in-flight loadImage", async () => {
+    const { result } = renderHook(() => useImageStore(), { wrapper });
+
+    let resolveLoad!: (v: ImageBitmap) => void;
+    const staleBitmapClose = vi.fn();
+    vi.mocked(globalThis.createImageBitmap).mockImplementationOnce(
+      () =>
+        new Promise<ImageBitmap>((resolve) => {
+          resolveLoad = resolve;
+        }),
+    );
+
+    // Start a load but don't await — it's blocked on createImageBitmap
+    const loadPromise = result.current
+      .loadImage(createTestFile("pending.png"))
+      .catch(() => {});
+
+    // Close while load is in-flight
+    act(() => result.current.closeImage());
+
+    // Now let the pending load resolve — it should be discarded
+    await act(async () => {
+      resolveLoad({
+        width: 50,
+        height: 50,
+        close: staleBitmapClose,
+      } as unknown as ImageBitmap);
+      await loadPromise;
+    });
+
+    // The stale bitmap should be closed and state should remain cleared
+    expect(staleBitmapClose).toHaveBeenCalled();
+    expect(result.current.image.file).toBeNull();
+    expect(result.current.image.imageBitmap).toBeNull();
   });
 
   it("setZoom updates zoom", () => {
@@ -323,6 +418,51 @@ describe("grid actions", () => {
     const cell = result.current.gridState.cells.find((c) => c.id === "0-0");
     expect(cell?.image.file).toBeNull();
     expect(cell?.image.imageData).toBeNull();
+  });
+
+  it("closeCellImage discards in-flight loadImageToCell after close then reload", async () => {
+    const { result } = renderHook(() => useGridActions(), { wrapper });
+    act(() => result.current.setGridEnabled(true));
+
+    // Start a slow load that we will intercept
+    let resolveFirst!: (v: ImageBitmap) => void;
+    const firstBitmapClose = vi.fn();
+    vi.mocked(globalThis.createImageBitmap).mockImplementationOnce(
+      () =>
+        new Promise<ImageBitmap>((resolve) => {
+          resolveFirst = resolve;
+        }),
+    );
+
+    // Start a load but don't await — it's blocked on createImageBitmap
+    const firstLoadPromise = result.current
+      .loadImageToCell("0-0", createTestFile("first.png"))
+      .catch(() => {});
+
+    // Close the cell while the first load is still in-flight
+    act(() => result.current.closeCellImage("0-0"));
+
+    // Start a second load that completes immediately
+    await act(async () => {
+      await result.current.loadImageToCell("0-0", createTestFile("second.png"));
+    });
+
+    // Now let the first load finish — it should be discarded
+    await act(async () => {
+      resolveFirst({
+        width: 50,
+        height: 50,
+        close: firstBitmapClose,
+      } as unknown as ImageBitmap);
+      await firstLoadPromise;
+    });
+
+    // The cell should still have the second image, not the first
+    const cell = result.current.gridState.cells.find((c) => c.id === "0-0");
+    expect(cell?.image.name).toBe("second.png");
+    expect(cell?.image.width).toBe(100);
+    // The stale first bitmap should have been closed
+    expect(firstBitmapClose).toHaveBeenCalled();
   });
 
   it("updateCellViewport updates a single cell viewport", () => {
@@ -544,6 +684,26 @@ describe("grid actions", () => {
     // Shrink to 1x2 — cell "1-1" is gone, should reset to "0-0"
     act(() => result.current.setGridLayout({ rows: 1, cols: 2 }));
     expect(result.current.gridState.activeCellId).toBe("0-0");
+  });
+
+  it("setGridLayout clamps NaN dimensions to 1", () => {
+    const { result } = renderHook(() => useGridActions(), { wrapper });
+
+    act(() => result.current.setGridLayout({ rows: NaN, cols: NaN }));
+
+    // NaN should be treated as 1, resulting in 1×1 which is single-view
+    expect(result.current.gridState.enabled).toBe(false);
+  });
+
+  it("setGridLayout clamps Infinity dimensions to valid range", () => {
+    const { result } = renderHook(() => useGridActions(), { wrapper });
+
+    act(() =>
+      result.current.setGridLayout({ rows: Infinity, cols: -Infinity }),
+    );
+
+    // Infinity → not finite → fallback to 1, so layout becomes 1×1 → single view
+    expect(result.current.gridState.enabled).toBe(false);
   });
 
   it("closeImage also resets grid state", async () => {
