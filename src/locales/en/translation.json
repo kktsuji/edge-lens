@@ -3,6 +3,7 @@
   "app.tagline": "Browser-based image analyzer — your images never leave your device.",
   "toolbar.open": "Open Image",
   "toolbar.close": "Close Image",
+  "toolbar.noImageToClose": "No image to close",
   "dropzone.title": "Drop an image here",
   "dropzone.subtitle": "or",
   "dropzone.formats": "Supports JPEG and PNG (max 50 MB)",
