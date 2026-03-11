@@ -126,6 +126,7 @@ function App() {
         <CloseButton />
         <div className="mx-1 h-5 w-px bg-gray-600" />
         <button
+          data-testid="tool-navigate"
           onClick={() => setToolMode("navigate")}
           disabled={!toolsEnabled}
           title={
@@ -138,12 +139,13 @@ function App() {
               ? `${t("toolbar.navigate")} (N)`
               : t("toolbar.openImageFirst")
           }
-          aria-pressed={toolMode === "navigate"}
+          aria-pressed={toolsEnabled ? toolMode === "navigate" : undefined}
           className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${toolBtnClass(toolMode === "navigate")}`}
         >
           ↖
         </button>
         <button
+          data-testid="tool-line-profile"
           onClick={() => setToolMode("line-profile")}
           disabled={!toolsEnabled}
           title={
@@ -156,12 +158,13 @@ function App() {
               ? `${t("toolbar.lineProfile")} (L)`
               : t("toolbar.openImageFirst")
           }
-          aria-pressed={toolMode === "line-profile"}
+          aria-pressed={toolsEnabled ? toolMode === "line-profile" : undefined}
           className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${toolBtnClass(toolMode === "line-profile")}`}
         >
           ╱
         </button>
         <button
+          data-testid="tool-roi"
           onClick={() => setToolMode("roi")}
           disabled={!toolsEnabled}
           title={
@@ -174,7 +177,7 @@ function App() {
               ? `${t("toolbar.roi")} (R)`
               : t("toolbar.openImageFirst")
           }
-          aria-pressed={toolMode === "roi"}
+          aria-pressed={toolsEnabled ? toolMode === "roi" : undefined}
           className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${toolBtnClass(toolMode === "roi")}`}
         >
           ▭

@@ -46,21 +46,15 @@ test.describe("Toolbar", () => {
   test("tool buttons visible but disabled when no image loaded", async ({
     page,
   }) => {
-    const navBtn = page.getByRole("button", {
-      name: "Open an image first",
-    });
-    const lpBtn = page.getByRole("button", {
-      name: "Open an image first",
-    });
-    const roiBtn = page.getByRole("button", {
-      name: "Open an image first",
-    });
+    const navBtn = page.getByTestId("tool-navigate");
+    const lpBtn = page.getByTestId("tool-line-profile");
+    const roiBtn = page.getByTestId("tool-roi");
 
-    await expect(navBtn.first()).toBeVisible();
-    await expect(navBtn.first()).toBeDisabled();
-    await expect(lpBtn.nth(1)).toBeVisible();
-    await expect(lpBtn.nth(1)).toBeDisabled();
-    await expect(roiBtn.nth(2)).toBeVisible();
-    await expect(roiBtn.nth(2)).toBeDisabled();
+    await expect(navBtn).toBeVisible();
+    await expect(navBtn).toBeDisabled();
+    await expect(lpBtn).toBeVisible();
+    await expect(lpBtn).toBeDisabled();
+    await expect(roiBtn).toBeVisible();
+    await expect(roiBtn).toBeDisabled();
   });
 });
