@@ -6,7 +6,6 @@ import {
   type DragEvent,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { CookieConsent } from "./components/CookieConsent";
 import { GitHubButton } from "./components/GitHubButton";
 import { HelpButton } from "./components/HelpButton";
 import { KeyboardShortcutsHelp } from "./components/KeyboardShortcutsHelp";
@@ -247,7 +246,6 @@ function App() {
           )}
         </Sidebar>
       </div>
-      <CookieConsent />
       {isHelpOpen && (
         <KeyboardShortcutsHelp onClose={() => setIsHelpOpen(false)} />
       )}
