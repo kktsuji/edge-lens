@@ -5,9 +5,6 @@ import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { ImageStoreProvider } from "./hooks/useImageStore";
 import "./i18n";
 import "./index.css";
-import { initGA4 } from "./utils/analytics";
-
-initGA4();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
