@@ -5,19 +5,26 @@ export function LockToggleButton() {
   const { t } = useTranslation();
   const { gridState, setGridPositionLocked } = useGridActions();
 
-  if (!gridState.enabled) return null;
+  const disabled = !gridState.enabled;
+
+  const className = disabled
+    ? "text-gray-600 cursor-not-allowed"
+    : gridState.positionLocked
+      ? "bg-blue-600 text-white"
+      : "text-gray-400 hover:bg-gray-700 hover:text-white";
+
+  const label = disabled
+    ? t("grid.enableGridFirst")
+    : `${gridState.positionLocked ? t("grid.unlock") : t("grid.lock")} (K)`;
 
   return (
     <button
       onClick={() => setGridPositionLocked(!gridState.positionLocked)}
-      title={`${gridState.positionLocked ? t("grid.unlock") : t("grid.lock")} (K)`}
-      aria-label={`${gridState.positionLocked ? t("grid.unlock") : t("grid.lock")} (K)`}
+      disabled={disabled}
+      title={label}
+      aria-label={label}
       aria-pressed={gridState.positionLocked}
-      className={`hidden min-h-8 min-w-8 items-center justify-center rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 md:inline-flex ${
-        gridState.positionLocked
-          ? "bg-blue-600 text-white"
-          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-      }`}
+      className={`hidden min-h-8 min-w-8 items-center justify-center rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 md:inline-flex ${className}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

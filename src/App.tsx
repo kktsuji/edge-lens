@@ -47,6 +47,14 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
   const isGridMode = gridState.enabled;
+  const toolsEnabled = hasImage || isGridMode;
+
+  const toolBtnClass = (isActive: boolean) =>
+    !toolsEnabled
+      ? "text-gray-600 cursor-not-allowed"
+      : isActive
+        ? "bg-blue-600 text-white"
+        : "text-gray-400 hover:bg-gray-700 hover:text-white";
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
@@ -116,56 +124,65 @@ function App() {
       <Toolbar>
         <FilePickerButton inputRef={fileInputRef} />
         <CloseButton />
-        {(hasImage || isGridMode) && (
-          <>
-            <div className="mx-1 h-5 w-px bg-gray-600" />
-            <button
-              onClick={() => setToolMode("navigate")}
-              title={`${t("toolbar.navigate")} (N)`}
-              aria-label={`${t("toolbar.navigate")} (N)`}
-              aria-pressed={toolMode === "navigate"}
-              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
-                toolMode === "navigate"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
-            >
-              ↖
-            </button>
-            <button
-              onClick={() => setToolMode("line-profile")}
-              title={`${t("toolbar.lineProfile")} (L)`}
-              aria-label={`${t("toolbar.lineProfile")} (L)`}
-              aria-pressed={toolMode === "line-profile"}
-              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
-                toolMode === "line-profile"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
-            >
-              ╱
-            </button>
-            <button
-              onClick={() => setToolMode("roi")}
-              title={`${t("toolbar.roi")} (R)`}
-              aria-label={`${t("toolbar.roi")} (R)`}
-              aria-pressed={toolMode === "roi"}
-              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
-                toolMode === "roi"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
-            >
-              ▭
-            </button>
-            <div className="mx-1 h-5 w-px bg-gray-600" />
-          </>
-        )}
+        <div className="mx-1 h-5 w-px bg-gray-600" />
+        <button
+          onClick={() => setToolMode("navigate")}
+          disabled={!toolsEnabled}
+          title={
+            toolsEnabled
+              ? `${t("toolbar.navigate")} (N)`
+              : t("toolbar.openImageFirst")
+          }
+          aria-label={
+            toolsEnabled
+              ? `${t("toolbar.navigate")} (N)`
+              : t("toolbar.openImageFirst")
+          }
+          aria-pressed={toolMode === "navigate"}
+          className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${toolBtnClass(toolMode === "navigate")}`}
+        >
+          ↖
+        </button>
+        <button
+          onClick={() => setToolMode("line-profile")}
+          disabled={!toolsEnabled}
+          title={
+            toolsEnabled
+              ? `${t("toolbar.lineProfile")} (L)`
+              : t("toolbar.openImageFirst")
+          }
+          aria-label={
+            toolsEnabled
+              ? `${t("toolbar.lineProfile")} (L)`
+              : t("toolbar.openImageFirst")
+          }
+          aria-pressed={toolMode === "line-profile"}
+          className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${toolBtnClass(toolMode === "line-profile")}`}
+        >
+          ╱
+        </button>
+        <button
+          onClick={() => setToolMode("roi")}
+          disabled={!toolsEnabled}
+          title={
+            toolsEnabled
+              ? `${t("toolbar.roi")} (R)`
+              : t("toolbar.openImageFirst")
+          }
+          aria-label={
+            toolsEnabled
+              ? `${t("toolbar.roi")} (R)`
+              : t("toolbar.openImageFirst")
+          }
+          aria-pressed={toolMode === "roi"}
+          className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${toolBtnClass(toolMode === "roi")}`}
+        >
+          ▭
+        </button>
+        <div className="mx-1 h-5 w-px bg-gray-600" />
         <GridToggleButton />
         <LockToggleButton />
-        {(hasImage || isGridMode) && (
-          <div className="mx-1 h-5 w-px bg-gray-600" />
-        )}
+        <div className="mx-1 h-5 w-px bg-gray-600" />
         {!isGridMode && hasImage && (
           <span className="hidden text-xs text-gray-400 md:inline">
             {image.name} ({image.width}×{image.height})
