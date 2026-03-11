@@ -33,11 +33,11 @@ export function DropZone() {
   );
 
   const handleDrop = useCallback(
-    (e: DragEvent) => {
+    async (e: DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
+      if (file) await handleFile(file);
     },
     [handleFile],
   );
@@ -66,7 +66,7 @@ export function DropZone() {
     >
       <div className="mb-30 text-center">
         <h1 className="mb-10 text-5xl font-bold text-white">🔍 EdgeLens</h1>
-        <p className="text-lg text-gray-300">{t("dropzone.heroTagline")}</p>
+        <p className="text-lg text-gray-300">{t("app.tagline")}</p>
         <p className="mt-3 text-base font-medium text-gray-300">
           🚫 {t("dropzone.noUpload")}&nbsp;&nbsp;|&nbsp;&nbsp;✅{" "}
           {t("dropzone.offlineAnalysis")}

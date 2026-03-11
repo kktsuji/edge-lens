@@ -139,6 +139,65 @@ describe("single-view state", () => {
     expect(result.current.image.width).toBe(60);
   });
 
+  it("concurrent loadImage calls discard the first and apply the second", async () => {
+    const { result } = renderHook(() => useImageStore(), { wrapper });
+
+    const closeMock1 = vi.fn();
+    const closeMock2 = vi.fn();
+
+    let resolveFirst!: (v: ImageBitmap) => void;
+    let resolveSecond!: (v: ImageBitmap) => void;
+
+    const createBitmapSpy = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<ImageBitmap>((r) => {
+            resolveFirst = r;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<ImageBitmap>((r) => {
+            resolveSecond = r;
+          }),
+      );
+    globalThis.createImageBitmap = createBitmapSpy;
+
+    // Start two concurrent loads
+    let p1: Promise<void>;
+    let p2: Promise<void>;
+    act(() => {
+      p1 = result.current.loadImage(createTestFile("first.png"));
+      p2 = result.current.loadImage(createTestFile("second.png"));
+    });
+
+    // Resolve second first, then first
+    await act(async () => {
+      resolveSecond({
+        width: 200,
+        height: 200,
+        close: closeMock2,
+      } as unknown as ImageBitmap);
+      await p2!;
+    });
+
+    await act(async () => {
+      resolveFirst({
+        width: 50,
+        height: 50,
+        close: closeMock1,
+      } as unknown as ImageBitmap);
+      await p1!;
+    });
+
+    // First load should be discarded (bitmap closed)
+    expect(closeMock1).toHaveBeenCalled();
+    // Second load's state should be applied
+    expect(result.current.image.name).toBe("second.png");
+    expect(result.current.image.width).toBe(200);
+  });
+
   it("closeImage resets all state and releases bitmap", async () => {
     const { result } = renderHook(() => useImageStore(), { wrapper });
 

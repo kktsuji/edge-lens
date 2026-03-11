@@ -34,6 +34,7 @@ export function GridToggleButton() {
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.stopPropagation();
         setIsDropdownOpen(false);
       }
     };

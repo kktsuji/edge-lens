@@ -23,7 +23,7 @@ export function FilePickerButton({
       await handleFileSelection(file, loadImage, setError);
       if (inputRef.current) inputRef.current.value = "";
     },
-    [loadImage],
+    [loadImage, inputRef],
   );
 
   return (

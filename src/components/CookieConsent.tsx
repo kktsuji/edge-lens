@@ -1,24 +1,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { initGA4 } from "../utils/analytics";
+import { safeGetItem, safeSetItem } from "../utils/storage";
 
 const STORAGE_KEY = "edgelens-cookie-consent";
-
-function safeGetItem(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function safeSetItem(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // Storage unavailable (e.g. Safari private browsing)
-  }
-}
 
 export function CookieConsent() {
   const { t } = useTranslation();

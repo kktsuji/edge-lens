@@ -33,11 +33,11 @@ export function GridCellDropZone({ cellId }: GridCellDropZoneProps) {
   );
 
   const handleDrop = useCallback(
-    (e: DragEvent) => {
+    async (e: DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
+      if (file) await handleFile(file);
     },
     [handleFile],
   );

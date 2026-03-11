@@ -1,4 +1,10 @@
-import { useCallback, useRef, useState, type DragEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { CookieConsent } from "./components/CookieConsent";
 import { GitHubButton } from "./components/GitHubButton";
@@ -48,6 +54,12 @@ function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const dragDepthRef = useRef(0);
+
+  useEffect(() => {
+    if (!dropError) return;
+    const timer = setTimeout(() => setDropError(null), 4000);
+    return () => clearTimeout(timer);
+  }, [dropError]);
 
   const handleDrop = useCallback(
     async (e: DragEvent<HTMLElement>) => {

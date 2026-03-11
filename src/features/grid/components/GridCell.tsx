@@ -46,6 +46,12 @@ function GridCellContent({ cellId, isActive }: GridCellProps) {
     setCellPixelInfo(cellId, pixelInfo);
   }, [cellId, pixelInfo, setCellPixelInfo]);
 
+  useEffect(() => {
+    if (!dropError) return;
+    const timer = setTimeout(() => setDropError(null), 4000);
+    return () => clearTimeout(timer);
+  }, [dropError]);
+
   const handleActivate = useCallback(() => {
     setActiveCellId(cellId);
   }, [cellId, setActiveCellId]);

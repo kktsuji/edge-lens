@@ -122,13 +122,13 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key !== " ") return;
       isSpaceDown = false;
-      if (isPanning) isPanning = false;
+      isPanning = false;
       canvas.style.cursor = "";
     };
 
     const onWindowBlur = () => {
       isSpaceDown = false;
-      if (isPanning) isPanning = false;
+      isPanning = false;
       canvas.style.cursor = "";
     };
 

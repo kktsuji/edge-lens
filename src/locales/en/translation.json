@@ -80,7 +80,6 @@
   "grid.columns": "Columns",
   "grid.ok": "OK",
   "grid.sidebarEmpty": "Click a cell or load an image to view details.",
-  "dropzone.heroTagline": "Browser-based image analyzer — your images never leave your device.",
   "dropzone.noUpload": "No images uploaded",
   "dropzone.offlineAnalysis": "Analysis works offline",
   "dropzone.openSource": "Open source",
@@ -89,5 +88,9 @@
   "chart.blue": "Blue",
   "chart.luminance": "Luminance",
   "chart.histogramAria": "Image color histogram",
-  "chart.lineProfileAria": "Line profile intensity chart"
+  "chart.lineProfileAria": "Line profile intensity chart",
+  "error.boundary.title": "Something went wrong",
+  "error.boundary.description": "An unexpected error occurred.",
+  "error.boundary.reload": "Reload",
+  "error.boundary.chartFailed": "Failed to load chart."
 }

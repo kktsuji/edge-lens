@@ -22,6 +22,8 @@ export const shortcuts = [
 export function KeyboardShortcutsHelp({ onClose }: Props) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -34,7 +36,7 @@ export function KeyboardShortcutsHelp({ onClose }: Props) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -62,7 +64,7 @@ export function KeyboardShortcutsHelp({ onClose }: Props) {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, []);
 
   return (
     <div
