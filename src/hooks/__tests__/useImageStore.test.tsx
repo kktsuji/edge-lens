@@ -217,6 +217,42 @@ describe("single-view state", () => {
     expect(result.current.toolMode).toBe("navigate");
   });
 
+  it("closeImage invalidates in-flight loadImage", async () => {
+    const { result } = renderHook(() => useImageStore(), { wrapper });
+
+    let resolveLoad!: (v: ImageBitmap) => void;
+    const staleBitmapClose = vi.fn();
+    vi.mocked(globalThis.createImageBitmap).mockImplementationOnce(
+      () =>
+        new Promise<ImageBitmap>((resolve) => {
+          resolveLoad = resolve;
+        }),
+    );
+
+    // Start a load but don't await — it's blocked on createImageBitmap
+    const loadPromise = result.current
+      .loadImage(createTestFile("pending.png"))
+      .catch(() => {});
+
+    // Close while load is in-flight
+    act(() => result.current.closeImage());
+
+    // Now let the pending load resolve — it should be discarded
+    await act(async () => {
+      resolveLoad({
+        width: 50,
+        height: 50,
+        close: staleBitmapClose,
+      } as unknown as ImageBitmap);
+      await loadPromise;
+    });
+
+    // The stale bitmap should be closed and state should remain cleared
+    expect(staleBitmapClose).toHaveBeenCalled();
+    expect(result.current.image.file).toBeNull();
+    expect(result.current.image.imageBitmap).toBeNull();
+  });
+
   it("setZoom updates zoom", () => {
     const { result } = renderHook(() => useImageStore(), { wrapper });
     act(() => result.current.setZoom(3));
@@ -648,6 +684,26 @@ describe("grid actions", () => {
     // Shrink to 1x2 — cell "1-1" is gone, should reset to "0-0"
     act(() => result.current.setGridLayout({ rows: 1, cols: 2 }));
     expect(result.current.gridState.activeCellId).toBe("0-0");
+  });
+
+  it("setGridLayout clamps NaN dimensions to 1", () => {
+    const { result } = renderHook(() => useGridActions(), { wrapper });
+
+    act(() => result.current.setGridLayout({ rows: NaN, cols: NaN }));
+
+    // NaN should be treated as 1, resulting in 1×1 which is single-view
+    expect(result.current.gridState.enabled).toBe(false);
+  });
+
+  it("setGridLayout clamps Infinity dimensions to valid range", () => {
+    const { result } = renderHook(() => useGridActions(), { wrapper });
+
+    act(() =>
+      result.current.setGridLayout({ rows: Infinity, cols: -Infinity }),
+    );
+
+    // Infinity → not finite → fallback to 1, so layout becomes 1×1 → single view
+    expect(result.current.gridState.enabled).toBe(false);
   });
 
   it("closeImage also resets grid state", async () => {

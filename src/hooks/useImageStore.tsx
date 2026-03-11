@@ -195,6 +195,8 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   // Fix #2: use state updaters to read latest state instead of closures
   const closeImage = useCallback(() => {
+    // Invalidate any pending loadImage so it discards its result
+    ++singleLoadVersionRef.current;
     // Collect bitmaps to close from refs before resetting state.
     // React 19 may defer setState updaters, so we cannot rely on
     // reading prev inside the updater and closing after setState.
@@ -288,8 +290,10 @@ export function ImageStoreProvider({ children }: { children: ReactNode }) {
 
   const setGridLayout = useCallback((layout: GridLayout) => {
     // Clamp layout to valid bounds (1–4 rows/cols)
-    const rows = Math.max(1, Math.min(4, Math.round(layout.rows)));
-    const cols = Math.max(1, Math.min(4, Math.round(layout.cols)));
+    const normalizeDimension = (value: number) =>
+      Number.isFinite(value) ? Math.max(1, Math.min(4, Math.round(value))) : 1;
+    const rows = normalizeDimension(layout.rows);
+    const cols = normalizeDimension(layout.cols);
     const normalized = { rows, cols };
     const prev = gridStateRef.current;
 
