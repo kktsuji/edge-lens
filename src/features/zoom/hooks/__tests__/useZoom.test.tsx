@@ -1,6 +1,6 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import {
   ImageStoreProvider,
   useImageStore,
@@ -81,25 +81,22 @@ function wrapper({ children }: { children: ReactNode }) {
 /**
  * Helper: load a dummy image so viewport is initialized.
  */
-async function loadDummyImage(
-  result: Pick<ReturnType<typeof renderHook>, "result"> & {
-    result: {
-      current: ReturnType<typeof useImageStore> & {
-        canvasRef: { current: typeof canvas };
-      };
-    };
-  },
-) {
+async function loadDummyImage(result: {
+  result: {
+    current: { loadImage: (file: File) => Promise<void> };
+  };
+}) {
   const blob = new Blob(["x"], { type: "image/png" });
   const file = new File([blob], "test.png", { type: "image/png" });
   await act(async () => {
-    result.result.current.loadImage(file);
+    await result.result.current.loadImage(file);
   });
 }
 
 function useZoomWithStore() {
   const store = useImageStore();
-  const canvasRef = { current: canvas };
+  const canvasRef = useRef(canvas);
+  canvasRef.current = canvas;
   useZoom(canvasRef as React.RefObject<HTMLCanvasElement>);
   return { ...store, canvasRef };
 }
@@ -217,51 +214,56 @@ describe("useZoom – click-drag panning", () => {
     expect(result.result.current.viewport.panY).toBe(initialPanY);
   });
 
-  it("pans with Space+drag in all modes", async () => {
-    const result = renderHook(() => useZoomWithStore(), { wrapper });
-    await loadDummyImage(result);
+  it.each(["roi", "line-profile"] as const)(
+    "pans with Space+drag in %s mode",
+    async (mode) => {
+      const result = renderHook(() => useZoomWithStore(), { wrapper });
+      await loadDummyImage(result);
 
-    // Switch to ROI mode (Space+drag should still pan)
-    act(() => {
-      result.result.current.setToolMode("roi");
-    });
-
-    const initialPanX = result.result.current.viewport.panX;
-    const initialPanY = result.result.current.viewport.panY;
-
-    // Hold space
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
-      );
-    });
-
-    act(() => {
-      firePointerEvent(canvas, "pointerdown", {
-        clientX: 100,
-        clientY: 100,
+      act(() => {
+        result.result.current.setToolMode(mode);
       });
-    });
-    act(() => {
-      firePointerEvent(canvas, "pointermove", {
-        clientX: 130,
-        clientY: 140,
+
+      const initialPanX = result.result.current.viewport.panX;
+      const initialPanY = result.result.current.viewport.panY;
+
+      // Hold space
+      act(() => {
+        window.dispatchEvent(
+          new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+        );
       });
-    });
-    act(() => {
-      firePointerEvent(canvas, "pointerup", { clientX: 130, clientY: 140 });
-    });
 
-    // Release space
-    act(() => {
-      window.dispatchEvent(
-        new KeyboardEvent("keyup", { key: " ", bubbles: true }),
-      );
-    });
+      act(() => {
+        firePointerEvent(canvas, "pointerdown", {
+          clientX: 100,
+          clientY: 100,
+        });
+      });
+      act(() => {
+        firePointerEvent(canvas, "pointermove", {
+          clientX: 130,
+          clientY: 140,
+        });
+      });
+      act(() => {
+        firePointerEvent(canvas, "pointerup", {
+          clientX: 130,
+          clientY: 140,
+        });
+      });
 
-    expect(result.result.current.viewport.panX).toBe(initialPanX + 30);
-    expect(result.result.current.viewport.panY).toBe(initialPanY + 40);
-  });
+      // Release space
+      act(() => {
+        window.dispatchEvent(
+          new KeyboardEvent("keyup", { key: " ", bubbles: true }),
+        );
+      });
+
+      expect(result.result.current.viewport.panX).toBe(initialPanX + 30);
+      expect(result.result.current.viewport.panY).toBe(initialPanY + 40);
+    },
+  );
 
   it("sets cursor to grabbing during drag in navigate mode", async () => {
     const result = renderHook(() => useZoomWithStore(), { wrapper });
@@ -359,5 +361,98 @@ describe("useZoom – click-drag panning", () => {
 
     expect(canvas.releasePointerCapture).toHaveBeenCalledWith(42);
     expect(canvas.style.cursor).toBe("");
+  });
+
+  it("does NOT call releasePointerCapture on blur when capture is not held", async () => {
+    const result = renderHook(() => useZoomWithStore(), { wrapper });
+    await loadDummyImage(result);
+
+    // Start drag
+    act(() => {
+      firePointerEvent(canvas, "pointerdown", {
+        clientX: 100,
+        clientY: 100,
+        pointerId: 7,
+      });
+    });
+
+    // Mock hasPointerCapture returning false (e.g., browser already released)
+    (canvas.hasPointerCapture as ReturnType<typeof vi.fn>).mockReturnValue(
+      false,
+    );
+
+    act(() => {
+      window.dispatchEvent(new Event("blur"));
+    });
+
+    expect(canvas.releasePointerCapture).not.toHaveBeenCalled();
+  });
+
+  it("ignores secondary pointers during an active drag", async () => {
+    const result = renderHook(() => useZoomWithStore(), { wrapper });
+    await loadDummyImage(result);
+
+    const initialPanX = result.result.current.viewport.panX;
+
+    // Primary pointer starts drag
+    act(() => {
+      firePointerEvent(canvas, "pointerdown", {
+        clientX: 100,
+        clientY: 100,
+        pointerId: 1,
+      });
+    });
+
+    // Secondary pointer fires move — should be ignored
+    act(() => {
+      firePointerEvent(canvas, "pointermove", {
+        clientX: 200,
+        clientY: 200,
+        pointerId: 2,
+      });
+    });
+
+    // Pan should not have changed from secondary pointer
+    expect(result.result.current.viewport.panX).toBe(initialPanX);
+
+    // Primary pointer moves — should pan
+    act(() => {
+      firePointerEvent(canvas, "pointermove", {
+        clientX: 120,
+        clientY: 100,
+        pointerId: 1,
+      });
+    });
+
+    expect(result.result.current.viewport.panX).toBe(initialPanX + 20);
+
+    // Secondary pointer up — should NOT end drag
+    act(() => {
+      firePointerEvent(canvas, "pointerup", {
+        clientX: 200,
+        clientY: 200,
+        pointerId: 2,
+      });
+    });
+
+    // Primary pointer still pans
+    act(() => {
+      firePointerEvent(canvas, "pointermove", {
+        clientX: 140,
+        clientY: 100,
+        pointerId: 1,
+      });
+    });
+
+    expect(result.result.current.viewport.panX).toBe(initialPanX + 40);
+
+    // Primary pointer up ends drag
+    act(() => {
+      firePointerEvent(canvas, "pointerup", {
+        clientX: 140,
+        clientY: 100,
+        pointerId: 1,
+      });
+    });
   });
 });

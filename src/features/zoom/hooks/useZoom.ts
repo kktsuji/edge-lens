@@ -145,7 +145,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || isPanning) return;
 
       const shouldPan = isSpaceDown || toolModeRef.current === "navigate";
 
@@ -164,7 +164,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (!isPanning) return;
+      if (!isPanning || e.pointerId !== activePointerId) return;
       const v = viewportRef.current;
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
@@ -174,22 +174,22 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     };
 
     const onPointerUp = (e: PointerEvent) => {
-      if (e.button !== 0 || !isPanning) return;
+      if (e.pointerId !== activePointerId || !isPanning) return;
       isPanning = false;
-      activePointerId = -1;
       if (canvas.hasPointerCapture(e.pointerId)) {
         canvas.releasePointerCapture(e.pointerId);
       }
+      activePointerId = -1;
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 
     const onPointerCancel = (e: PointerEvent) => {
-      if (!isPanning) return;
+      if (e.pointerId !== activePointerId || !isPanning) return;
       isPanning = false;
-      activePointerId = -1;
       if (canvas.hasPointerCapture(e.pointerId)) {
         canvas.releasePointerCapture(e.pointerId);
       }
+      activePointerId = -1;
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 
