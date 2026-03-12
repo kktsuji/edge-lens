@@ -100,13 +100,16 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     [setViewport],
   );
 
-  // Pointer-based pan (Space+drag for mouse, single-finger drag for touch in navigate mode)
+  // Pointer-based pan:
+  // - Navigate mode: click-drag pans (mouse & touch)
+  // - Any mode: Space+drag pans (keyboard shortcut override)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     let isSpaceDown = false;
     let isPanning = false;
+    let activePointerId = -1;
     let lastX = 0;
     let lastY = 0;
 
@@ -122,35 +125,46 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key !== " ") return;
       isSpaceDown = false;
-      isPanning = false;
-      canvas.style.cursor = "";
+      // Don't reset isPanning — let pointerup handle cleanup so that
+      // releasing Space mid-drag doesn't orphan the pointer capture.
+      if (!isPanning) {
+        canvas.style.cursor = "";
+      }
     };
 
     const onWindowBlur = () => {
       isSpaceDown = false;
+      if (isPanning && activePointerId >= 0) {
+        if (canvas.hasPointerCapture(activePointerId)) {
+          canvas.releasePointerCapture(activePointerId);
+        }
+      }
       isPanning = false;
+      activePointerId = -1;
       canvas.style.cursor = "";
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || isPanning) return;
 
-      const shouldPan =
-        isSpaceDown ||
-        (e.pointerType === "touch" && toolModeRef.current === "navigate");
+      const shouldPan = isSpaceDown || toolModeRef.current === "navigate";
 
       if (!shouldPan) return;
 
+      // preventDefault suppresses text selection during drag. This is safe
+      // because the pixel inspector reads from pointermove (hover), not from
+      // pointerdown defaults.
       e.preventDefault();
       canvas.setPointerCapture(e.pointerId);
       isPanning = true;
+      activePointerId = e.pointerId;
       lastX = e.clientX;
       lastY = e.clientY;
       canvas.style.cursor = "grabbing";
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (!isPanning) return;
+      if (!isPanning || e.pointerId !== activePointerId) return;
       const v = viewportRef.current;
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
@@ -160,13 +174,22 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     };
 
     const onPointerUp = (e: PointerEvent) => {
-      if (e.button !== 0 || !isPanning) return;
+      if (e.pointerId !== activePointerId || !isPanning) return;
       isPanning = false;
+      if (canvas.hasPointerCapture(e.pointerId)) {
+        canvas.releasePointerCapture(e.pointerId);
+      }
+      activePointerId = -1;
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 
-    const onPointerCancel = () => {
+    const onPointerCancel = (e: PointerEvent) => {
+      if (e.pointerId !== activePointerId || !isPanning) return;
       isPanning = false;
+      if (canvas.hasPointerCapture(e.pointerId)) {
+        canvas.releasePointerCapture(e.pointerId);
+      }
+      activePointerId = -1;
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 
