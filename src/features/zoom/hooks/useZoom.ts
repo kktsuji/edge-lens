@@ -100,7 +100,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     [setViewport],
   );
 
-  // Pointer-based pan (Space+drag for mouse, single-finger drag for touch in navigate mode)
+  // Pointer-based pan:
+  // - Navigate mode: click-drag pans (mouse & touch)
+  // - Any mode: Space+drag pans (keyboard shortcut override)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -139,6 +141,9 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
       if (!shouldPan) return;
 
+      // preventDefault suppresses text selection during drag. This is safe
+      // because the pixel inspector reads from pointermove (hover), not from
+      // pointerdown defaults.
       e.preventDefault();
       canvas.setPointerCapture(e.pointerId);
       isPanning = true;
@@ -160,11 +165,13 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onPointerUp = (e: PointerEvent) => {
       if (e.button !== 0 || !isPanning) return;
       isPanning = false;
+      canvas.releasePointerCapture(e.pointerId);
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 
-    const onPointerCancel = () => {
+    const onPointerCancel = (e: PointerEvent) => {
       isPanning = false;
+      canvas.releasePointerCapture(e.pointerId);
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 

@@ -84,21 +84,19 @@ test.describe("Click-drag panning", () => {
     expect(Buffer.compare(before, after)).not.toBe(0);
   });
 
-  test("click-drag does NOT pan in ROI mode", async ({ page }) => {
+  test("canvas shows crosshair cursor in ROI mode", async ({ page }) => {
     await switchToolMode(page, "roi");
 
     const canvas = page.locator("main canvas");
-
-    // The canvas should have crosshair cursor in ROI mode
     await expect(canvas).toHaveClass(/cursor-crosshair/);
   });
 
-  test("click-drag does NOT pan in line-profile mode", async ({ page }) => {
+  test("canvas shows crosshair cursor in line-profile mode", async ({
+    page,
+  }) => {
     await switchToolMode(page, "line-profile");
 
     const canvas = page.locator("main canvas");
-
-    // The canvas should have crosshair cursor in line-profile mode
     await expect(canvas).toHaveClass(/cursor-crosshair/);
   });
 
