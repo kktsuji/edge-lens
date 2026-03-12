@@ -165,13 +165,18 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onPointerUp = (e: PointerEvent) => {
       if (e.button !== 0 || !isPanning) return;
       isPanning = false;
-      canvas.releasePointerCapture(e.pointerId);
+      if (canvas.hasPointerCapture(e.pointerId)) {
+        canvas.releasePointerCapture(e.pointerId);
+      }
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 
     const onPointerCancel = (e: PointerEvent) => {
+      if (!isPanning) return;
       isPanning = false;
-      canvas.releasePointerCapture(e.pointerId);
+      if (canvas.hasPointerCapture(e.pointerId)) {
+        canvas.releasePointerCapture(e.pointerId);
+      }
       canvas.style.cursor = isSpaceDown ? "grab" : "";
     };
 

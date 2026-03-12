@@ -61,9 +61,10 @@ beforeEach(() => {
       left: 0,
     }),
   });
-  // Stub setPointerCapture / releasePointerCapture
+  // Stub setPointerCapture / releasePointerCapture / hasPointerCapture
   canvas.setPointerCapture = vi.fn();
   canvas.releasePointerCapture = vi.fn();
+  canvas.hasPointerCapture = vi.fn().mockReturnValue(true);
   document.body.appendChild(canvas);
 });
 

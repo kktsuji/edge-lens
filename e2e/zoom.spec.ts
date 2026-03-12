@@ -102,9 +102,14 @@ test.describe("Click-drag panning", () => {
 
   test("canvas shows default cursor in navigate mode", async ({ page }) => {
     const canvas = page.locator("main canvas");
-    // Navigate mode should NOT have crosshair — default cursor for pixel inspector
+    // Navigate mode uses the default cursor (no cursor-* override classes)
     const cls = await canvas.getAttribute("class");
     expect(cls).not.toContain("cursor-crosshair");
     expect(cls).not.toContain("cursor-grab");
+    // Verify inline cursor style is not set (default cursor)
+    const inlineCursor = await canvas.evaluate(
+      (el) => (el as HTMLElement).style.cursor,
+    );
+    expect(inlineCursor).toBe("");
   });
 });
