@@ -35,21 +35,23 @@ export function ToolButton({
 }) {
   const { t } = useTranslation();
   const isActive = currentMode === mode;
+  const actionLabel = t(labelKey);
   const label = toolsEnabled
-    ? `${t(labelKey)} (${SHORTCUT_KEY[mode]})`
-    : t("toolbar.openImageFirst");
+    ? `${actionLabel} (${SHORTCUT_KEY[mode]})`
+    : `${actionLabel} — ${t("toolbar.openImageFirst")}`;
 
   return (
-    <button
-      data-testid={testId}
-      onClick={() => setToolMode(mode)}
-      disabled={!toolsEnabled}
-      title={label}
-      aria-label={label}
-      aria-pressed={toolsEnabled ? isActive : undefined}
-      className={`${BASE_CLASS} ${stateClass(toolsEnabled, isActive)}`}
-    >
-      {icon}
-    </button>
+    <span className="inline-flex" title={label}>
+      <button
+        data-testid={testId}
+        onClick={() => setToolMode(mode)}
+        disabled={!toolsEnabled}
+        aria-label={label}
+        aria-pressed={toolsEnabled ? isActive : undefined}
+        className={`${BASE_CLASS} ${stateClass(toolsEnabled, isActive)}`}
+      >
+        {icon}
+      </button>
+    </span>
   );
 }

@@ -13,43 +13,47 @@ export function LockToggleButton() {
       ? "bg-blue-600 text-white"
       : "text-gray-400 hover:bg-gray-700 hover:text-white";
 
+  const lockLabel = gridState.positionLocked
+    ? t("grid.unlock")
+    : t("grid.lock");
   const label = disabled
-    ? t("grid.enableGridFirst")
-    : `${gridState.positionLocked ? t("grid.unlock") : t("grid.lock")} (K)`;
+    ? `${lockLabel} — ${t("grid.enableGridFirst")}`
+    : `${lockLabel} (K)`;
 
   return (
-    <button
-      onClick={() => setGridPositionLocked(!gridState.positionLocked)}
-      disabled={disabled}
-      title={label}
-      aria-label={label}
-      aria-pressed={disabled ? undefined : gridState.positionLocked}
-      className={`hidden min-h-8 min-w-8 items-center justify-center rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 md:inline-flex ${className}`}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
+    <span className="hidden md:inline-flex" title={label}>
+      <button
+        onClick={() => setGridPositionLocked(!gridState.positionLocked)}
+        disabled={disabled}
+        aria-label={label}
+        aria-pressed={disabled ? undefined : gridState.positionLocked}
+        className={`min-h-8 min-w-8 items-center justify-center rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 inline-flex ${className}`}
       >
-        {gridState.positionLocked ? (
-          <>
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </>
-        ) : (
-          <>
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-          </>
-        )}
-      </svg>
-    </button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          {gridState.positionLocked ? (
+            <>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </>
+          ) : (
+            <>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+            </>
+          )}
+        </svg>
+      </button>
+    </span>
   );
 }

@@ -67,17 +67,21 @@ test.describe("Grid View", () => {
     ).toBeVisible();
   });
 
-  test("lock button visible in toolbar when grid active", async ({ page }) => {
-    // Lock button should not be visible before grid mode
-    await expect(
-      page.getByRole("button", { name: /Lock Position|Unlock Position/ }),
-    ).toBeHidden();
+  test("lock button visible but disabled before grid, enabled when grid active", async ({
+    page,
+  }) => {
+    // Lock button should be visible but disabled before grid mode
+    const lockBtn = page.getByRole("button", {
+      name: /Lock Position|Unlock Position/,
+    });
+    await expect(lockBtn).toBeVisible();
+    await expect(lockBtn).toBeDisabled();
 
     await openGridMode(page);
 
-    await expect(
-      page.getByRole("button", { name: /Lock Position|Unlock Position/ }),
-    ).toBeVisible();
+    // Lock button should be visible and enabled when grid is active
+    await expect(lockBtn).toBeVisible();
+    await expect(lockBtn).toBeEnabled();
   });
 
   test("active cell has visual indicator", async ({ page }) => {

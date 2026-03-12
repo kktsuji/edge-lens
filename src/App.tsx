@@ -48,7 +48,9 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
   const isGridMode = gridState.enabled;
-  const toolsEnabled = hasImage || isGridMode;
+  const hasGridImages =
+    gridState.enabled && gridState.cells.some((cell) => cell.image.imageData);
+  const toolsEnabled = hasImage || hasGridImages;
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
