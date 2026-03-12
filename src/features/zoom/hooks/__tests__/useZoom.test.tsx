@@ -286,4 +286,79 @@ describe("useZoom – click-drag panning", () => {
     // After release, inline cursor is cleared (CSS class handles default)
     expect(canvas.style.cursor).toBe("");
   });
+
+  it("continues panning when Space is released mid-drag", async () => {
+    const result = renderHook(() => useZoomWithStore(), { wrapper });
+    await loadDummyImage(result);
+
+    // Switch to ROI mode so panning requires Space
+    act(() => {
+      result.result.current.setToolMode("roi");
+    });
+
+    const initialPanX = result.result.current.viewport.panX;
+    const initialPanY = result.result.current.viewport.panY;
+
+    // Hold Space and start drag
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+      );
+    });
+    act(() => {
+      firePointerEvent(canvas, "pointerdown", {
+        clientX: 100,
+        clientY: 100,
+      });
+    });
+
+    // Release Space mid-drag
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keyup", { key: " ", bubbles: true }),
+      );
+    });
+
+    // Continue moving — should still pan
+    act(() => {
+      firePointerEvent(canvas, "pointermove", {
+        clientX: 160,
+        clientY: 130,
+      });
+    });
+
+    // Finish drag
+    act(() => {
+      firePointerEvent(canvas, "pointerup", { clientX: 160, clientY: 130 });
+    });
+
+    expect(result.result.current.viewport.panX).toBe(initialPanX + 60);
+    expect(result.result.current.viewport.panY).toBe(initialPanY + 30);
+  });
+
+  it("releases pointer capture on window blur during drag", async () => {
+    const result = renderHook(() => useZoomWithStore(), { wrapper });
+    await loadDummyImage(result);
+
+    expect(result.result.current.toolMode).toBe("navigate");
+
+    // Start drag
+    act(() => {
+      firePointerEvent(canvas, "pointerdown", {
+        clientX: 100,
+        clientY: 100,
+        pointerId: 42,
+      });
+    });
+
+    expect(canvas.style.cursor).toBe("grabbing");
+
+    // Window loses focus mid-drag
+    act(() => {
+      window.dispatchEvent(new Event("blur"));
+    });
+
+    expect(canvas.releasePointerCapture).toHaveBeenCalledWith(42);
+    expect(canvas.style.cursor).toBe("");
+  });
 });

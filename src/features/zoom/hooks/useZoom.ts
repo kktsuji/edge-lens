@@ -109,6 +109,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
     let isSpaceDown = false;
     let isPanning = false;
+    let activePointerId = -1;
     let lastX = 0;
     let lastY = 0;
 
@@ -124,13 +125,22 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.key !== " ") return;
       isSpaceDown = false;
-      isPanning = false;
-      canvas.style.cursor = "";
+      // Don't reset isPanning — let pointerup handle cleanup so that
+      // releasing Space mid-drag doesn't orphan the pointer capture.
+      if (!isPanning) {
+        canvas.style.cursor = "";
+      }
     };
 
     const onWindowBlur = () => {
       isSpaceDown = false;
+      if (isPanning && activePointerId >= 0) {
+        if (canvas.hasPointerCapture(activePointerId)) {
+          canvas.releasePointerCapture(activePointerId);
+        }
+      }
       isPanning = false;
+      activePointerId = -1;
       canvas.style.cursor = "";
     };
 
@@ -147,6 +157,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
       e.preventDefault();
       canvas.setPointerCapture(e.pointerId);
       isPanning = true;
+      activePointerId = e.pointerId;
       lastX = e.clientX;
       lastY = e.clientY;
       canvas.style.cursor = "grabbing";
@@ -165,6 +176,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onPointerUp = (e: PointerEvent) => {
       if (e.button !== 0 || !isPanning) return;
       isPanning = false;
+      activePointerId = -1;
       if (canvas.hasPointerCapture(e.pointerId)) {
         canvas.releasePointerCapture(e.pointerId);
       }
@@ -174,6 +186,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onPointerCancel = (e: PointerEvent) => {
       if (!isPanning) return;
       isPanning = false;
+      activePointerId = -1;
       if (canvas.hasPointerCapture(e.pointerId)) {
         canvas.releasePointerCapture(e.pointerId);
       }
