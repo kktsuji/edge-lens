@@ -135,9 +135,7 @@ export function useZoom(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
 
-      const shouldPan =
-        isSpaceDown ||
-        (e.pointerType === "touch" && toolModeRef.current === "navigate");
+      const shouldPan = isSpaceDown || toolModeRef.current === "navigate";
 
       if (!shouldPan) return;
 

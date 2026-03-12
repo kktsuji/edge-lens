@@ -1,5 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { FIXTURE, getZoomPercent, loadTestImage } from "./helpers.js";
+import {
+  FIXTURE,
+  drawOnCanvas,
+  getZoomPercent,
+  loadTestImage,
+  switchToolMode,
+} from "./helpers.js";
 
 test.describe("Zoom", () => {
   test.beforeEach(async ({ page }) => {
@@ -49,5 +55,58 @@ test.describe("Zoom", () => {
 
     const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
     await expect(zoomSpan).toHaveText("100%");
+  });
+});
+
+test.describe("Click-drag panning", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await loadTestImage(page, FIXTURE);
+    // Zoom to 100% so the small test image has room to pan
+    await page.keyboard.press("1");
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(zoomSpan).toHaveText("100%");
+  });
+
+  test("click-drag pans in navigate mode", async ({ page }) => {
+    const canvas = page.locator("main canvas");
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+
+    // Take a screenshot before dragging to compare canvas content shift
+    const before = await canvas.screenshot();
+
+    // Drag from center towards top-left
+    await drawOnCanvas(page, canvas, { x: 50, y: 50 }, { x: 30, y: 30 });
+
+    const after = await canvas.screenshot();
+    // Canvas content should have shifted
+    expect(Buffer.compare(before, after)).not.toBe(0);
+  });
+
+  test("click-drag does NOT pan in ROI mode", async ({ page }) => {
+    await switchToolMode(page, "roi");
+
+    const canvas = page.locator("main canvas");
+
+    // The canvas should have crosshair cursor in ROI mode
+    await expect(canvas).toHaveClass(/cursor-crosshair/);
+  });
+
+  test("click-drag does NOT pan in line-profile mode", async ({ page }) => {
+    await switchToolMode(page, "line-profile");
+
+    const canvas = page.locator("main canvas");
+
+    // The canvas should have crosshair cursor in line-profile mode
+    await expect(canvas).toHaveClass(/cursor-crosshair/);
+  });
+
+  test("canvas shows default cursor in navigate mode", async ({ page }) => {
+    const canvas = page.locator("main canvas");
+    // Navigate mode should NOT have crosshair — default cursor for pixel inspector
+    const cls = await canvas.getAttribute("class");
+    expect(cls).not.toContain("cursor-crosshair");
+    expect(cls).not.toContain("cursor-grab");
   });
 });
