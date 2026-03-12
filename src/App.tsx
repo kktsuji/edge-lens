@@ -30,7 +30,11 @@ import { RoiStatsPanel } from "./features/roi/components/RoiStatsPanel";
 import { useRoiSelection } from "./features/roi/hooks/useRoiSelection";
 import { useZoom } from "./features/zoom/hooks/useZoom";
 import { useCanvas } from "./hooks/useCanvas";
-import { useImageStore, useGridActions } from "./hooks/useImageStore";
+import {
+  useImageStore,
+  useGridActions,
+  useHasGridImages,
+} from "./hooks/useImageStore";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { handleFileSelection } from "./utils/validation";
 import { GridContainer } from "./features/grid/components/GridContainer";
@@ -48,8 +52,7 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
   const isGridMode = gridState.enabled;
-  const hasGridImages =
-    gridState.enabled && gridState.cells.some((cell) => cell.image.imageData);
+  const hasGridImages = useHasGridImages();
   const toolsEnabled = hasImage || hasGridImages;
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);

@@ -1,13 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { useImageStore, useGridActions } from "../../../hooks/useImageStore";
+import { useImageStore, useHasGridImages } from "../../../hooks/useImageStore";
 
 export function CloseButton() {
   const { t } = useTranslation();
   const { image, closeImage } = useImageStore();
-  const { gridState } = useGridActions();
-
-  const hasGridImages =
-    gridState.enabled && gridState.cells.some((c) => c.image.imageData);
+  const hasGridImages = useHasGridImages();
   const disabled = !image.imageData && !hasGridImages;
 
   const closeLabel = t("toolbar.close");
@@ -19,10 +16,7 @@ export function CloseButton() {
     <span className="inline-flex" title={label}>
       <button
         data-testid="close-button"
-        onClick={() => {
-          if (disabled) return;
-          closeImage();
-        }}
+        onClick={closeImage}
         disabled={disabled}
         className={
           disabled

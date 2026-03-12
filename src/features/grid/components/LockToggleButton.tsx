@@ -27,7 +27,7 @@ export function LockToggleButton() {
         disabled={disabled}
         aria-label={label}
         aria-pressed={disabled ? undefined : gridState.positionLocked}
-        className={`min-h-8 min-w-8 items-center justify-center rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 inline-flex ${className}`}
+        className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${className}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
