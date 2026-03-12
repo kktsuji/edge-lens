@@ -14,7 +14,11 @@ export function CloseButton() {
 
   return (
     <button
-      onClick={closeImage}
+      data-testid="close-button"
+      onClick={() => {
+        if (disabled) return;
+        closeImage();
+      }}
       disabled={disabled}
       className={
         disabled

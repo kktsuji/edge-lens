@@ -26,7 +26,7 @@ test.describe("Image Loader", () => {
   test("close button visible but disabled when no image loaded", async ({
     page,
   }) => {
-    const closeBtn = page.getByRole("button", { name: "No image to close" });
+    const closeBtn = page.getByTestId("close-button");
     await expect(closeBtn).toBeVisible();
     await expect(closeBtn).toBeDisabled();
   });

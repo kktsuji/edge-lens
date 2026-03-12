@@ -49,7 +49,7 @@ export function GridToggleButton() {
     };
   }, [isDropdownOpen, updatePosition]);
 
-  // Grid mode is always enabled in order to make layout selection possible before loading
+  // Grid toggle button is always visible so users can select a layout before loading images
   return (
     <div className="relative hidden md:inline-flex" ref={wrapperRef}>
       <button
