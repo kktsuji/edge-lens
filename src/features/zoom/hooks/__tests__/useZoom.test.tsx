@@ -82,14 +82,13 @@ function wrapper({ children }: { children: ReactNode }) {
  * Helper: load a dummy image so viewport is initialized.
  */
 async function loadDummyImage(
-  result: ReturnType<
-    typeof renderHook<
-      void,
-      ReturnType<typeof useImageStore> & {
+  result: Pick<ReturnType<typeof renderHook>, "result"> & {
+    result: {
+      current: ReturnType<typeof useImageStore> & {
         canvasRef: { current: typeof canvas };
-      }
-    >
-  >,
+      };
+    };
+  },
 ) {
   const blob = new Blob(["x"], { type: "image/png" });
   const file = new File([blob], "test.png", { type: "image/png" });
