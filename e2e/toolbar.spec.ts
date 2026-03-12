@@ -43,15 +43,18 @@ test.describe("Toolbar", () => {
     await expect(lpBtn).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("tool buttons hidden when no image loaded", async ({ page }) => {
-    await expect(
-      page.getByRole("button", { name: "Navigate (N)" }),
-    ).toBeHidden();
-    await expect(
-      page.getByRole("button", { name: "Line Profile (L)" }),
-    ).toBeHidden();
-    await expect(
-      page.getByRole("button", { name: "ROI Selection (R)" }),
-    ).toBeHidden();
+  test("tool buttons visible but disabled when no image loaded", async ({
+    page,
+  }) => {
+    const navBtn = page.getByTestId("tool-navigate");
+    const lpBtn = page.getByTestId("tool-line-profile");
+    const roiBtn = page.getByTestId("tool-roi");
+
+    await expect(navBtn).toBeVisible();
+    await expect(navBtn).toBeDisabled();
+    await expect(lpBtn).toBeVisible();
+    await expect(lpBtn).toBeDisabled();
+    await expect(roiBtn).toBeVisible();
+    await expect(roiBtn).toBeDisabled();
   });
 });

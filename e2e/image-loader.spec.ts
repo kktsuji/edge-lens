@@ -23,6 +23,14 @@ test.describe("Image Loader", () => {
     await expect(page.getByText("Drop an image here")).toBeVisible();
   });
 
+  test("close button visible but disabled when no image loaded", async ({
+    page,
+  }) => {
+    const closeBtn = page.getByTestId("close-button");
+    await expect(closeBtn).toBeVisible();
+    await expect(closeBtn).toBeDisabled();
+  });
+
   test("rejects unsupported file format", async ({ page }) => {
     // Create a temporary text file to simulate unsupported format
     const fileChooserPromise = page.waitForEvent("filechooser");

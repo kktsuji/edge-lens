@@ -660,3 +660,10 @@ export function useGridActions(): GridActions {
   }
   return ctx;
 }
+
+export function useHasGridImages(): boolean {
+  const { gridState } = useGridActions();
+  return (
+    gridState.enabled && gridState.cells.some((cell) => cell.image.imageData)
+  );
+}

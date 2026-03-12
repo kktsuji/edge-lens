@@ -30,13 +30,18 @@ import { RoiStatsPanel } from "./features/roi/components/RoiStatsPanel";
 import { useRoiSelection } from "./features/roi/hooks/useRoiSelection";
 import { useZoom } from "./features/zoom/hooks/useZoom";
 import { useCanvas } from "./hooks/useCanvas";
-import { useImageStore, useGridActions } from "./hooks/useImageStore";
+import {
+  useImageStore,
+  useGridActions,
+  useHasGridImages,
+} from "./hooks/useImageStore";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { handleFileSelection } from "./utils/validation";
 import { GridContainer } from "./features/grid/components/GridContainer";
 import { GridToggleButton } from "./features/grid/components/GridToggleButton";
 import { LockToggleButton } from "./features/grid/components/LockToggleButton";
 import { GridSidebarContent } from "./features/grid/components/GridSidebarContent";
+import { ToolButton } from "./components/ToolButton";
 
 function App() {
   const { t } = useTranslation();
@@ -47,6 +52,8 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!image.imageData;
   const isGridMode = gridState.enabled;
+  const hasGridImages = useHasGridImages();
+  const toolsEnabled = hasImage || hasGridImages;
 
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [dropError, setDropError] = useState<string | null>(null);
@@ -116,56 +123,38 @@ function App() {
       <Toolbar>
         <FilePickerButton inputRef={fileInputRef} />
         <CloseButton />
-        {(hasImage || isGridMode) && (
-          <>
-            <div className="mx-1 h-5 w-px bg-gray-600" />
-            <button
-              onClick={() => setToolMode("navigate")}
-              title={`${t("toolbar.navigate")} (N)`}
-              aria-label={`${t("toolbar.navigate")} (N)`}
-              aria-pressed={toolMode === "navigate"}
-              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
-                toolMode === "navigate"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
-            >
-              ↖
-            </button>
-            <button
-              onClick={() => setToolMode("line-profile")}
-              title={`${t("toolbar.lineProfile")} (L)`}
-              aria-label={`${t("toolbar.lineProfile")} (L)`}
-              aria-pressed={toolMode === "line-profile"}
-              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
-                toolMode === "line-profile"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
-            >
-              ╱
-            </button>
-            <button
-              onClick={() => setToolMode("roi")}
-              title={`${t("toolbar.roi")} (R)`}
-              aria-label={`${t("toolbar.roi")} (R)`}
-              aria-pressed={toolMode === "roi"}
-              className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
-                toolMode === "roi"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
-            >
-              ▭
-            </button>
-            <div className="mx-1 h-5 w-px bg-gray-600" />
-          </>
-        )}
+        <div className="mx-1 h-5 w-px bg-gray-600" />
+        <ToolButton
+          testId="tool-navigate"
+          mode="navigate"
+          icon="↖"
+          labelKey="toolbar.navigate"
+          toolsEnabled={toolsEnabled}
+          currentMode={toolMode}
+          setToolMode={setToolMode}
+        />
+        <ToolButton
+          testId="tool-line-profile"
+          mode="line-profile"
+          icon="╱"
+          labelKey="toolbar.lineProfile"
+          toolsEnabled={toolsEnabled}
+          currentMode={toolMode}
+          setToolMode={setToolMode}
+        />
+        <ToolButton
+          testId="tool-roi"
+          mode="roi"
+          icon="▭"
+          labelKey="toolbar.roi"
+          toolsEnabled={toolsEnabled}
+          currentMode={toolMode}
+          setToolMode={setToolMode}
+        />
+        <div className="mx-1 hidden h-5 w-px bg-gray-600 md:block" />
         <GridToggleButton />
         <LockToggleButton />
-        {(hasImage || isGridMode) && (
-          <div className="mx-1 h-5 w-px bg-gray-600" />
-        )}
+        <div className="mx-1 hidden h-5 w-px bg-gray-600 md:block" />
         {!isGridMode && hasImage && (
           <span className="hidden text-xs text-gray-400 md:inline">
             {image.name} ({image.width}×{image.height})
