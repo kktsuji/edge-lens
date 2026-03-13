@@ -43,6 +43,25 @@ import { LockToggleButton } from "./features/grid/components/LockToggleButton";
 import { GridSidebarContent } from "./features/grid/components/GridSidebarContent";
 import { Icon } from "./components/Icon";
 import { ToolButton } from "./components/ToolButton";
+import { SidebarToggleButton } from "./components/SidebarToggleButton";
+
+const NavigateIcon = (
+  <Icon>
+    <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+  </Icon>
+);
+
+const LineProfileIcon = (
+  <Icon>
+    <line x1="5" y1="19" x2="19" y2="5" />
+  </Icon>
+);
+
+const RoiIcon = (
+  <Icon>
+    <rect x="3" y="5" width="18" height="14" rx="1" />
+  </Icon>
+);
 
 function App() {
   const { t } = useTranslation();
@@ -128,11 +147,7 @@ function App() {
         <ToolButton
           testId="tool-navigate"
           mode="navigate"
-          icon={
-            <Icon>
-              <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
-            </Icon>
-          }
+          icon={NavigateIcon}
           labelKey="toolbar.navigate"
           toolsEnabled={toolsEnabled}
           currentMode={toolMode}
@@ -141,11 +156,7 @@ function App() {
         <ToolButton
           testId="tool-line-profile"
           mode="line-profile"
-          icon={
-            <Icon>
-              <line x1="5" y1="19" x2="19" y2="5" />
-            </Icon>
-          }
+          icon={LineProfileIcon}
           labelKey="toolbar.lineProfile"
           toolsEnabled={toolsEnabled}
           currentMode={toolMode}
@@ -154,11 +165,7 @@ function App() {
         <ToolButton
           testId="tool-roi"
           mode="roi"
-          icon={
-            <Icon>
-              <rect x="3" y="5" width="18" height="14" rx="1" />
-            </Icon>
-          }
+          icon={RoiIcon}
           labelKey="toolbar.roi"
           toolsEnabled={toolsEnabled}
           currentMode={toolMode}
@@ -179,18 +186,10 @@ function App() {
           </span>
         )}
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
-          <button
+          <SidebarToggleButton
+            isOpen={isSidebarOpen}
             onClick={() => setIsSidebarOpen((v) => !v)}
-            className="inline-flex items-center justify-center min-h-8 min-w-8 rounded px-1 py-0.5 text-sm text-gray-400 hover:bg-gray-700 hover:text-white sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 md:hidden"
-            aria-label="Toggle sidebar"
-            aria-expanded={isSidebarOpen}
-          >
-            <Icon>
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </Icon>
-          </button>
+          />
           <GitHubButton />
           <HelpButton onClick={() => setIsHelpOpen((v) => !v)} />
         </div>

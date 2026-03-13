@@ -3,9 +3,11 @@ import type { ReactNode } from "react";
 export function Icon({
   children,
   size = 16,
+  className,
 }: {
   children: ReactNode;
   size?: number;
+  className?: string;
 }) {
   return (
     <svg
@@ -19,6 +21,7 @@ export function Icon({
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={className}
     >
       {children}
     </svg>
