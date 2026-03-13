@@ -9,7 +9,7 @@ const SHORTCUT_KEY: Record<ToolMode, string> = {
 };
 
 const BASE_CLASS =
-  "min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1";
+  "inline-flex items-center justify-center min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1";
 
 function stateClass(enabled: boolean, isActive: boolean) {
   if (!enabled) return "text-gray-600 cursor-not-allowed";
@@ -49,7 +49,7 @@ export function ToolButton({
         disabled={!toolsEnabled}
         aria-label={label}
         aria-pressed={toolsEnabled ? isActive : undefined}
-        className={`${BASE_CLASS} inline-flex items-center justify-center ${stateClass(toolsEnabled, isActive)}`}
+        className={`${BASE_CLASS} ${stateClass(toolsEnabled, isActive)}`}
       >
         {icon}
       </button>

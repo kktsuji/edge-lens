@@ -41,6 +41,7 @@ import { GridContainer } from "./features/grid/components/GridContainer";
 import { GridToggleButton } from "./features/grid/components/GridToggleButton";
 import { LockToggleButton } from "./features/grid/components/LockToggleButton";
 import { GridSidebarContent } from "./features/grid/components/GridSidebarContent";
+import { Icon } from "./components/Icon";
 import { ToolButton } from "./components/ToolButton";
 
 function App() {
@@ -128,20 +129,9 @@ function App() {
           testId="tool-navigate"
           mode="navigate"
           icon={
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <Icon>
               <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
-            </svg>
+            </Icon>
           }
           labelKey="toolbar.navigate"
           toolsEnabled={toolsEnabled}
@@ -152,20 +142,9 @@ function App() {
           testId="tool-line-profile"
           mode="line-profile"
           icon={
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <Icon>
               <line x1="5" y1="19" x2="19" y2="5" />
-            </svg>
+            </Icon>
           }
           labelKey="toolbar.lineProfile"
           toolsEnabled={toolsEnabled}
@@ -176,20 +155,9 @@ function App() {
           testId="tool-roi"
           mode="roi"
           icon={
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <Icon>
               <rect x="3" y="5" width="18" height="14" rx="1" />
-            </svg>
+            </Icon>
           }
           labelKey="toolbar.roi"
           toolsEnabled={toolsEnabled}
@@ -217,22 +185,11 @@ function App() {
             aria-label="Toggle sidebar"
             aria-expanded={isSidebarOpen}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
+            <Icon>
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
+            </Icon>
           </button>
           <GitHubButton />
           <HelpButton onClick={() => setIsHelpOpen((v) => !v)} />
