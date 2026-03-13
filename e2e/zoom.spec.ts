@@ -18,25 +18,29 @@ test.describe("Zoom", () => {
   });
 
   test("zoom in with + key", async ({ page }) => {
-    const initialZoom = await getZoomPercent(page);
+    // Set a known zoom level to avoid race with async auto-fit
+    await page.keyboard.press("1");
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(zoomSpan).toHaveText("100%");
 
     await page.keyboard.press("+");
 
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).not.toHaveText(`${initialZoom}%`);
+    await expect(zoomSpan).not.toHaveText("100%");
     const newZoom = await getZoomPercent(page);
-    expect(newZoom).toBeGreaterThan(initialZoom);
+    expect(newZoom).toBeGreaterThan(100);
   });
 
   test("zoom out with - key", async ({ page }) => {
-    const initialZoom = await getZoomPercent(page);
+    // Set a known zoom level to avoid race with async auto-fit
+    await page.keyboard.press("1");
+    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+    await expect(zoomSpan).toHaveText("100%");
 
     await page.keyboard.press("-");
 
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).not.toHaveText(`${initialZoom}%`);
+    await expect(zoomSpan).not.toHaveText("100%");
     const newZoom = await getZoomPercent(page);
-    expect(newZoom).toBeLessThan(initialZoom);
+    expect(newZoom).toBeLessThan(100);
   });
 
   test("fit to screen with 0 key", async ({ page }) => {
