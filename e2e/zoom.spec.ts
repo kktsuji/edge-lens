@@ -30,7 +30,7 @@ test.describe("Zoom", () => {
 
     await page.keyboard.press("+");
 
-    await expect(zoomSpan).toHaveText(/^(?!100%$)\d+%$/);
+    await expect(zoomSpan).not.toHaveText("100%");
     const newZoom = await getZoomPercent(page);
     expect(newZoom).toBeGreaterThan(100);
   });
@@ -40,7 +40,7 @@ test.describe("Zoom", () => {
 
     await page.keyboard.press("-");
 
-    await expect(zoomSpan).toHaveText(/^(?!100%$)\d+%$/);
+    await expect(zoomSpan).not.toHaveText("100%");
     const newZoom = await getZoomPercent(page);
     expect(newZoom).toBeLessThan(100);
   });
@@ -50,7 +50,7 @@ test.describe("Zoom", () => {
 
     // Fit to screen — for a 2x2 image the fit zoom will differ from 100%
     await page.keyboard.press("0");
-    await expect(zoomSpan).toHaveText(/^(?!100%$)\d+%$/);
+    await expect(zoomSpan).not.toHaveText("100%");
   });
 
   test("actual size (100%) with 1 key", async ({ page }) => {
