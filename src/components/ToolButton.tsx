@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { ToolMode } from "../types";
 
@@ -27,7 +28,7 @@ export function ToolButton({
 }: {
   testId: string;
   mode: ToolMode;
-  icon: string;
+  icon: ReactNode;
   labelKey: string;
   toolsEnabled: boolean;
   currentMode: ToolMode;
@@ -48,7 +49,7 @@ export function ToolButton({
         disabled={!toolsEnabled}
         aria-label={label}
         aria-pressed={toolsEnabled ? isActive : undefined}
-        className={`${BASE_CLASS} ${stateClass(toolsEnabled, isActive)}`}
+        className={`${BASE_CLASS} inline-flex items-center justify-center ${stateClass(toolsEnabled, isActive)}`}
       >
         {icon}
       </button>
