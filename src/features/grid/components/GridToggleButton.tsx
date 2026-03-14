@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { Icon } from "../../../components/Icon";
 import { useGridActions } from "../../../hooks/useImageStore";
 import { GridLayoutSelector } from "./GridLayoutSelector";
 
@@ -61,29 +62,18 @@ export function GridToggleButton() {
         aria-haspopup="dialog"
         aria-expanded={isDropdownOpen}
         aria-controls="grid-layout-dropdown"
-        className={`min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
+        className={`inline-flex items-center justify-center min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1 ${
           gridState.enabled
             ? "bg-blue-600 text-white"
             : "text-gray-400 hover:bg-gray-700 hover:text-white"
         }`}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
+        <Icon>
           <rect x="3" y="3" width="7" height="7" />
           <rect x="14" y="3" width="7" height="7" />
           <rect x="3" y="14" width="7" height="7" />
           <rect x="14" y="14" width="7" height="7" />
-        </svg>
+        </Icon>
       </button>
       {isDropdownOpen &&
         createPortal(

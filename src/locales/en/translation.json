@@ -92,5 +92,6 @@
   "error.boundary.title": "Something went wrong",
   "error.boundary.description": "An unexpected error occurred.",
   "error.boundary.reload": "Reload",
-  "error.boundary.chartFailed": "Failed to load chart."
+  "error.boundary.chartFailed": "Failed to load chart.",
+  "sidebar.toggle": "Toggle sidebar"
 }

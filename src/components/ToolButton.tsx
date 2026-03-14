@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { ToolMode } from "../types";
 
@@ -8,7 +9,7 @@ const SHORTCUT_KEY: Record<ToolMode, string> = {
 };
 
 const BASE_CLASS =
-  "min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1";
+  "inline-flex items-center justify-center min-h-8 min-w-8 rounded px-1 py-0.5 text-sm transition-colors sm:min-h-10 sm:min-w-10 sm:px-2 sm:py-1";
 
 function stateClass(enabled: boolean, isActive: boolean) {
   if (!enabled) return "text-gray-600 cursor-not-allowed";
@@ -27,7 +28,7 @@ export function ToolButton({
 }: {
   testId: string;
   mode: ToolMode;
-  icon: string;
+  icon: ReactNode;
   labelKey: string;
   toolsEnabled: boolean;
   currentMode: ToolMode;
