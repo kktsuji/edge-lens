@@ -4,16 +4,9 @@ import {
   drawOnCanvas,
   getZoomPercent,
   loadTestImage,
+  resetZoomTo100,
   switchToolMode,
 } from "./helpers.js";
-
-/** Press "1" to set zoom to 100% and return the zoom span locator. */
-async function resetZoomTo100(page: import("@playwright/test").Page) {
-  await page.keyboard.press("1");
-  const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-  await expect(zoomSpan).toHaveText("100%");
-  return zoomSpan;
-}
 
 test.describe("Zoom", () => {
   test.beforeEach(async ({ page }) => {

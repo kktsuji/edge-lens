@@ -101,6 +101,16 @@ export async function loadImageIntoGridCell(
 }
 
 /**
+ * Press "1" to set zoom to 100% and return the zoom span locator.
+ */
+export async function resetZoomTo100(page: Page): Promise<Locator> {
+  await page.keyboard.press("1");
+  const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
+  await expect(zoomSpan).toHaveText("100%");
+  return zoomSpan;
+}
+
+/**
  * Reads the zoom percentage from the toolbar as a number.
  */
 export async function getZoomPercent(page: Page): Promise<number> {
