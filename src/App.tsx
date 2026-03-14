@@ -45,19 +45,19 @@ import { Icon } from "./components/Icon";
 import { ToolButton } from "./components/ToolButton";
 import { SidebarToggleButton } from "./components/SidebarToggleButton";
 
-const NavigateIcon = (
+const NavigateIcon = () => (
   <Icon>
     <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
   </Icon>
 );
 
-const LineProfileIcon = (
+const LineProfileIcon = () => (
   <Icon>
     <line x1="5" y1="19" x2="19" y2="5" />
   </Icon>
 );
 
-const RoiIcon = (
+const RoiIcon = () => (
   <Icon>
     <rect x="3" y="5" width="18" height="14" rx="1" />
   </Icon>
@@ -147,7 +147,7 @@ function App() {
         <ToolButton
           testId="tool-navigate"
           mode="navigate"
-          icon={NavigateIcon}
+          icon={<NavigateIcon />}
           labelKey="toolbar.navigate"
           toolsEnabled={toolsEnabled}
           currentMode={toolMode}
@@ -156,7 +156,7 @@ function App() {
         <ToolButton
           testId="tool-line-profile"
           mode="line-profile"
-          icon={LineProfileIcon}
+          icon={<LineProfileIcon />}
           labelKey="toolbar.lineProfile"
           toolsEnabled={toolsEnabled}
           currentMode={toolMode}
@@ -165,7 +165,7 @@ function App() {
         <ToolButton
           testId="tool-roi"
           mode="roi"
-          icon={RoiIcon}
+          icon={<RoiIcon />}
           labelKey="toolbar.roi"
           toolsEnabled={toolsEnabled}
           currentMode={toolMode}

@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+/**
+ * Renders SVG icons. All children must use 24×24 viewBox coordinate space.
+ */
 export function Icon({
   children,
   size = 16,
