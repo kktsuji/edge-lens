@@ -209,7 +209,7 @@ function App() {
               <canvas
                 ref={canvasRef}
                 aria-label={image.name || undefined}
-                className={`h-full w-full ${toolMode === "roi" || toolMode === "line-profile" ? "cursor-crosshair" : toolMode === "navigate" ? "cursor-grab" : ""}`}
+                className={`h-full w-full ${toolMode === "roi" || toolMode === "line-profile" ? "cursor-crosshair" : toolMode === "navigate" ? "cursor-default" : ""}`}
               />
               <RoiSelectionOverlay />
               <LineProfileOverlay />

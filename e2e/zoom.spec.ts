@@ -92,9 +92,9 @@ test.describe("Click-drag panning", () => {
     await expect(canvas).toHaveClass(/cursor-crosshair/);
   });
 
-  test("canvas shows grab cursor in navigate mode", async ({ page }) => {
+  test("canvas shows default cursor in navigate mode", async ({ page }) => {
     const canvas = page.locator("main canvas");
-    await expect(canvas).toHaveClass(/cursor-grab/);
+    await expect(canvas).toHaveClass(/cursor-default/);
   });
 
   test("Space+drag shows correct cursor transitions in ROI mode", async ({
