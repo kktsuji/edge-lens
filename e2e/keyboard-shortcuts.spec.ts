@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { FIXTURE, loadTestImage } from "./helpers.js";
+import { FIXTURE, loadTestImage, resetZoomTo100 } from "./helpers.js";
 
 test.describe("Keyboard Shortcuts", () => {
   test.beforeEach(async ({ page }) => {
@@ -76,9 +76,7 @@ test.describe("Keyboard Shortcuts", () => {
 
   test("+/- keys change zoom percentage", async ({ page }) => {
     // Set to 100% first (verifies canvas ref and keyboard handler work)
-    await page.keyboard.press("1");
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).toHaveText("100%");
+    const zoomSpan = await resetZoomTo100(page);
 
     // Zoom in with "="  (same as "+", avoids shift key issues)
     await page.keyboard.press("=");

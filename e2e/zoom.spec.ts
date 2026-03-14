@@ -4,6 +4,7 @@ import {
   drawOnCanvas,
   getZoomPercent,
   loadTestImage,
+  resetZoomTo100,
   switchToolMode,
 } from "./helpers.js";
 
@@ -18,32 +19,27 @@ test.describe("Zoom", () => {
   });
 
   test("zoom in with + key", async ({ page }) => {
-    const initialZoom = await getZoomPercent(page);
+    const zoomSpan = await resetZoomTo100(page);
 
     await page.keyboard.press("+");
 
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).not.toHaveText(`${initialZoom}%`);
+    await expect(zoomSpan).not.toHaveText("100%");
     const newZoom = await getZoomPercent(page);
-    expect(newZoom).toBeGreaterThan(initialZoom);
+    expect(newZoom).toBeGreaterThan(100);
   });
 
   test("zoom out with - key", async ({ page }) => {
-    const initialZoom = await getZoomPercent(page);
+    const zoomSpan = await resetZoomTo100(page);
 
     await page.keyboard.press("-");
 
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).not.toHaveText(`${initialZoom}%`);
+    await expect(zoomSpan).not.toHaveText("100%");
     const newZoom = await getZoomPercent(page);
-    expect(newZoom).toBeLessThan(initialZoom);
+    expect(newZoom).toBeLessThan(100);
   });
 
   test("fit to screen with 0 key", async ({ page }) => {
-    // Go to a known zoom level first
-    await page.keyboard.press("1");
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).toHaveText("100%");
+    const zoomSpan = await resetZoomTo100(page);
 
     // Fit to screen — for a 2x2 image the fit zoom will differ from 100%
     await page.keyboard.press("0");
@@ -51,10 +47,7 @@ test.describe("Zoom", () => {
   });
 
   test("actual size (100%) with 1 key", async ({ page }) => {
-    await page.keyboard.press("1");
-
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).toHaveText("100%");
+    await resetZoomTo100(page);
   });
 });
 
@@ -63,9 +56,7 @@ test.describe("Click-drag panning", () => {
     await page.goto("/");
     await loadTestImage(page, FIXTURE);
     // Zoom to 100% so the small test image has room to pan
-    await page.keyboard.press("1");
-    const zoomSpan = page.locator("span").filter({ hasText: /^\d+%$/ });
-    await expect(zoomSpan).toHaveText("100%");
+    await resetZoomTo100(page);
   });
 
   test("click-drag pans in navigate mode", async ({ page }) => {
